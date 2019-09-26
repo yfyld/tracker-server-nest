@@ -1,2 +1,0 @@
-#!/bin/sh
-rsync -vzrtopg --exclude=.git/ --exclude=db/ --exclude=sdk/ --exclude=esdata/ --exclude=server/node_modules/ --exclude=web/node_modules/ --exclude=server/backup/ --exclude=server/src/publics/ ./ root@49.235.154.22:/work/trycatch
