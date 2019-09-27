@@ -1,3 +1,4 @@
+import { Cookie } from './../../decotators/cookie.decorators';
 import { QueryList } from './../../decotators/query-list.decorators';
 import { Auth } from '@/decotators/user.decorators';
 import {
@@ -9,6 +10,7 @@ import {
   HttpStatus,
   Put,
   ClassSerializerInterceptor,
+  Res,
 } from '@nestjs/common';
 import { UserModel, RoleModel } from './user.model';
 import { UserService } from './user.service';
@@ -73,6 +75,20 @@ export class UserController {
     const newUser = await this.userService.addUser(user);
     return this.userService.createToken(newUser);
   }
+
+  // @Get('single-signon')
+  // async singleSignOn(
+  //   @Cookie() cookie,
+  //   @Res() response: Response,
+  // ): Promise<void> {
+  //   const result = await this.userService.singleSignOn(cookie);
+  //   response.cookie('OVERMIND_TOKEN', result.accessToken, {
+  //     maxAge: result.expiresIn,
+  //     httpOnly: false,
+  //     path: '/',
+  //   });
+  //   return response.redirect(303, `${BASE_URL.webUrl}/project-list`);
+  // }
 
   @ApiOperation({ title: '修改用户信息', description: '' })
   @HttpProcessor.handle('修改用户信息')
