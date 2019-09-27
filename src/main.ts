@@ -27,11 +27,11 @@ const color = c => (isDevMode ? c : '');
 global.console = Object.assign(console, {
   log: (...args) => log('[log]', ...args),
   warn: (...args) =>
-    warn(color('\x1b[33m%s\x1b[0m'), '[warn]', '[trycatch]', ...args),
+    warn(color('\x1b[33m%s\x1b[0m'), '[warn]', '[tracker]', ...args),
   info: (...args) =>
-    info(color('\x1b[34m%s\x1b[0m'), '[info]', '[trycatch]', ...args),
+    info(color('\x1b[34m%s\x1b[0m'), '[info]', '[tracker]', ...args),
   error: (...args) =>
-    info(color('\x1b[31m%s\x1b[0m'), '[error]', '[trycatch]', ...args),
+    info(color('\x1b[31m%s\x1b[0m'), '[error]', '[tracker]', ...args),
 });
 
 dirExists(path.join(__dirname, 'publics/doc'));

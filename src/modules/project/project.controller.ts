@@ -139,23 +139,4 @@ export class ProjectController {
     return this.projectService.updateMember(body);
   }
 
-  @ApiOperation({ title: '添加sourcemap', description: '' })
-  @Post('/sourcemap')
-  @HttpProcessor.handle({ message: '添加sourcemap' })
-  // @UseGuards(JwtAuthGuard)
-  addSourcemap(@Body() body: AddSourcemapsDto): Promise<void> {
-    return this.projectService.addSourcemap(body);
-  }
-
-  @ApiOperation({ title: '批量操作sourcemap', description: '' })
-  @Put('/sourcemap/action')
-  @HttpProcessor.handle({ message: '批量操作sourcemap' })
-  // @UseGuards(JwtAuthGuard)
-  actionSourcemap(@Body() body: ActionSourcemapsDto): Promise<void> {
-    if (body.actionType === 'DELETE') {
-      return this.projectService.deleteSourcemap(body);
-    } else {
-      return this.projectService.updateSourcemap(body);
-    }
-  }
 }

@@ -13,6 +13,7 @@ import { Repository, Like } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { SignupDto, TokenDto, UserListReqDto, UpdateUserDto } from './user.dto';
 import { PageData, QueryListQuery } from '@/interfaces/request.interface';
+import { TokenResult } from './user.interface';
 
 @Injectable()
 export class UserService {
@@ -164,4 +165,20 @@ export class UserService {
     this.userModel.save(user);
     return;
   }
+
+  // public async singleSignOn(cookie): Promise<TokenResult> {
+  //   const userInfo: any = await this.singleLoginService.getUserInfo(cookie);
+  //   const user = await this.userModel.findOne({
+  //     username: userInfo.username,
+  //   });
+  //   if (user) {
+  //     return this.createToken(user);
+  //   } else {
+  //     const newUser = await this.addUser({
+  //       username: userInfo.username,
+  //       password: '123456',
+  //     });
+  //     return this.createToken(newUser);
+  //   }
+  // }
 }
