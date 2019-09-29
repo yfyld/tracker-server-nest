@@ -22,37 +22,10 @@ export class ProjectModel {
   name: string;
 
   @Column()
-  image: string;
-
-  @Column()
   description: string;
-
-  @Column()
-  version: string;
-
-  @Column()
-  language: string;
-
-  @Column()
-  frame: string;
-
-  @Column()
-  alarmType: string;
-
-  @Column()
-  alarmHookUrl: string;
-
-  @Column()
-  sourcemapEnable: boolean;
-
-  @Column()
-  sourcemapOnline: boolean;
 
   @ManyToOne(type => UserModel, { cascade: true, onDelete: 'CASCADE' })
   creator: UserModel;
-
-  @ManyToOne(type => UserModel, { cascade: true, onDelete: 'CASCADE' })
-  guarder: UserModel;
 }
 
 @Entity()

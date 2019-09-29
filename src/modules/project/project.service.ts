@@ -34,29 +34,36 @@ export class ProjectService {
     private readonly sourcemapModel: Repository<SourcemapModel>,
   ) {}
 
-  public getProjectById(projectId: number): Promise<ProjectModel> {
-    return this.projectModel.findOne({
+  public async getProjectById(projectId: number): Promise<ProjectModel> {
+    const project = await this.projectModel.findOne({
       where: { id: projectId },
-      relations: ['creator', 'guarder'],
+      relations: ['creator'],
     });
+    if (!project) {
+      throw new HttpBadRequestError('项目不存在');
+    }
+    return project;
   }
 
   public async getProjectInfo(projectId: number): Promise<ProjectDto> {
-    const project = await this.getProjectById(projectId);
+    const project = await this.projectModel.findOne({
+      where: { id: projectId },
+      relations: ['creator'],
+    });
+    if (!project) {
+      throw new HttpBadRequestError('项目不存在');
+    }
     const members = await this.memberModel.find({
       where: { project: { id: projectId } },
       relations: ['user', 'role'],
     });
-    const sourcemap = await this.sourcemapModel.find({
-      where: { project },
-    });
+
     const result: ProjectDto = {
       ...project,
       members: members.map(item => ({
         ...item.user,
         roleCode: item.role && item.role.code,
       })),
-      sourcemap,
     };
     return result;
   }
@@ -70,7 +77,7 @@ export class ProjectService {
       where: {
         name: Like(`%${query.query.projectName || ''}%`),
       },
-      relations: ['creator', 'guarder'],
+      relations: ['creator'],
     });
     return {
       totalCount,
@@ -98,23 +105,19 @@ export class ProjectService {
   ): Promise<AddProjectResDto> {
     const project = this.projectModel.create({
       creator: user,
-      guarder: { id: projectInfo.guarderId || user.id },
       ...projectInfo,
     });
     const { id } = await this.projectModel.save(project);
     await this.addMembers({
       projectId: id,
-      memberIds: [project.guarder.id],
+      memberIds: [user.id],
       roleCode: 'ADMIN',
     });
     return { id };
   }
 
-  public async updateProject(
-    projectInfo: UpdateProjectDto,
-    projectId: number,
-  ): Promise<void> {
-    let project = await this.projectModel.findOne(projectId);
+  public async updateProject(projectInfo: UpdateProjectDto): Promise<void> {
+    let project = await this.projectModel.findOne(projectInfo.id);
     project = { ...project, ...projectInfo };
     await this.projectModel.save(project);
     return;

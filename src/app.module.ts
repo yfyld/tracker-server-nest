@@ -11,6 +11,7 @@ import { ErrorModule } from './modules/error/error.module';
 import { CorsMiddleware } from './middlewares/cors.middleware';
 import { DatabaseModule } from './providers/database/database.module';
 import { PermissionsGuard } from './guards/permission.guard';
+import { MetadataModule } from './modules/metadata/metadata.module';
 
 @Module({
   imports: [
@@ -23,6 +24,7 @@ import { PermissionsGuard } from './guards/permission.guard';
     HelperModule,
     EsModule,
     BullQueueModule,
+    MetadataModule,
   ],
   controllers: [AppController],
   providers: [PermissionsGuard],

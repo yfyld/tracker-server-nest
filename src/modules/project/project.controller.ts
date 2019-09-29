@@ -64,13 +64,10 @@ export class ProjectController {
 
   @ApiOperation({ title: '编辑项目', description: '' })
   @HttpProcessor.handle('编辑项目')
-  @Put('/:projectId')
+  @Put('/')
   // @UseGuards(JwtAuthGuard)
-  updateProject(
-    @Body() body: UpdateProjectDto,
-    @Param('projectId', new ParseIntPipe()) projectId: number,
-  ): Promise<void> {
-    return this.projectService.updateProject(body, projectId);
+  updateProject(@Body() body: UpdateProjectDto): Promise<void> {
+    return this.projectService.updateProject(body);
   }
 
   @ApiOperation({ title: '删除项目', description: '' })
@@ -138,5 +135,4 @@ export class ProjectController {
   updateMember(@Body() body: UpdateMembersDto): Promise<void> {
     return this.projectService.updateMember(body);
   }
-
 }
