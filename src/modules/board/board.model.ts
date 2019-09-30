@@ -13,32 +13,11 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { UserModel } from '../user/user.model';
 import { ProjectModel } from '../project/project.model';
 
 @Entity()
-export class MetadataTagModel {
-  @PrimaryGeneratedColumn()
-  id: number;
-  @Column()
-  name: string;
-}
-
-@Entity()
-export class FieldModel {
-  @PrimaryGeneratedColumn()
-  id: number;
-  @Column()
-  code: string;
-  @Column()
-  type: string;
-  @Column()
-  status: number;
-  @Column()
-  name: string;
-}
-
-@Entity()
-export class MetadataModel {
+export class BoardModel {
   @PrimaryGeneratedColumn()
   id: string;
 
@@ -46,26 +25,28 @@ export class MetadataModel {
   name: string;
 
   @Column()
-  code: string;
+  type: string;
+
+  @Column()
+  layout: string;
 
   @Column()
   status: number;
 
-  @Column()
-  description: string;
+  @ManyToOne(type => UserModel, { cascade: true, onDelete: 'CASCADE' })
+  creator: UserModel;
 
   @ManyToOne(type => ProjectModel)
   project: ProjectModel;
   @Column()
   projectId: number;
 
+  @Column()
+  isPublic: boolean;
+
   @CreateDateColumn()
   createdAt: Date;
 
   @UpdateDateColumn()
   updatedAt: Date;
-
-  @ManyToMany(type => MetadataTagModel)
-  @JoinTable()
-  tags: MetadataTagModel[];
 }

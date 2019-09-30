@@ -14,31 +14,10 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { ProjectModel } from '../project/project.model';
+import { UserModel } from '../user/user.model';
 
 @Entity()
-export class MetadataTagModel {
-  @PrimaryGeneratedColumn()
-  id: number;
-  @Column()
-  name: string;
-}
-
-@Entity()
-export class FieldModel {
-  @PrimaryGeneratedColumn()
-  id: number;
-  @Column()
-  code: string;
-  @Column()
-  type: string;
-  @Column()
-  status: number;
-  @Column()
-  name: string;
-}
-
-@Entity()
-export class MetadataModel {
+export class ReportModel {
   @PrimaryGeneratedColumn()
   id: string;
 
@@ -46,10 +25,22 @@ export class MetadataModel {
   name: string;
 
   @Column()
-  code: string;
+  type: string;
 
   @Column()
-  status: number;
+  timeStart: number;
+
+  @Column()
+  timeEnd: number;
+
+  @Column()
+  timeType: string;
+
+  @Column()
+  model: string;
+
+  @Column()
+  data: string;
 
   @Column()
   description: string;
@@ -59,13 +50,12 @@ export class MetadataModel {
   @Column()
   projectId: number;
 
+  @ManyToOne(type => UserModel, { cascade: true, onDelete: 'CASCADE' })
+  creator: UserModel;
+
   @CreateDateColumn()
   createdAt: Date;
 
   @UpdateDateColumn()
   updatedAt: Date;
-
-  @ManyToMany(type => MetadataTagModel)
-  @JoinTable()
-  tags: MetadataTagModel[];
 }

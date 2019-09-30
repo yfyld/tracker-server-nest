@@ -12,7 +12,8 @@ import { CorsMiddleware } from './middlewares/cors.middleware';
 import { DatabaseModule } from './providers/database/database.module';
 import { PermissionsGuard } from './guards/permission.guard';
 import { MetadataModule } from './modules/metadata/metadata.module';
-
+import { BoardModule } from './modules/board/board.module';
+import { ReportModule } from './modules/report/report.module';
 @Module({
   imports: [
     DatabaseModule,
@@ -24,6 +25,8 @@ import { MetadataModule } from './modules/metadata/metadata.module';
     HelperModule,
     EsModule,
     BullQueueModule,
+    ReportModule,
+    BoardModule,
     MetadataModule,
   ],
   controllers: [AppController],

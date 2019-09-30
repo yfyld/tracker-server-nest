@@ -1,15 +1,13 @@
-import { ALARM_INTERVAL } from '../../app.config';
-import { InjectQueue } from 'nest-bull';
-import { SourcemapModel, ProjectModel } from '../project/project.model';
 import {
   QueryMetadataListDto,
   MetadataDto,
   SourceCodeDto,
   UpdateMetadataDto,
   AddMetadataDto,
+  QueryFieldListDto,
 } from './metadata.dto';
 
-import { MetadataModel } from './metadata.model';
+import { MetadataModel, FieldModel } from './metadata.model';
 import { Injectable, HttpService } from '@nestjs/common';
 import {
   Repository,
@@ -22,12 +20,8 @@ import {
 } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 
-import { UserModel } from '@/modules/user/user.model';
 import { QueryListQuery, PageData } from '@/interfaces/request.interface';
-import * as SourceMap from 'source-map';
-import { RedisService } from 'nestjs-redis';
-import { Queue } from 'bull';
-import * as moment from 'moment';
+
 import { HttpBadRequestError } from '@/errors/bad-request.error';
 @Injectable()
 export class MetadataService {
@@ -35,9 +29,43 @@ export class MetadataService {
     @InjectRepository(MetadataModel)
     private readonly metadataModel: Repository<MetadataModel>,
 
-    @InjectRepository(ProjectModel)
-    private readonly projectModel: Repository<ProjectModel>,
+    @InjectRepository(FieldModel)
+    private readonly fieldModel: Repository<FieldModel>,
   ) {}
+
+  public async getFields(
+    query: QueryListQuery<QueryFieldListDto>,
+  ): Promise<PageData<FieldModel>> {
+    const searchBody: FindManyOptions<FieldModel> = {
+      skip: query.skip,
+      take: query.take,
+      where: {},
+      order: {},
+    };
+
+    if (query.sort.key) {
+      searchBody.order[query.sort.key] = query.sort.value;
+    }
+
+    if (query.query.name) {
+      (searchBody.where as any).name = Like(`%${query.query.name || ''}%`);
+    }
+
+    if (typeof query.query.status !== 'undefined') {
+      (searchBody.where as any).status = query.query.status;
+    }
+
+    const [fields, totalCount] = await this.fieldModel.findAndCount(searchBody);
+    return {
+      totalCount,
+      list: fields,
+    };
+  }
+
+  public async getActiveFields(query: any): Promise<any> {
+    const fields = await this.fieldModel.find();
+    return fields;
+  }
 
   public async addMetadata(body: AddMetadataDto): Promise<void> {
     const oldmetadata = await this.metadataModel.findOne({

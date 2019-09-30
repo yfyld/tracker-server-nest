@@ -18,7 +18,7 @@ import {
   All,
   Render,
 } from '@nestjs/common';
-import { MetadataModel } from './metadata.model';
+import { MetadataModel, FieldModel } from './metadata.model';
 import { MetadataService } from './metadata.service';
 import { HttpProcessor } from '@/decotators/http.decotator';
 import { JwtAuthGuard } from '@/guards/auth.guard';
@@ -34,6 +34,7 @@ import {
   QueryMetadataListDto,
   UpdateMetadataDto,
   AddMetadataDto,
+  QueryFieldListDto,
 } from './metadata.dto';
 
 @ApiUseTags('元数据')
@@ -57,6 +58,23 @@ export class MetadataController {
     query: QueryListQuery<QueryMetadataListDto>,
   ): Promise<PageData<MetadataModel>> {
     return this.metadataService.getMetadatas(query);
+  }
+  @HttpProcessor.handle('获取元数据列表')
+  // @UseGuards(JwtAuthGuard)
+  @Get('/fields')
+  getFields(
+    @QueryList(new ParsePageQueryIntPipe(['projectId', 'status', 'type']))
+    query: QueryListQuery<QueryFieldListDto>,
+  ): Promise<PageData<FieldModel>> {
+    return this.metadataService.getFields(query);
+  }
+
+  @Get('/active-fields')
+  getActiveFields(
+    @Query()
+    query: any,
+  ): Promise<FieldModel> {
+    return this.metadataService.getActiveFields(query);
   }
 
   // @HttpProcessor.handle('获取元数据信息')

@@ -9,21 +9,21 @@ import {
 import { ApiModelProperty } from '@nestjs/swagger';
 import { ProjectModel } from '../project/project.model';
 
-export class AddMetadataDto {
-  @IsString()
-  code: string;
+export class AddReportDto {
   @IsString()
   name: string;
   @IsOptional()
   @IsString()
   description?: string;
-  @IsNumber()
-  status: number;
+  @IsString()
+  type: string;
+  @IsDefined()
+  data: any;
   @IsNumber()
   projectId: number;
 }
 
-export class MetadataDto {
+export class ReportDto {
   @ApiModelProperty()
   @IsDefined()
   @IsNotEmpty({ message: '项目名称不能为空' })
@@ -46,7 +46,7 @@ export class MetadataDto {
   project: ProjectModel | { id: number };
 }
 
-export class QueryMetadataListDto {
+export class QueryReportListDto {
   @ApiModelProperty()
   @IsDefined()
   @IsNotEmpty({ message: '项目名称不能为空' })
@@ -63,12 +63,12 @@ export class QueryMetadataListDto {
   name: string;
 }
 
-export class UpdateMetadataDto {
+export class UpdateReportDto {
   guarderId?: number;
   level?: number;
   status?: number;
   @IsDefined()
-  metadataIds: string[];
+  reportIds: string[];
   @IsDefined()
   actionType: string;
 }
