@@ -1,11 +1,11 @@
-import { ALARM_INTERVAL } from './../../app.config';
-import { ErrorService } from './error.service';
+import { ALARM_INTERVAL } from '../../app.config';
+import { MetadataService } from './metadata.service';
 import { Injectable } from '@nestjs/common';
 import { Cron, Interval, Timeout, NestSchedule } from 'nest-schedule';
 
 @Injectable()
-export class ErrorSchedule extends NestSchedule {
-  constructor(private readonly errorService: ErrorService) {
+export class MetadataSchedule extends NestSchedule {
+  constructor(private readonly metadataService: MetadataService) {
     super();
   }
 
@@ -25,7 +25,6 @@ export class ErrorSchedule extends NestSchedule {
   @Interval(ALARM_INTERVAL)
   intervalAlarm() {
     console.log('auto alarm');
-    this.errorService.computedAlarmErrors();
     // return true; //to stop
   }
 }
