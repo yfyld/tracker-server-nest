@@ -23,10 +23,10 @@ import { ReportModule } from './modules/report/report.module';
     BullQueueModule,
     ReportModule,
     BoardModule,
-    MetadataModule,
+    MetadataModule
   ],
   controllers: [AppController],
-  providers: [PermissionsGuard],
+  providers: [PermissionsGuard]
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {

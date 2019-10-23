@@ -18,18 +18,18 @@ import { ValidationPipe } from '@/pipes/validation.pipe';
     PassportModule.register({ defaultStrategy: 'jwt' }),
     JwtModule.register({
       secretOrPrivateKey: AUTH.jwtTokenSecret,
-      signOptions: { expiresIn: AUTH.expiresIn },
-    }),
+      signOptions: { expiresIn: AUTH.expiresIn }
+    })
   ],
   providers: [
     UserService,
     JwtStrategy,
     {
       provide: APP_PIPE,
-      useClass: ValidationPipe,
-    },
+      useClass: ValidationPipe
+    }
   ],
   controllers: [UserController],
-  exports: [UserService],
+  exports: [UserService]
 })
 export class UserModule {}

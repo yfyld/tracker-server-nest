@@ -9,7 +9,7 @@ import {
   ManyToMany,
   JoinTable,
   ManyToOne,
-  JoinColumn,
+  JoinColumn
 } from 'typeorm';
 import { UserModel } from '../user/user.model';
 

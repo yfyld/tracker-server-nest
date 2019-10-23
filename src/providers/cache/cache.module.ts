@@ -7,10 +7,10 @@ import { CacheService } from './cache.service';
   imports: [
     NestCacheModule.registerAsync({
       useClass: CacheConfigService,
-      inject: [CacheConfigService],
-    }),
+      inject: [CacheConfigService]
+    })
   ],
   providers: [CacheConfigService, CacheService],
-  exports: [CacheService],
+  exports: [CacheService]
 })
 export class CacheModule {}

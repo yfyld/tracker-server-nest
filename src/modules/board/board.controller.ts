@@ -6,16 +6,7 @@ import { AddBoardDto, QueryBoardListDto } from './board.dto';
 import { BoardService } from './board.service';
 import { ApiOperation, ApiUseTags } from '@nestjs/swagger';
 import { MULTER_OPTIONS, BASE_URL } from '../../app.config';
-import {
-  Controller,
-  Post,
-  UseInterceptors,
-  UploadedFile,
-  UseGuards,
-  Body,
-  Get,
-  Query,
-} from '@nestjs/common';
+import { Controller, Post, UseInterceptors, UploadedFile, UseGuards, Body, Get, Query } from '@nestjs/common';
 
 import { JwtAuthGuard } from '@/guards/auth.guard';
 import { Auth } from '@/decotators/user.decorators';
@@ -40,7 +31,7 @@ export class BoardController {
   async getBoards(
     @QueryList(new ParsePageQueryIntPipe(['projectId', 'status']))
     query: QueryListQuery<QueryBoardListDto>,
-    @Auth() user,
+    @Auth() user
   ): Promise<PageData<BoardModel>> {
     return this.boardService.getBoards(query, user);
   }

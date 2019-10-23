@@ -9,14 +9,10 @@ import { UserModel } from '@/modules/user/user.model';
 export class PermissionsGuard implements CanActivate {
   constructor(private readonly reflector: Reflector) {}
 
-  canActivate(
-    context: ExecutionContext,
-  ): boolean | Promise<boolean> | Observable<boolean> {
+  canActivate(context: ExecutionContext): boolean | Promise<boolean> | Observable<boolean> {
     const permissions = [
-      ...(this.reflector.get<string[]>('permissions', context.getClass()) ||
-        []),
-      ...(this.reflector.get<string[]>('permissions', context.getHandler()) ||
-        []),
+      ...(this.reflector.get<string[]>('permissions', context.getClass()) || []),
+      ...(this.reflector.get<string[]>('permissions', context.getHandler()) || [])
     ];
     if (permissions.length === 0) {
       return true;
@@ -28,8 +24,7 @@ export class PermissionsGuard implements CanActivate {
       this.handleError();
       return false;
     }
-    const hasPermission = () =>
-      user.permissions.some(permission => permissions.includes(permission));
+    const hasPermission = () => user.permissions.some(permission => permissions.includes(permission));
 
     if (hasPermission()) {
       return true;

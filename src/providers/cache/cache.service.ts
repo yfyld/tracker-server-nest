@@ -67,7 +67,6 @@ export interface ICacheIntervalIOOption<T> extends ICacheIntervalOption<T> {
  */
 @Injectable()
 export class CacheService {
-
   private cache!: ICacheManager;
 
   constructor(@Inject(CACHE_MANAGER) cache: ICacheManager) {
@@ -103,31 +102,34 @@ export class CacheService {
   promise<T>(options: ICachePromiseOption<T>): TCacheResult<T>;
   promise<T>(options: ICachePromiseIoOption<T>): ICacheIoResult<T>;
   promise(options) {
-
     const { key, promise, ioMode = false } = options;
 
     // 包装任务
     const promiseTask = (resolve, reject) => {
-      return promise().then(data => {
-        this.set(key, data);
-        resolve(data);
-      }).catch(reject);
+      return promise()
+        .then(data => {
+          this.set(key, data);
+          resolve(data);
+        })
+        .catch(reject);
     };
 
     // Promise 拦截模式（返回死数据）
     const handlePromiseMode = () => {
       return new Promise((resolve, reject) => {
-        this.get(key).then(value => {
-          const isValidValue = value !== null && value !== undefined;
-          isValidValue ? resolve(value) : promiseTask(resolve, reject);
-        }).catch(reject);
+        this.get(key)
+          .then(value => {
+            const isValidValue = value !== null && value !== undefined;
+            isValidValue ? resolve(value) : promiseTask(resolve, reject);
+          })
+          .catch(reject);
       });
     };
 
     // 双向同步模式（返回获取器和更新器）
     const handleIoMode = () => ({
       get: handlePromiseMode,
-      update: () => new Promise(promiseTask),
+      update: () => new Promise(promiseTask)
     });
 
     return ioMode ? handleIoMode() : handlePromiseMode();
@@ -142,7 +144,6 @@ export class CacheService {
   public interval<T>(options: ICacheIntervalOption<T>): TCacheIntervalResult<T>;
   public interval<T>(options: ICacheIntervalIOOption<T>): ICacheIoResult<T>;
   public interval<T>(options) {
-
     const { key, promise, timeout, timing, ioMode = false } = options;
 
     // 包装任务
@@ -191,7 +192,7 @@ export class CacheService {
     // 双向同步模式（返回获取器和更新器）
     const handleIoMode = () => ({
       get: getKeyCache,
-      update: promiseTask,
+      update: promiseTask
     });
 
     // 返回 Redis 获取器

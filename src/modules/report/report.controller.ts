@@ -16,26 +16,16 @@ import {
   Param,
   Put,
   All,
-  Render,
+  Render
 } from '@nestjs/common';
 import { ReportModel } from './report.model';
 import { ReportService } from './report.service';
 import { HttpProcessor } from '@/decotators/http.decotator';
 import { JwtAuthGuard } from '@/guards/auth.guard';
-import {
-  ApiBearerAuth,
-  ApiOperation,
-  ApiUseTags,
-  ApiResponse,
-} from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation, ApiUseTags, ApiResponse } from '@nestjs/swagger';
 import { Permissions } from '@/decotators/permissions.decotators';
 import { PermissionsGuard } from '@/guards/permission.guard';
-import {
-  QueryReportListDto,
-  UpdateReportDto,
-  AddReportDto,
-  QueryFieldListDto,
-} from './report.dto';
+import { QueryReportListDto, UpdateReportDto, AddReportDto, QueryFieldListDto } from './report.dto';
 import { Auth } from '@/decotators/user.decorators';
 
 @ApiUseTags('报告单')
@@ -56,7 +46,7 @@ export class ReportController {
   @Get('/')
   getReports(
     @QueryList(new ParsePageQueryIntPipe(['projectId', 'status']))
-    query: QueryListQuery<QueryReportListDto>,
+    query: QueryListQuery<QueryReportListDto>
   ): Promise<PageData<ReportModel>> {
     return this.reportService.getReports(query);
   }

@@ -14,7 +14,7 @@ import {
   AddMembersDto,
   DeleteMembersDto,
   AddSourcemapsDto,
-  ActionSourcemapsDto,
+  ActionSourcemapsDto
 } from './project.dto';
 import { UserModel } from '@/modules/user/user.model';
 import { QueryListQuery, PageData } from '@/interfaces/request.interface';
@@ -31,13 +31,13 @@ export class ProjectService {
     @InjectRepository(MemberModel)
     private readonly memberModel: Repository<MemberModel>,
     @InjectRepository(SourcemapModel)
-    private readonly sourcemapModel: Repository<SourcemapModel>,
+    private readonly sourcemapModel: Repository<SourcemapModel>
   ) {}
 
   public async getProjectById(projectId: number): Promise<ProjectModel> {
     const project = await this.projectModel.findOne({
       where: { id: projectId },
-      relations: ['creator'],
+      relations: ['creator']
     });
     if (!project) {
       throw new HttpBadRequestError('项目不存在');
@@ -48,70 +48,65 @@ export class ProjectService {
   public async getProjectInfo(projectId: number): Promise<ProjectDto> {
     const project = await this.projectModel.findOne({
       where: { id: projectId },
-      relations: ['creator'],
+      relations: ['creator']
     });
     if (!project) {
       throw new HttpBadRequestError('项目不存在');
     }
     const members = await this.memberModel.find({
       where: { project: { id: projectId } },
-      relations: ['user', 'role'],
+      relations: ['user', 'role']
     });
 
     const result: ProjectDto = {
       ...project,
       members: members.map(item => ({
         ...item.user,
-        roleCode: item.role && item.role.code,
-      })),
+        roleCode: item.role && item.role.code
+      }))
     };
     return result;
   }
 
-  public async getProjects(
-    query: QueryListQuery<QueryProjectsDto>,
-  ): Promise<PageData<ProjectModel>> {
+  public async getProjects(query: QueryListQuery<QueryProjectsDto>): Promise<PageData<ProjectModel>> {
     const [projects, totalCount] = await this.projectModel.findAndCount({
       skip: query.skip,
       take: query.take,
       where: {
-        name: Like(`%${query.query.projectName || ''}%`),
+        name: Like(`%${query.query.projectName || ''}%`)
       },
-      relations: ['creator'],
+      relations: ['creator']
     });
     return {
       totalCount,
-      list: projects,
+      list: projects
     };
   }
 
   public async getMyProjects(user: UserModel): Promise<any> {
     const projects = await this.memberModel.find({
       where: { user },
-      relations: ['project', 'role'],
+      relations: ['project', 'role']
     });
     return {
       list: projects.map(item => ({
         name: item.project.name,
         id: item.project.id,
-        role: item.role.code,
-      })),
+        role: item.role.code
+      }))
     };
   }
 
-  public async addProject(
-    projectInfo: AddProjectDto,
-    user: UserModel,
-  ): Promise<AddProjectResDto> {
+  public async addProject(projectInfo: AddProjectDto, user: UserModel): Promise<AddProjectResDto> {
     const project = this.projectModel.create({
       creator: user,
-      ...projectInfo,
+      ...projectInfo
     });
     const { id } = await this.projectModel.save(project);
     await this.addMembers({
       projectId: id,
       memberIds: [user.id],
-      roleCode: 'ADMIN',
+      roleCode: 'ADMIN'
     });
     return { id };
   }
@@ -140,7 +135,7 @@ export class ProjectService {
       throw new HttpBadRequestError('项目不存在');
     }
     const members = await this.userModel.find({
-      id: In(memberIds),
+      id: In(memberIds)
     });
     await this.memberModel
       .createQueryBuilder()
@@ -158,7 +153,7 @@ export class ProjectService {
       .delete()
       .where('project = :projectId AND userId IN (:...memberIds) ', {
         projectId,
-        memberIds,
+        memberIds
       })
       .execute();
     return;
@@ -176,7 +171,7 @@ export class ProjectService {
       .set({ role })
       .where('projectId = :projectId AND userId IN (:...memberIds) ', {
         projectId,
-        memberIds,
+        memberIds
       })
       .execute();
     return;
@@ -193,8 +188,8 @@ export class ProjectService {
           project: { id: projectId },
           hash,
           version,
-          ...file,
-        })),
+          ...file
+        }))
       )
       .execute();
     return;
@@ -209,7 +204,7 @@ export class ProjectService {
       .set({ hash, version })
       .where('projectId = :projectId AND id IN (:...sourcemapIds) ', {
         projectId,
-        sourcemapIds,
+        sourcemapIds
       })
       .execute();
     return;
@@ -223,7 +218,7 @@ export class ProjectService {
       .delete()
       .where('projectId = :projectId AND id IN (:...sourcemapIds) ', {
         projectId,
-        sourcemapIds,
+        sourcemapIds
       })
       .execute();
     return;

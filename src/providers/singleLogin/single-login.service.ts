@@ -36,7 +36,7 @@ export class SingleLoginService {
         username: user.username,
         nickname: user.display_name,
         email: user.email,
-        mobile: user.mobile,
+        mobile: user.mobile
       };
     } catch (e) {
       // tslint:disable-next-line: no-console

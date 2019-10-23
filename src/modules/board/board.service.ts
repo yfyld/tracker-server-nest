@@ -10,7 +10,7 @@ import { QueryListQuery, PageData } from '@/interfaces/request.interface';
 export class BoardService {
   constructor(
     @InjectRepository(BoardModel)
-    private readonly boardModel: Repository<BoardModel>,
+    private readonly boardModel: Repository<BoardModel>
   ) {}
 
   /**
@@ -20,20 +20,17 @@ export class BoardService {
     const board = this.boardModel.create({
       creator: user,
       ...body,
-      layout: JSON.stringify(body.layout),
+      layout: JSON.stringify(body.layout)
     });
     await this.boardModel.save(board);
     return;
   }
 
-  public async getBoards(
-    query: QueryListQuery<QueryBoardListDto>,
-    user: UserModel,
-  ): Promise<PageData<BoardModel>> {
+  public async getBoards(query: QueryListQuery<QueryBoardListDto>, user: UserModel): Promise<PageData<BoardModel>> {
     const searchBody: FindManyOptions<BoardModel> = {
       skip: query.skip,
       take: query.take,
-      where: {},
+      where: {}
     };
 
     if (typeof query.query.status !== 'undefined') {
@@ -51,7 +48,7 @@ export class BoardService {
     const [boards, totalCount] = await this.boardModel.findAndCount(searchBody);
     return {
       totalCount,
-      list: boards.map(item => ({ ...item, layout: JSON.parse(item.layout) })),
+      list: boards.map(item => ({ ...item, layout: JSON.parse(item.layout) }))
     };
   }
 }

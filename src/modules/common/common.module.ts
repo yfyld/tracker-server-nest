@@ -6,6 +6,6 @@ import { CommonService } from './common.service';
   imports: [],
   controllers: [CommonController],
   providers: [CommonService],
-  exports: [CommonService],
+  exports: [CommonService]
 })
 export class CommonModule {}

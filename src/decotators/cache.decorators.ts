@@ -21,7 +21,7 @@ export function HttpCache(...args) {
   const option = args[0];
   const isOption = (value): value is ICacheOption => lodash.isObject(value);
   const key: string = isOption(option) ? option.key : option;
-  const ttl: number = isOption(option) ? option.ttl : (args[1] || null);
+  const ttl: number = isOption(option) ? option.ttl : args[1] || null;
   return (_, __, descriptor: PropertyDescriptor) => {
     if (key) {
       CacheKey(key)(descriptor.value);

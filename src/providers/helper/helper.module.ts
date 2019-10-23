@@ -9,6 +9,6 @@ const services = [IpService, UaService, ChartService];
 @Module({
   imports: [HttpModule],
   providers: services,
-  exports: services,
+  exports: services
 })
 export class HelperModule {}

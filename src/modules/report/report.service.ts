@@ -4,20 +4,12 @@ import {
   SourceCodeDto,
   UpdateReportDto,
   AddReportDto,
-  QueryFieldListDto,
+  QueryFieldListDto
 } from './report.dto';
 
 import { ReportModel } from './report.model';
 import { Injectable, HttpService } from '@nestjs/common';
-import {
-  Repository,
-  In,
-  LessThan,
-  MoreThan,
-  Between,
-  Like,
-  FindManyOptions,
-} from 'typeorm';
+import { Repository, In, LessThan, MoreThan, Between, Like, FindManyOptions } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 
 import { QueryListQuery, PageData } from '@/interfaces/request.interface';
@@ -28,27 +20,25 @@ import { UserModel } from '../user/user.model';
 export class ReportService {
   constructor(
     @InjectRepository(ReportModel)
-    private readonly reportModel: Repository<ReportModel>,
+    private readonly reportModel: Repository<ReportModel>
   ) {}
 
   public async addReport(body: AddReportDto, user: UserModel): Promise<void> {
     const report = this.reportModel.create({
       ...body,
       creator: user,
-      data: JSON.stringify(body.data),
+      data: JSON.stringify(body.data)
     });
     await this.reportModel.save(report);
     return;
   }
 
-  public async getReports(
-    query: QueryListQuery<QueryReportListDto>,
-  ): Promise<PageData<ReportModel>> {
+  public async getReports(query: QueryListQuery<QueryReportListDto>): Promise<PageData<ReportModel>> {
     const searchBody: FindManyOptions<ReportModel> = {
       skip: query.skip,
       take: query.take,
       where: {},
-      order: {},
+      order: {}
     };
 
     if (query.sort.key) {
@@ -63,12 +53,10 @@ export class ReportService {
       (searchBody.where as any).name = Like(`%${query.query.name || ''}%`);
     }
 
-    const [report, totalCount] = await this.reportModel.findAndCount(
-      searchBody,
-    );
+    const [report, totalCount] = await this.reportModel.findAndCount(searchBody);
     return {
       totalCount,
-      list: report,
+      list: report
     };
   }
 

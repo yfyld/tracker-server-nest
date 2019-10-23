@@ -20,7 +20,7 @@ export class IpService {
   private queryIpByTaobao(ip: IP): Promise<IIPDetail> {
     return this.httpService.axiosRef
       .request({
-        url: `http://ip.taobao.com/service/getIpInfo.php?ip=${ip}`,
+        url: `http://ip.taobao.com/service/getIpInfo.php?ip=${ip}`
       })
       .then(response => {
         if (response.data && response.data.code === 0) {
@@ -43,7 +43,7 @@ export class IpService {
         region: result.data.region_name,
         city: result.data.city_name,
         isp: result.data.isp_domain,
-        ip,
+        ip
       };
     } else {
       return {
@@ -51,7 +51,7 @@ export class IpService {
         region: '未知',
         city: '未知',
         isp: '未知',
-        ip,
+        ip
       };
     }
   }
@@ -68,7 +68,7 @@ export class IpService {
         country,
         isp,
         region,
-        ip,
+        ip
       }))
       .catch(() => Promise.resolve(result));
   }

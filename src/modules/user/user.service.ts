@@ -1,9 +1,4 @@
-import {
-  UserModel,
-  RoleModel,
-  PermissionModel,
-  ProjectRoleModel,
-} from './user.model';
+import { UserModel, RoleModel, PermissionModel, ProjectRoleModel } from './user.model';
 import { Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { Base64 } from 'js-base64';
@@ -24,7 +19,7 @@ export class UserService {
     private readonly roleModel: Repository<RoleModel>,
     // @InjectRepository(ProjectRole)
     // private readonly projectRoleModel: Repository<ProjectRole>,
-    private readonly jwtService: JwtService,
+    private readonly jwtService: JwtService
   ) {}
 
   // 密码编码
@@ -48,12 +43,9 @@ export class UserService {
       .where('user.id = :id', { id })
       .getOne();
 
-    const permissionList: PermissionModel[] = user.roles.reduce(
-      (total, item) => {
-        return total.concat(item.permissions);
-      },
-      [],
-    );
+    const permissionList: PermissionModel[] = user.roles.reduce((total, item) => {
+      return total.concat(item.permissions);
+    }, []);
 
     return permissionList;
   }
@@ -64,7 +56,7 @@ export class UserService {
       username: user.username,
       id: user.id,
       password: user.password,
-      permissions: permissions.map(item => item.code),
+      permissions: permissions.map(item => item.code)
     };
     const accessToken = this.jwtService.sign({ data });
     return Promise.resolve({ accessToken, expiresIn: AUTH.expiresIn });
@@ -83,8 +75,8 @@ export class UserService {
     const user = await this.userModel.findOne({
       select: ['password'],
       where: {
-        username: payload.data.username,
-      },
+        username: payload.data.username
+      }
     });
     const isVerified = user && payload.data.password === user.password; // lodash.isEqual(payload.data, {username:user.username});
     return isVerified ? payload.data : null;
@@ -97,8 +89,7 @@ export class UserService {
       .addSelect('user.password')
       .getOne();
     const extantAuthPwd = user && user.password;
-    const extantPassword =
-      extantAuthPwd || this.encodeMd5(AUTH.defaultPassword);
+    const extantPassword = extantAuthPwd || this.encodeMd5(AUTH.defaultPassword);
     const submittedPassword = this.encodeMd5(this.encodeBase64(password));
     if (submittedPassword !== extantPassword) {
       return Promise.reject('密码不匹配');
@@ -110,22 +101,20 @@ export class UserService {
     return this.userModel.findOne({ username });
   }
 
-  public async getUsers(
-    query: QueryListQuery<UserListReqDto>,
-  ): Promise<PageData<UserModel>> {
+  public async getUsers(query: QueryListQuery<UserListReqDto>): Promise<PageData<UserModel>> {
     const [users, totalCount] = await this.userModel.findAndCount({
       where: [
         {
-          username: Like(`%${query.query.name || ''}%`),
+          username: Like(`%${query.query.name || ''}%`)
           //nickname: Like(`%${query.query.name}%`),
-        },
+        }
       ],
       skip: query.skip,
-      take: query.take,
+      take: query.take
     });
     return {
       totalCount,
-      list: users,
+      list: users
     };
   }
 

@@ -17,7 +17,7 @@ export class LoggingInterceptor implements NestInterceptor {
     const now = Date.now();
     return call$.pipe(
       // tslint:disable-next-line:no-console
-      tap(() => console.log('--- 响应请求：', content, `${Date.now() - now}ms`)),
+      tap(() => console.log('--- 响应请求：', content, `${Date.now() - now}ms`))
     );
   }
 }

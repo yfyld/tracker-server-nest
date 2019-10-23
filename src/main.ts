@@ -26,12 +26,9 @@ const { log, warn, info } = console;
 const color = c => (isDevMode ? c : '');
 global.console = Object.assign(console, {
   log: (...args) => log('[log]', ...args),
-  warn: (...args) =>
-    warn(color('\x1b[33m%s\x1b[0m'), '[warn]', '[tracker]', ...args),
-  info: (...args) =>
-    info(color('\x1b[34m%s\x1b[0m'), '[info]', '[tracker]', ...args),
-  error: (...args) =>
-    info(color('\x1b[31m%s\x1b[0m'), '[error]', '[tracker]', ...args),
+  warn: (...args) => warn(color('\x1b[33m%s\x1b[0m'), '[warn]', '[tracker]', ...args),
+  info: (...args) => info(color('\x1b[34m%s\x1b[0m'), '[info]', '[tracker]', ...args),
+  error: (...args) => info(color('\x1b[31m%s\x1b[0m'), '[error]', '[tracker]', ...args)
 });
 
 dirExists(path.join(__dirname, 'publics/doc'));
@@ -58,14 +55,14 @@ async function bootstrap() {
   app.useGlobalPipes(
     new ValidationPipe({
       //skipMissingProperties: true,
-    }),
+    })
   );
 
   // 拦截器
   app.useGlobalInterceptors(
     new TransformInterceptor(new Reflector()),
     new ErrorInterceptor(new Reflector()),
-    new LoggingInterceptor(),
+    new LoggingInterceptor()
   );
 
   app.use('/public', serveStatic(path.join(__dirname, 'publics'), {}));
@@ -83,10 +80,7 @@ async function bootstrap() {
     .build();
 
   const document = SwaggerModule.createDocument(app, options);
-  fs.writeFileSync(
-    path.join(__dirname, 'publics/doc/swagger.json'),
-    JSON.stringify(document),
-  );
+  fs.writeFileSync(path.join(__dirname, 'publics/doc/swagger.json'), JSON.stringify(document));
   SwaggerModule.setup('doc-api', app, document);
 
   await app.listen(APP.port);

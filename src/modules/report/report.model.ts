@@ -12,7 +12,7 @@ import {
   JoinColumn,
   PrimaryColumn,
   CreateDateColumn,
-  UpdateDateColumn,
+  UpdateDateColumn
 } from 'typeorm';
 import { ProjectModel } from '../project/project.model';
 import { UserModel } from '../user/user.model';

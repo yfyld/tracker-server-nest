@@ -1,10 +1,9 @@
-import {REDIS} from '@/app.config';
+import { REDIS } from '@/app.config';
 import * as redisStore from 'cache-manager-redis-store';
 import { CacheModuleOptions, CacheOptionsFactory, Injectable } from '@nestjs/common';
 
 @Injectable()
 export class CacheConfigService implements CacheOptionsFactory {
-
   // 重试策略
   public retryStrategy() {
     return {
@@ -21,7 +20,7 @@ export class CacheConfigService implements CacheOptionsFactory {
           return new Error('尝试次数已达极限');
         }
         return Math.min(options.attempt * 100, 3000);
-      },
+      }
     };
   }
 

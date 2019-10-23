@@ -8,16 +8,9 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { ProjectModel } from '../project/project.model';
 
 @Module({
-  imports: [
-    TypeOrmModule.forFeature([
-      MetadataModel,
-      MetadataTagModel,
-      ProjectModel,
-      FieldModel,
-    ]),
-  ],
+  imports: [TypeOrmModule.forFeature([MetadataModel, MetadataTagModel, ProjectModel, FieldModel])],
   providers: [MetadataService],
   controllers: [MetadataController],
-  exports: [MetadataService],
+  exports: [MetadataService]
 })
 export class MetadataModule {}

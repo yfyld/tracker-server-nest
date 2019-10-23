@@ -15,18 +15,13 @@ import {
   Param,
   Put,
   UseInterceptors,
-  ClassSerializerInterceptor,
+  ClassSerializerInterceptor
 } from '@nestjs/common';
 import { ProjectModel } from './project.model';
 import { ProjectService } from './project.service';
 import { HttpProcessor } from '@/decotators/http.decotator';
 import { JwtAuthGuard } from '@/guards/auth.guard';
-import {
-  ApiBearerAuth,
-  ApiOperation,
-  ApiUseTags,
-  ApiResponse,
-} from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation, ApiUseTags, ApiResponse } from '@nestjs/swagger';
 import { Permissions } from '@/decotators/permissions.decotators';
 import { PermissionsGuard } from '@/guards/permission.guard';
 import {
@@ -39,7 +34,7 @@ import {
   UpdateProjectDto,
   AddProjectResDto,
   AddSourcemapsDto,
-  ActionSourcemapsDto,
+  ActionSourcemapsDto
 } from './project.dto';
 import { Auth } from '@/decotators/user.decorators';
 import { UserModel } from '@/modules/user/user.model';
@@ -55,10 +50,7 @@ export class ProjectController {
   @Post('/')
   @HttpProcessor.handle({ message: '新建项目' })
   // @UseGuards(JwtAuthGuard)
-  addProject(
-    @Body() body: AddProjectDto,
-    @Auth() user: UserModel,
-  ): Promise<AddProjectResDto> {
+  addProject(@Body() body: AddProjectDto, @Auth() user: UserModel): Promise<AddProjectResDto> {
     return this.projectService.addProject(body, user);
   }
 
@@ -74,9 +66,7 @@ export class ProjectController {
   @HttpProcessor.handle('删除项目')
   @Delete('/:projectId')
   // @UseGuards(JwtAuthGuard)
-  deleteProject(
-    @Param('projectId', new ParseIntPipe()) projectId: number,
-  ): Promise<void> {
+  deleteProject(@Param('projectId', new ParseIntPipe()) projectId: number): Promise<void> {
     return this.projectService.deleteProject(projectId);
   }
 
@@ -87,9 +77,7 @@ export class ProjectController {
   @HttpProcessor.handle('获取项目信息')
   @Get('/info')
   // @UseGuards(JwtAuthGuard)
-  getProjectInfo(
-    @Query('projectId', new ParseIntPipe()) projectId: number,
-  ): Promise<ProjectDto> {
+  getProjectInfo(@Query('projectId', new ParseIntPipe()) projectId: number): Promise<ProjectDto> {
     return this.projectService.getProjectInfo(projectId);
   }
 
@@ -98,9 +86,7 @@ export class ProjectController {
   @HttpProcessor.handle('获取项目列表')
   // @UseGuards(JwtAuthGuard)
   @Get('/')
-  getProjects(
-    @QueryList() query: QueryListQuery<QueryProjectsDto>,
-  ): Promise<PageData<ProjectModel>> {
+  getProjects(@QueryList() query: QueryListQuery<QueryProjectsDto>): Promise<PageData<ProjectModel>> {
     return this.projectService.getProjects(query);
   }
 

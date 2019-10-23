@@ -11,7 +11,7 @@ export type PageQuery<T> = {
 export enum Sort {
   DESC = 'DESC',
   ASC = 'ASC',
-  DEFAULT = '',
+  DEFAULT = ''
 }
 
 export interface SortQuery {

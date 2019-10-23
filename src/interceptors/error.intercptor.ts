@@ -18,8 +18,6 @@ export class ErrorInterceptor implements NestInterceptor {
     const target = context.getHandler();
     const statusCode = this.reflector.get<HttpStatus>(HTTP.HTTP_ERROR_CODE, target);
     const message = this.reflector.get<TMessage>(HTTP.HTTP_ERROR_MESSAGE, target) || HTTP.HTTP_DEFAULT_ERROR_TEXT;
-    return call$.pipe(
-      catchError(error => throwError(new CustomError({ message, error }, statusCode))),
-    );
+    return call$.pipe(catchError(error => throwError(new CustomError({ message, error }, statusCode))));
   }
 }

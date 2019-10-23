@@ -9,7 +9,7 @@ import {
   JoinTable,
   OneToOne,
   JoinColumn,
-  PrimaryColumn,
+  PrimaryColumn
 } from 'typeorm';
 import { ProjectModel } from '../project/project.model';
 import { Exclude } from 'class-transformer';

@@ -1,14 +1,16 @@
 // 响应状态
 export enum EHttpStatus {
   Error = 400,
-  Success = 200,
+  Success = 200
 }
 
 export type TMessage = string;
-export type TExceptionOption = TMessage | {
-  message: TMessage;
-  error?: any
-};
+export type TExceptionOption =
+  | TMessage
+  | {
+      message: TMessage;
+      error?: any;
+    };
 
 // 翻页数据
 export interface IHttpResultPaginate<T> {
@@ -25,7 +27,7 @@ export interface IHttpResponseBase {
 // HTTP error
 export type THttpErrorResponse = IHttpResponseBase & {
   error: any;
-  debug?: string
+  debug?: string;
 };
 
 // HTTP success 返回

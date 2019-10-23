@@ -6,5 +6,5 @@ import { DynamicModule } from '@nestjs/common';
 export const RedisModule: DynamicModule = _RedisModule.register({
   host: REDIS.host,
   port: REDIS.port,
-  db: 3,
+  db: 3
 });

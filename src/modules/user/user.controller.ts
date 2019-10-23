@@ -10,28 +10,17 @@ import {
   HttpStatus,
   Put,
   ClassSerializerInterceptor,
-  Res,
+  Res
 } from '@nestjs/common';
 import { UserModel, RoleModel } from './user.model';
 import { UserService } from './user.service';
 import { HttpProcessor } from '@/decotators/http.decotator';
 import { JwtAuthGuard } from '@/guards/auth.guard';
 import { TokenResult } from './user.interface';
-import {
-  ApiBearerAuth,
-  ApiUseTags,
-  ApiOperation,
-  ApiResponse,
-} from '@nestjs/swagger';
+import { ApiBearerAuth, ApiUseTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { Permissions } from '@/decotators/permissions.decotators';
 import { PermissionsGuard } from '@/guards/permission.guard';
-import {
-  SignupDto,
-  SigninDto,
-  TokenDto,
-  UserListReqDto,
-  UpdateUserDto,
-} from './user.dto';
+import { SignupDto, SigninDto, TokenDto, UserListReqDto, UpdateUserDto } from './user.dto';
 import { QueryListQuery, PageData } from '@/interfaces/request.interface';
 import { UseInterceptors } from '@nestjs/common';
 @ApiUseTags('账号权限')
@@ -94,10 +83,7 @@ export class UserController {
   @HttpProcessor.handle('修改用户信息')
   @UseGuards(JwtAuthGuard)
   @Put('/')
-  updateUser(
-    @Body() body: UpdateUserDto,
-    @Auth() user: UserModel,
-  ): Promise<void> {
+  updateUser(@Body() body: UpdateUserDto, @Auth() user: UserModel): Promise<void> {
     return this.userService.updateUser(body, user.id);
   }
 
@@ -123,9 +109,7 @@ export class UserController {
   @HttpProcessor.handle('获取用户列表')
   @UseGuards(JwtAuthGuard)
   @Get('/')
-  getUsers(
-    @QueryList() query: QueryListQuery<UserListReqDto>,
-  ): Promise<PageData<UserModel>> {
+  getUsers(@QueryList() query: QueryListQuery<UserListReqDto>): Promise<PageData<UserModel>> {
     return this.userService.getUsers(query);
   }
 }

@@ -1,11 +1,4 @@
-import {
-  IsNotEmpty,
-  IsDefined,
-  IsInt,
-  IsString,
-  IsOptional,
-  IsNumber,
-} from 'class-validator';
+import { IsNotEmpty, IsDefined, IsInt, IsString, IsOptional, IsNumber } from 'class-validator';
 import { ApiModelProperty } from '@nestjs/swagger';
 import { ProjectModel } from '../project/project.model';
 

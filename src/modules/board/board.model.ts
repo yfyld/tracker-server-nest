@@ -11,7 +11,7 @@ import {
   JoinColumn,
   PrimaryColumn,
   CreateDateColumn,
-  UpdateDateColumn,
+  UpdateDateColumn
 } from 'typeorm';
 import { UserModel } from '../user/user.model';
 import { ProjectModel } from '../project/project.model';

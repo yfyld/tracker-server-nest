@@ -1,12 +1,4 @@
-import {
-  IsNotEmpty,
-  IsDefined,
-  IsInt,
-  IsString,
-  IsBoolean,
-  IsOptional,
-  IsNumber,
-} from 'class-validator';
+import { IsNotEmpty, IsDefined, IsInt, IsString, IsBoolean, IsOptional, IsNumber } from 'class-validator';
 import { UserModel } from '../user/user.model';
 
 export class AddProjectDto {

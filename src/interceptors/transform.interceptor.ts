@@ -11,7 +11,7 @@ import * as HTTP from '@/constants/http.constant';
 export function transformDataToPaginate<T>(data: PaginateResult<T>, request?: any): IHttpResultPaginate<T[]> {
   return {
     list: data.docs,
-    totalCount: data.total,
+    totalCount: data.total
   };
 }
 
@@ -28,9 +28,11 @@ export class TransformInterceptor<T> implements NestInterceptor<T, THttpSuccessR
     const request = context.switchToHttp().getRequest();
     const message = this.reflector.get<TMessage>(HTTP.HTTP_SUCCESS_MESSAGE, target) || HTTP.HTTP_DEFAULT_SUCCESS_TEXT;
     const usePaginate = this.reflector.get<boolean>(HTTP.HTTP_RES_TRANSFORM_PAGINATE, target);
-    return call$.pipe(map((data: any) => {
-      const result = !usePaginate ? data : transformDataToPaginate<T>(data, request);
-      return { status: EHttpStatus.Success, message, result };
-    }));
+    return call$.pipe(
+      map((data: any) => {
+        const result = !usePaginate ? data : transformDataToPaginate<T>(data, request);
+        return { status: EHttpStatus.Success, message, result };
+      })
+    );
   }
 }

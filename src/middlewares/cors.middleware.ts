@@ -1,9 +1,4 @@
-import {
-  Injectable,
-  NestMiddleware,
-  HttpStatus,
-  RequestMethod,
-} from '@nestjs/common';
+import { Injectable, NestMiddleware, HttpStatus, RequestMethod } from '@nestjs/common';
 import { Request, Response } from 'express';
 import { CROSS_DOMAIN, APP } from '@/app.config';
 
@@ -24,7 +19,7 @@ export class CorsMiddleware implements NestMiddleware {
       RequestMethod.PUT,
       RequestMethod.PATCH,
       RequestMethod.POST,
-      RequestMethod.DELETE,
+      RequestMethod.DELETE
     ];
     const allowedHeaders = [
       'Authorization',
@@ -37,7 +32,7 @@ export class CorsMiddleware implements NestMiddleware {
       'Cache-Control',
       'Expires',
       'Content-Type',
-      'X-E4M-With',
+      'X-E4M-With'
     ];
 
     // Allow Origin
@@ -47,10 +42,7 @@ export class CorsMiddleware implements NestMiddleware {
 
     // Headers
     response.header('Access-Control-Allow-Headers', allowedHeaders.join(','));
-    response.header(
-      'Access-Control-Allow-Methods',
-      allowedMethods.map(getMethod).join(','),
-    );
+    response.header('Access-Control-Allow-Methods', allowedMethods.map(getMethod).join(','));
     response.header('Access-Control-Allow-Credentials', 'true');
     response.header('Access-Control-Max-Age', '1728000');
     response.header('Content-Type', 'application/json; charset=utf-8');

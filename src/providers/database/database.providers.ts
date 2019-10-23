@@ -5,6 +5,6 @@ import { ORMCONFIG } from '@/app.config';
 export const databaseProviders = [
   {
     provide: DB_CONNECTION_TOKEN,
-    useFactory: async () => await createConnection(ORMCONFIG),
-  },
+    useFactory: async () => await createConnection(ORMCONFIG)
+  }
 ];

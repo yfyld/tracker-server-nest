@@ -16,18 +16,13 @@ import {
   Param,
   Put,
   All,
-  Render,
+  Render
 } from '@nestjs/common';
 import { MetadataModel, FieldModel, MetadataTagModel } from './metadata.model';
 import { MetadataService } from './metadata.service';
 import { HttpProcessor } from '@/decotators/http.decotator';
 import { JwtAuthGuard } from '@/guards/auth.guard';
-import {
-  ApiBearerAuth,
-  ApiOperation,
-  ApiUseTags,
-  ApiResponse,
-} from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation, ApiUseTags, ApiResponse } from '@nestjs/swagger';
 import { Permissions } from '@/decotators/permissions.decotators';
 import { PermissionsGuard } from '@/guards/permission.guard';
 import {
@@ -36,7 +31,7 @@ import {
   AddMetadataTagDto,
   AddMetadataDto,
   QueryFieldListDto,
-  QueryMetadataTagListDto,
+  QueryMetadataTagListDto
 } from './metadata.dto';
 
 @ApiUseTags('元数据')
@@ -57,7 +52,7 @@ export class MetadataController {
   @Get('/')
   getMetadatas(
     @QueryList(new ParsePageQueryIntPipe(['projectId', 'status']))
-    query: QueryListQuery<QueryMetadataListDto>,
+    query: QueryListQuery<QueryMetadataListDto>
   ): Promise<PageData<MetadataModel>> {
     return this.metadataService.getMetadatas(query);
   }
@@ -66,7 +61,7 @@ export class MetadataController {
   @Get('/fields')
   getFields(
     @QueryList(new ParsePageQueryIntPipe(['projectId', 'status', 'type']))
-    query: QueryListQuery<QueryFieldListDto>,
+    query: QueryListQuery<QueryFieldListDto>
   ): Promise<PageData<FieldModel>> {
     return this.metadataService.getFields(query);
   }
@@ -74,7 +69,7 @@ export class MetadataController {
   @Get('/active-fields')
   getActiveFields(
     @Query()
-    query: any,
+    query: any
   ): Promise<FieldModel> {
     return this.metadataService.getActiveFields(query);
   }
@@ -91,7 +86,7 @@ export class MetadataController {
   @Get('/tag')
   getMetadataTags(
     @QueryList(new ParsePageQueryIntPipe(['projectId']))
-    query: QueryListQuery<QueryMetadataTagListDto>,
+    query: QueryListQuery<QueryMetadataTagListDto>
   ): Promise<PageData<MetadataTagModel>> {
     return this.metadataService.getMetadataTags(query);
   }

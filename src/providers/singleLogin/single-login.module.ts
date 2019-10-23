@@ -7,6 +7,6 @@ const services = [SingleLoginService];
 @Module({
   imports: [],
   providers: services,
-  exports: services,
+  exports: services
 })
 export class SingleLoginModule {}

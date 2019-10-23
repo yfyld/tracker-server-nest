@@ -16,9 +16,9 @@ export const QueryList = createParamDecorator(
       take: Number(pageSize || 20),
       sort: {
         key: sortKey,
-        value: newSort,
+        value: newSort
       },
-      query,
+      query
     };
-  },
+  }
 );

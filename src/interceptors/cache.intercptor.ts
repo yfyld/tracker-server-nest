@@ -10,7 +10,6 @@ import { REDIS } from '@/app.config';
  */
 @Injectable()
 export class HttpCacheInterceptor extends CacheInterceptor {
-
   // 自定义装饰器，修饰 ttl 参数
   async intercept(context: ExecutionContext, next: CallHandler<any>): Promise<Observable<any>> {
     const call$ = next.handle();
@@ -26,9 +25,7 @@ export class HttpCacheInterceptor extends CacheInterceptor {
     }
     try {
       const value = await this.cacheManager.get(key);
-      return value ? of(value) : call$.pipe(
-        tap(response => this.cacheManager.set(key, response, { ttl })),
-      );
+      return value ? of(value) : call$.pipe(tap(response => this.cacheManager.set(key, response, { ttl })));
     } catch (error) {
       return call$;
     }

@@ -6,20 +6,12 @@ import {
   AddMetadataDto,
   QueryFieldListDto,
   AddMetadataTagDto,
-  QueryMetadataTagListDto,
+  QueryMetadataTagListDto
 } from './metadata.dto';
 
 import { MetadataModel, FieldModel, MetadataTagModel } from './metadata.model';
 import { Injectable, HttpService } from '@nestjs/common';
-import {
-  Repository,
-  In,
-  LessThan,
-  MoreThan,
-  Between,
-  Like,
-  FindManyOptions,
-} from 'typeorm';
+import { Repository, In, LessThan, MoreThan, Between, Like, FindManyOptions } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 
 import { QueryListQuery, PageData } from '@/interfaces/request.interface';
@@ -35,17 +27,15 @@ export class MetadataService {
     private readonly metadataTagModel: Repository<MetadataTagModel>,
 
     @InjectRepository(FieldModel)
-    private readonly fieldModel: Repository<FieldModel>,
+    private readonly fieldModel: Repository<FieldModel>
   ) {}
 
-  public async getFields(
-    query: QueryListQuery<QueryFieldListDto>,
-  ): Promise<PageData<FieldModel>> {
+  public async getFields(query: QueryListQuery<QueryFieldListDto>): Promise<PageData<FieldModel>> {
     const searchBody: FindManyOptions<FieldModel> = {
       skip: query.skip,
       take: query.take,
       where: {},
-      order: {},
+      order: {}
     };
 
     if (query.sort.key) {
@@ -63,7 +53,7 @@ export class MetadataService {
     const [fields, totalCount] = await this.fieldModel.findAndCount(searchBody);
     return {
       totalCount,
-      list: fields,
+      list: fields
     };
   }
 
@@ -75,28 +65,26 @@ export class MetadataService {
   public async addMetadata(body: AddMetadataDto): Promise<void> {
     const oldmetadata = await this.metadataModel.findOne({
       code: body.code,
-      projectId: body.projectId,
+      projectId: body.projectId
     });
     if (oldmetadata) {
       throw new HttpBadRequestError('元数据code重复');
     }
     const metadata = this.metadataModel.create({
-      ...body,
+      ...body
     });
     await this.metadataModel.save(metadata);
     return;
   }
 
-  public async getMetadatas(
-    query: QueryListQuery<QueryMetadataListDto>,
-  ): Promise<PageData<MetadataModel>> {
+  public async getMetadatas(query: QueryListQuery<QueryMetadataListDto>): Promise<PageData<MetadataModel>> {
     const searchBody: FindManyOptions<MetadataModel> = {
       skip: query.skip,
       take: query.take,
       where: {
-        name: Like(`%${query.query.name || ''}%`),
+        name: Like(`%${query.query.name || ''}%`)
       },
-      order: {},
+      order: {}
     };
 
     if (query.sort.key) {
@@ -106,12 +94,10 @@ export class MetadataService {
       (searchBody.where as any).status = query.query.status;
     }
 
-    const [metadata, totalCount] = await this.metadataModel.findAndCount(
-      searchBody,
-    );
+    const [metadata, totalCount] = await this.metadataModel.findAndCount(searchBody);
     return {
       totalCount,
-      list: metadata,
+      list: metadata
     };
   }
 
@@ -136,35 +122,31 @@ export class MetadataService {
   public async addMetadataTag(body: AddMetadataTagDto): Promise<void> {
     const oldmetadata = await this.metadataTagModel.findOne({
       name: body.name,
-      project: { id: body.projectId },
+      project: { id: body.projectId }
     });
     if (oldmetadata) {
       throw new HttpBadRequestError('标签已经存在');
     }
     const metadata = this.metadataTagModel.create({
       ...body,
-      project: { id: body.projectId },
+      project: { id: body.projectId }
     });
     await this.metadataTagModel.save(metadata);
     return;
   }
 
-  public async getMetadataTags(
-    query: QueryListQuery<QueryMetadataTagListDto>,
-  ): Promise<PageData<MetadataTagModel>> {
+  public async getMetadataTags(query: QueryListQuery<QueryMetadataTagListDto>): Promise<PageData<MetadataTagModel>> {
     const searchBody: FindManyOptions<MetadataTagModel> = {
       skip: query.skip,
       take: query.take,
       where: { projectId: query.query.projectId },
-      order: {},
+      order: {}
     };
 
-    const [metadataTag, totalCount] = await this.metadataTagModel.findAndCount(
-      searchBody,
-    );
+    const [metadataTag, totalCount] = await this.metadataTagModel.findAndCount(searchBody);
     return {
       totalCount,
-      list: metadataTag,
+      list: metadataTag
     };
   }
 }

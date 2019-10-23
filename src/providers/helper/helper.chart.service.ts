@@ -23,23 +23,23 @@ export class ChartService {
     var chart,
       option = {
         title: {
-          text: 'test',
+          text: 'test'
         },
         tooltip: {},
         legend: {
-          data: ['test'],
+          data: ['test']
         },
         xAxis: {
-          data: ['a', 'b', 'c', 'd', 'f', 'g'],
+          data: ['a', 'b', 'c', 'd', 'f', 'g']
         },
         yAxis: {},
         series: [
           {
             name: 'test',
             type: 'bar',
-            data: [5, 20, 36, 10, 10, 20],
-          },
-        ],
+            data: [5, 20, 36, 10, 10, 20]
+          }
+        ]
       };
 
     let defaultConfig = {
@@ -47,15 +47,13 @@ export class ChartService {
       height: 400,
       option,
       enableAutoDispose: true,
-      path: path.join(__dirname, '../../publics/charts/default.png'),
+      path: path.join(__dirname, '../../publics/charts/default.png')
     };
 
     config = Object.assign({}, defaultConfig, config);
 
     config.option.animation = false;
-    chart = echarts.init(
-      createCanvas(parseInt(config.width, 10), parseInt(config.height, 10)),
-    );
+    chart = echarts.init(createCanvas(parseInt(config.width, 10), parseInt(config.height, 10)));
     chart.setOption(config.option);
     if (config.path) {
       try {
@@ -63,10 +61,7 @@ export class ChartService {
         if (config.enableAutoDispose) {
           chart.dispose();
         }
-        return `${BASE_URL.serverUrl}/public/charts/${config.path.replace(
-          /^.*\/([^/]+\.png)/,
-          '$1',
-        )}`;
+        return `${BASE_URL.serverUrl}/public/charts/${config.path.replace(/^.*\/([^/]+\.png)/, '$1')}`;
       } catch (err) {
         console.error('Error: Write File failed' + err.message);
       }
