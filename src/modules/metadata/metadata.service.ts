@@ -5,9 +5,11 @@ import {
   UpdateMetadataDto,
   AddMetadataDto,
   QueryFieldListDto,
+  AddMetadataTagDto,
+  QueryMetadataTagListDto,
 } from './metadata.dto';
 
-import { MetadataModel, FieldModel } from './metadata.model';
+import { MetadataModel, FieldModel, MetadataTagModel } from './metadata.model';
 import { Injectable, HttpService } from '@nestjs/common';
 import {
   Repository,
@@ -28,6 +30,9 @@ export class MetadataService {
   constructor(
     @InjectRepository(MetadataModel)
     private readonly metadataModel: Repository<MetadataModel>,
+
+    @InjectRepository(MetadataTagModel)
+    private readonly metadataTagModel: Repository<MetadataTagModel>,
 
     @InjectRepository(FieldModel)
     private readonly fieldModel: Repository<FieldModel>,
@@ -126,5 +131,40 @@ export class MetadataService {
       .where('id IN (:...metadataIds)', { metadataIds: body.metadataIds })
       .execute();
     return;
+  }
+
+  public async addMetadataTag(body: AddMetadataTagDto): Promise<void> {
+    const oldmetadata = await this.metadataTagModel.findOne({
+      name: body.name,
+      project: { id: body.projectId },
+    });
+    if (oldmetadata) {
+      throw new HttpBadRequestError('标签已经存在');
+    }
+    const metadata = this.metadataTagModel.create({
+      ...body,
+      project: { id: body.projectId },
+    });
+    await this.metadataTagModel.save(metadata);
+    return;
+  }
+
+  public async getMetadataTags(
+    query: QueryListQuery<QueryMetadataTagListDto>,
+  ): Promise<PageData<MetadataTagModel>> {
+    const searchBody: FindManyOptions<MetadataTagModel> = {
+      skip: query.skip,
+      take: query.take,
+      where: { projectId: query.query.projectId },
+      order: {},
+    };
+
+    const [metadataTag, totalCount] = await this.metadataTagModel.findAndCount(
+      searchBody,
+    );
+    return {
+      totalCount,
+      list: metadataTag,
+    };
   }
 }

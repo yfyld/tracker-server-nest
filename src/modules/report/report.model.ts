@@ -1,3 +1,4 @@
+import { BoardModel } from './../board/board.model';
 import { IsString, IsDefined, IsNotEmpty } from 'class-validator';
 import { ApiModelProperty } from '@nestjs/swagger';
 import {
@@ -49,6 +50,9 @@ export class ReportModel {
   project: ProjectModel;
   @Column()
   projectId: number;
+
+  @ManyToOne(type => ProjectModel)
+  board: BoardModel;
 
   @ManyToOne(type => UserModel, { cascade: true, onDelete: 'CASCADE' })
   creator: UserModel;

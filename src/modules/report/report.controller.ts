@@ -52,13 +52,20 @@ export class ReportController {
   }
 
   @HttpProcessor.handle('获取报告单列表')
-  // @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard)
   @Get('/')
   getReports(
     @QueryList(new ParsePageQueryIntPipe(['projectId', 'status']))
     query: QueryListQuery<QueryReportListDto>,
   ): Promise<PageData<ReportModel>> {
     return this.reportService.getReports(query);
+  }
+
+  @HttpProcessor.handle('删除报告单')
+  @Delete('/:reportId')
+  @UseGuards(JwtAuthGuard)
+  updateReport(@Param('reportId') reportId: number): Promise<void> {
+    return this.reportService.deleteReport(reportId);
   }
 
   // @HttpProcessor.handle('获取报告单信息')

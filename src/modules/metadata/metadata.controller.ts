@@ -18,7 +18,7 @@ import {
   All,
   Render,
 } from '@nestjs/common';
-import { MetadataModel, FieldModel } from './metadata.model';
+import { MetadataModel, FieldModel, MetadataTagModel } from './metadata.model';
 import { MetadataService } from './metadata.service';
 import { HttpProcessor } from '@/decotators/http.decotator';
 import { JwtAuthGuard } from '@/guards/auth.guard';
@@ -33,8 +33,10 @@ import { PermissionsGuard } from '@/guards/permission.guard';
 import {
   QueryMetadataListDto,
   UpdateMetadataDto,
+  AddMetadataTagDto,
   AddMetadataDto,
   QueryFieldListDto,
+  QueryMetadataTagListDto,
 } from './metadata.dto';
 
 @ApiUseTags('元数据')
@@ -75,6 +77,23 @@ export class MetadataController {
     query: any,
   ): Promise<FieldModel> {
     return this.metadataService.getActiveFields(query);
+  }
+
+  @HttpProcessor.handle('新增标签')
+  @Post('/tag')
+  @UseGuards(JwtAuthGuard)
+  addMetadataTag(@Body() body: AddMetadataTagDto): Promise<void> {
+    return this.metadataService.addMetadataTag(body);
+  }
+
+  @HttpProcessor.handle('获取tag列表')
+  @UseGuards(JwtAuthGuard)
+  @Get('/tag')
+  getMetadataTags(
+    @QueryList(new ParsePageQueryIntPipe(['projectId']))
+    query: QueryListQuery<QueryMetadataTagListDto>,
+  ): Promise<PageData<MetadataTagModel>> {
+    return this.metadataService.getMetadataTags(query);
   }
 
   // @HttpProcessor.handle('获取元数据信息')

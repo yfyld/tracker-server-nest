@@ -73,6 +73,21 @@ export class UpdateMetadataDto {
   actionType: string;
 }
 
+export class AddMetadataTagDto {
+  @IsString()
+  name: string;
+  @IsOptional()
+  @IsString()
+  description?: string;
+  @IsNumber()
+  projectId: number;
+}
+
+export class QueryMetadataTagListDto {
+  @IsNumber()
+  projectId: number;
+}
+
 export class SourceCodeDto {
   code: string;
   line: number;

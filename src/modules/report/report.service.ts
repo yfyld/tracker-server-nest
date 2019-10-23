@@ -89,4 +89,10 @@ export class ReportService {
       .execute();
     return;
   }
+
+  public async deleteReport(id: number): Promise<void> {
+    const report = await this.reportModel.findOne(id);
+    await this.reportModel.remove(report);
+    return;
+  }
 }
