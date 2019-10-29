@@ -49,7 +49,7 @@ export class ProjectController {
   @ApiResponse({ status: 200, type: ProjectDto })
   @Post('/')
   @HttpProcessor.handle({ message: '新建项目' })
-  // @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard)
   addProject(@Body() body: AddProjectDto, @Auth() user: UserModel): Promise<AddProjectResDto> {
     return this.projectService.addProject(body, user);
   }
@@ -57,7 +57,7 @@ export class ProjectController {
   @ApiOperation({ title: '编辑项目', description: '' })
   @HttpProcessor.handle('编辑项目')
   @Put('/')
-  // @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard)
   updateProject(@Body() body: UpdateProjectDto): Promise<void> {
     return this.projectService.updateProject(body);
   }
@@ -65,7 +65,7 @@ export class ProjectController {
   @ApiOperation({ title: '删除项目', description: '' })
   @HttpProcessor.handle('删除项目')
   @Delete('/:projectId')
-  // @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard)
   deleteProject(@Param('projectId', new ParseIntPipe()) projectId: number): Promise<void> {
     return this.projectService.deleteProject(projectId);
   }
@@ -76,7 +76,7 @@ export class ProjectController {
   @ApiResponse({ status: 200, type: ProjectModel })
   @HttpProcessor.handle('获取项目信息')
   @Get('/info')
-  // @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard)
   getProjectInfo(@Query('projectId', new ParseIntPipe()) projectId: number): Promise<ProjectDto> {
     return this.projectService.getProjectInfo(projectId);
   }
@@ -84,7 +84,7 @@ export class ProjectController {
   @ApiOperation({ title: '获取项目列表', description: '' })
   @ApiBearerAuth()
   @HttpProcessor.handle('获取项目列表')
-  // @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard)
   @Get('/')
   getProjects(@QueryList() query: QueryListQuery<QueryProjectsDto>): Promise<PageData<ProjectModel>> {
     return this.projectService.getProjects(query);
@@ -93,7 +93,7 @@ export class ProjectController {
   @ApiOperation({ title: '获取所有相关项目', description: '' })
   @ApiBearerAuth()
   @HttpProcessor.handle('获取所有相关项目')
-  // @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard)
   @Get('/all')
   getMyProjects(@Auth() user: UserModel): Promise<PageData<ProjectModel>> {
     return this.projectService.getMyProjects(user);
@@ -102,7 +102,7 @@ export class ProjectController {
   @ApiOperation({ title: '添加成员', description: '' })
   @Post('/add-members')
   @HttpProcessor.handle({ message: '添加成员' })
-  // @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard)
   addMembers(@Body() body: AddMembersDto): Promise<void> {
     return this.projectService.addMembers(body);
   }
@@ -110,7 +110,7 @@ export class ProjectController {
   @ApiOperation({ title: '删除成员', description: '' })
   @Post('/delete-members')
   @HttpProcessor.handle({ message: '删除成员' })
-  // @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard)
   deleteMember(@Body() body: DeleteMembersDto): Promise<void> {
     return this.projectService.deleteMember(body);
   }
