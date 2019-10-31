@@ -52,9 +52,9 @@ export class ReportModel {
   projectId: number;
 
   @ManyToOne(type => BoardModel)
-  board: BoardModel;
+  board?: BoardModel;
   @Column()
-  boardId: number;
+  boardId?: number;
 
   @ManyToOne(type => UserModel, { cascade: true, onDelete: 'CASCADE' })
   creator: UserModel;

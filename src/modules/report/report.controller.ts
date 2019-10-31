@@ -45,7 +45,7 @@ export class ReportController {
   @UseGuards(JwtAuthGuard)
   @Get('/')
   getReports(
-    @QueryList(new ParsePageQueryIntPipe(['projectId', 'status']))
+    @QueryList(new ParsePageQueryIntPipe(['projectId', 'status', 'boardId', 'inBoard']))
     query: QueryListQuery<QueryReportListDto>
   ): Promise<PageData<ReportModel>> {
     return this.reportService.getReports(query);
