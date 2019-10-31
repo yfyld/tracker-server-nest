@@ -29,13 +29,13 @@ export class ReportModel {
   type: string;
 
   @Column()
-  timeStart: number;
+  dateStart: number;
 
   @Column()
-  timeEnd: number;
+  dateEnd: number;
 
   @Column()
-  timeType: string;
+  dateType: string;
 
   @Column()
   model: string;
@@ -51,8 +51,10 @@ export class ReportModel {
   @Column()
   projectId: number;
 
-  @ManyToOne(type => ProjectModel)
+  @ManyToOne(type => BoardModel)
   board: BoardModel;
+  @Column()
+  boardId: number;
 
   @ManyToOne(type => UserModel, { cascade: true, onDelete: 'CASCADE' })
   creator: UserModel;

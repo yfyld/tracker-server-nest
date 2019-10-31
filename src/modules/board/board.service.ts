@@ -1,7 +1,8 @@
+import { ReportModel } from './../report/report.model';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, FindManyOptions } from 'typeorm';
 import { BoardModel } from './board.model';
-import { AddBoardDto, QueryBoardListDto } from './board.dto';
+import { AddBoardDto, QueryBoardListDto, QueryBoardInfoDto, BoardInfoDto, UpdateBoardDto } from './board.dto';
 import { Injectable } from '@nestjs/common';
 import { UserModel } from '../user/user.model';
 import { QueryListQuery, PageData } from '@/interfaces/request.interface';
@@ -10,7 +11,9 @@ import { QueryListQuery, PageData } from '@/interfaces/request.interface';
 export class BoardService {
   constructor(
     @InjectRepository(BoardModel)
-    private readonly boardModel: Repository<BoardModel>
+    private readonly boardModel: Repository<BoardModel>,
+    @InjectRepository(ReportModel)
+    private readonly reportModel: Repository<ReportModel>
   ) {}
 
   /**
@@ -22,6 +25,18 @@ export class BoardService {
       ...body,
       layout: JSON.stringify(body.layout)
     });
+    await this.boardModel.save(board);
+    return;
+  }
+
+  public async updateBoard(body: UpdateBoardDto): Promise<void> {
+    let board = await this.boardModel.findOne({
+      where: {
+        id: body.id,
+        projectId: body.projectId
+      }
+    });
+    board = { ...board, ...body, layout: JSON.stringify(body.layout) };
     await this.boardModel.save(board);
     return;
   }
@@ -48,7 +63,22 @@ export class BoardService {
     const [boards, totalCount] = await this.boardModel.findAndCount(searchBody);
     return {
       totalCount,
-      list: boards.map(item => ({ ...item, layout: JSON.parse(item.layout) }))
+      list: boards
     };
+  }
+
+  public async getBoardInfo(query: QueryBoardInfoDto): Promise<BoardInfoDto> {
+    const boardInfo = await this.boardModel.findOne({ where: { id: query.boardId, project: { id: query.projectId } } });
+    const layout: any[] = JSON.parse(boardInfo.layout);
+    (boardInfo as any).layout = layout;
+    const reportIds = layout.map(item => Number(item.i));
+    const reportList = await this.reportModel
+      .createQueryBuilder('')
+      .where('id IN (:...reportIds) ', {
+        reportIds
+      })
+      .getMany();
+
+    return { ...boardInfo, reportList };
   }
 }

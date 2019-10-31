@@ -8,6 +8,8 @@ export class AddReportDto {
   @IsOptional()
   @IsString()
   description?: string;
+  @IsOptional()
+  boardId?: number;
   @IsString()
   type: string;
   @IsDefined()
@@ -54,6 +56,12 @@ export class QueryReportListDto {
   @IsOptional()
   @IsString()
   name: string;
+  @IsOptional()
+  @IsNumber()
+  inBoard: number;
+  @IsOptional()
+  @IsNumber()
+  boardId: number;
 }
 
 export class UpdateReportDto {
