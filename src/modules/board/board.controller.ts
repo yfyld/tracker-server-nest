@@ -3,7 +3,14 @@ import { BoardModel } from './board.model';
 import { ParsePageQueryIntPipe } from './../../pipes/parse-page-query-int.pipe';
 import { QueryList } from '@/decotators/query-list.decorators';
 import { HttpProcessor } from '@/decotators/http.decotator';
-import { AddBoardDto, QueryBoardListDto, QueryBoardInfoDto, BoardInfoDto, UpdateBoardDto } from './board.dto';
+import {
+  AddBoardDto,
+  QueryBoardListDto,
+  QueryBoardInfoDto,
+  BoardInfoDto,
+  UpdateBoardDto,
+  AddBoardReportDto
+} from './board.dto';
 import { BoardService } from './board.service';
 import { ApiOperation, ApiUseTags } from '@nestjs/swagger';
 import { MULTER_OPTIONS, BASE_URL } from '../../app.config';
@@ -47,9 +54,14 @@ export class BoardController {
   @HttpProcessor.handle('看板详情')
   @Get('/info')
   @UseGuards(JwtAuthGuard)
-  async getBoardInfo(
-    @Query(new ParseIntPipe(['projectId', 'boradId'])) query: QueryBoardInfoDto
-  ): Promise<BoardInfoDto> {
+  async getBoardInfo(@Query(new ParseIntPipe(['projectId', 'id'])) query: QueryBoardInfoDto): Promise<BoardInfoDto> {
     return this.boardService.getBoardInfo(query);
+  }
+
+  @HttpProcessor.handle('添加报表到看板')
+  @Post('/append')
+  @UseGuards(JwtAuthGuard)
+  async appendReport(@Body() body: AddBoardReportDto) {
+    return;
   }
 }

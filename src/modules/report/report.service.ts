@@ -46,9 +46,8 @@ export class ReportService {
     const report = this.reportModel.create(reportInfo);
     await this.reportModel.save(report);
     if (board) {
-      board.layout = JSON.stringify(
-        JSON.parse(board.layout).concat({ y: Infinity, x: 0, w: 12, h: 3, i: String(report.id) })
-      );
+      const layout = board.layout ? JSON.parse(board.layout) : [];
+      board.layout = JSON.stringify(layout.concat({ y: Infinity, x: 0, w: 12, h: 9, i: String(report.id) }));
       this.boardModel.save(board);
     }
     return;

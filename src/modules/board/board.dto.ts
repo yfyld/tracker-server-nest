@@ -30,7 +30,7 @@ export class QueryBoardInfoDto {
   @IsDefined()
   projectId: number;
   @IsDefined()
-  boardId: number;
+  id: number;
 }
 
 export class BoardInfoDto extends BoardModel {
@@ -75,4 +75,9 @@ export class UpdateBoardDto {
     i: string;
   }[];
   status: number;
+}
+
+export class AddBoardReportDto {
+  @IsOptional()
+  name: string;
 }

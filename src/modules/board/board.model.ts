@@ -1,3 +1,4 @@
+import { ReportModel } from './../report/report.model';
 import { IsString, IsDefined, IsNotEmpty } from 'class-validator';
 import { ApiModelProperty } from '@nestjs/swagger';
 import {
@@ -11,7 +12,8 @@ import {
   JoinColumn,
   PrimaryColumn,
   CreateDateColumn,
-  UpdateDateColumn
+  UpdateDateColumn,
+  OneToOne
 } from 'typeorm';
 import { UserModel } from '../user/user.model';
 import { ProjectModel } from '../project/project.model';
@@ -49,4 +51,36 @@ export class BoardModel {
 
   @UpdateDateColumn()
   updatedAt: Date;
+}
+
+@Entity()
+export class BoardReportModel {
+  @PrimaryGeneratedColumn()
+  id: string;
+
+  @OneToOne(type => BoardModel)
+  @JoinColumn()
+  board: BoardModel;
+
+  @OneToOne(type => ReportModel)
+  @JoinColumn()
+  report: ReportModel;
+
+  @Column()
+  dateType: string;
+
+  @Column()
+  dateStart: number;
+
+  @Column()
+  dateEnd: number;
+
+  @Column()
+  showType: string;
+
+  @Column()
+  timeType: string;
+
+  @Column()
+  subtitle: string;
 }

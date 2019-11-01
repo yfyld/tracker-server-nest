@@ -68,7 +68,12 @@ export class BoardService {
   }
 
   public async getBoardInfo(query: QueryBoardInfoDto): Promise<BoardInfoDto> {
-    const boardInfo = await this.boardModel.findOne({ where: { id: query.boardId, project: { id: query.projectId } } });
+    const boardInfo = await this.boardModel.findOne({ where: { id: query.id, project: { id: query.projectId } } });
+
+    if (!boardInfo.layout) {
+      (boardInfo as any).layout = [];
+      return { ...boardInfo, reportList: [] };
+    }
     const layout: any[] = JSON.parse(boardInfo.layout);
     (boardInfo as any).layout = layout;
     const reportIds = layout.map(item => Number(item.i));
