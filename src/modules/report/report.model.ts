@@ -20,7 +20,7 @@ import { UserModel } from '../user/user.model';
 @Entity()
 export class ReportModel {
   @PrimaryGeneratedColumn()
-  id: string;
+  id: number;
 
   @Column()
   name: string;
@@ -51,10 +51,8 @@ export class ReportModel {
   @Column()
   projectId: number;
 
-  @ManyToOne(type => BoardModel)
-  board: BoardModel;
-  @Column({ nullable: true })
-  boardId: number;
+  @ManyToMany(type => BoardModel, board => board.reports)
+  boards: BoardModel[];
 
   @ManyToOne(type => UserModel, { cascade: true, onDelete: 'CASCADE' })
   creator: UserModel;
