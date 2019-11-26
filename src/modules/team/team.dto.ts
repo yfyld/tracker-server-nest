@@ -8,76 +8,37 @@ export class AddTeamDto {
   @IsOptional()
   @IsString()
   description?: string;
-  @IsString()
-  type: string;
-  @IsDefined()
-  data: any;
-  @IsNumber()
-  projectId: number;
+  public: boolean;
+  members: number[];
 }
 
 export class TeamDto {
-  @ApiModelProperty()
-  @IsDefined()
-  @IsNotEmpty({ message: '项目名称不能为空' })
+  @IsString()
   name: string;
-  @ApiModelProperty()
+  @IsNumber()
   id: string;
-  @ApiModelProperty()
-  type: string;
-  @ApiModelProperty()
-  level: number;
-  @ApiModelProperty()
-  status: number;
-  @ApiModelProperty()
-  message: string;
-  @ApiModelProperty()
-  url: string;
-  @ApiModelProperty()
-  version?: string;
-  @ApiModelProperty()
-  project: ProjectModel | { id: number };
+  @IsString()
+  description: string;
 }
 
 export class QueryTeamListDto {
-  @ApiModelProperty()
-  @IsDefined()
-  @IsNotEmpty({ message: '项目名称不能为空' })
-  projectId: string;
-
-  @IsOptional()
-  @IsString()
-  tag: string;
-  @IsOptional()
-  @IsNumber()
-  status: number;
   @IsOptional()
   @IsString()
   name: string;
+
+  relevance?: number;
 }
 
 export class UpdateTeamDto {
-  guarderId?: number;
-  level?: number;
-  status?: number;
-  @IsDefined()
-  teamIds: string[];
-  @IsDefined()
-  actionType: string;
-}
-
-export class SourceCodeDto {
-  code: string;
-  line: number;
-  column: number;
-  sourceUrl: string;
+  @IsNumber()
+  id: string;
+  @IsNumber()
+  creatorId: number;
+  @IsString()
   name: string;
-}
-
-export class QueryFieldListDto {
-  @IsDefined()
-  projectId: number;
-  type: number;
-  status: number;
-  name?: string;
+  @IsOptional()
+  @IsString()
+  description?: string;
+  public: boolean;
+  members: number[];
 }

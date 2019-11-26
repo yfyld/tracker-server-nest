@@ -13,6 +13,7 @@ import {
 } from 'typeorm';
 import { ProjectModel } from '../project/project.model';
 import { Exclude } from 'class-transformer';
+import { TeamModel } from '../team/team.model';
 
 @Entity()
 export class PermissionModel {
@@ -86,22 +87,9 @@ export class UserModel {
   @ManyToMany(type => PermissionModel)
   @JoinTable()
   permissions: PermissionModel[];
-}
 
-@Entity()
-export class TeamModel {
-  @PrimaryGeneratedColumn()
-  id: number;
-
-  @ApiModelProperty()
-  @IsDefined()
-  @IsString()
-  @Column()
-  name: string;
-
-  @ManyToMany(type => UserModel)
-  @JoinTable()
-  users: UserModel[];
+  @OneToMany(type => TeamModel, team => team.creator)
+  teams: TeamModel[];
 }
 
 @Entity()

@@ -105,7 +105,7 @@ export class UserService {
     const [users, totalCount] = await this.userModel.findAndCount({
       where: [
         {
-          username: Like(`%${query.query.name || ''}%`)
+          nickname: Like(`%${query.query.nickname || ''}%`)
           //nickname: Like(`%${query.query.name}%`),
         }
       ],

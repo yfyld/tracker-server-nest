@@ -1,4 +1,5 @@
-import { QueryTeamListDto, TeamDto, SourceCodeDto, UpdateTeamDto, AddTeamDto, QueryFieldListDto } from './team.dto';
+import { ParsePageQueryIntPipe } from './../../pipes/parse-page-query-int.pipe';
+import { QueryTeamListDto, TeamDto, UpdateTeamDto, AddTeamDto } from './team.dto';
 
 import { TeamModel } from './team.model';
 import { Injectable, HttpService } from '@nestjs/common';
@@ -13,37 +14,39 @@ import { UserModel } from '../user/user.model';
 export class TeamService {
   constructor(
     @InjectRepository(TeamModel)
-    private readonly teamModel: Repository<TeamModel>
+    private readonly teamModel: Repository<TeamModel>,
+    @InjectRepository(UserModel)
+    private readonly userModel: Repository<UserModel>
   ) {}
 
   public async addTeam(body: AddTeamDto, user: UserModel): Promise<void> {
+    const members = await this.userModel.find({
+      id: In(body.members)
+    });
     const team = this.teamModel.create({
       ...body,
-      creator: user,
-      data: JSON.stringify(body.data)
+      members,
+      creator: user
     });
     await this.teamModel.save(team);
     return;
   }
 
-  public async getTeams(query: QueryListQuery<QueryTeamListDto>): Promise<PageData<TeamModel>> {
+  public async getTeams(query: QueryListQuery<QueryTeamListDto>, user: UserModel): Promise<PageData<TeamModel>> {
     const searchBody: FindManyOptions<TeamModel> = {
       skip: query.skip,
       take: query.take,
       where: {},
+      relations: ['creator', 'members'],
       order: {}
     };
 
-    if (query.sort.key) {
-      searchBody.order[query.sort.key] = query.sort.value;
-    }
-
-    if (typeof query.query.status !== 'undefined') {
-      (searchBody.where as any).status = query.query.status;
-    }
-
     if (typeof query.query.name !== 'undefined') {
       (searchBody.where as any).name = Like(`%${query.query.name || ''}%`);
+    }
+
+    if (!!query.query.relevance) {
+      (searchBody.where as any).creator = user;
     }
 
     const [team, totalCount] = await this.teamModel.findAndCount(searchBody);
@@ -54,20 +57,15 @@ export class TeamService {
   }
 
   public async updateTeam(body: UpdateTeamDto): Promise<void> {
-    const updateBody: any = {};
-    if (body.actionType === 'LEVEL') {
-      updateBody.level = body.level;
-    } else if (body.actionType === 'STATUS') {
-      updateBody.status = body.status;
-    } else {
-      updateBody.guarder = { id: body.guarderId };
-    }
-    await this.teamModel
-      .createQueryBuilder()
-      .update()
-      .set(updateBody)
-      .where('id IN (:...teamIds)', { teamIds: body.teamIds })
-      .execute();
+    const members = body.members.length
+      ? await this.userModel.find({
+          id: In(body.members)
+        })
+      : [];
+    const creator = await this.userModel.findOne(body.creatorId);
+    let team = await this.teamModel.findOne(body.id);
+    team = { ...team, ...body, members, creator };
+    await this.teamModel.save(team);
     return;
   }
 
