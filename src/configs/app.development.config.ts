@@ -39,7 +39,7 @@ export const BASE_URL = {
   serverUrl: 'http://127.0.0.1:7009'
 };
 
-const opsConfig = require('./config/ops.config');
+const opsConfig = require('./configs/ops.config');
 
 export const ORMCONFIG: MysqlConnectionOptions = {
   type: 'mysql',

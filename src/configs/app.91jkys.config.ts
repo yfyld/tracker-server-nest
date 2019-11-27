@@ -33,7 +33,7 @@ export const BASE_URL = {
   serverUrl: 'http://telescope.qa.91jkys.com/api'
 };
 
-const opsConfig = require('./config/ops.config');
+const opsConfig = require('./configs/ops.config');
 
 export const ORMCONFIG: MysqlConnectionOptions = {
   type: 'mysql',
