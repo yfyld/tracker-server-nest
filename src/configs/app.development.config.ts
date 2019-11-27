@@ -39,11 +39,10 @@ export const BASE_URL = {
   serverUrl: 'http://127.0.0.1:7009'
 };
 
-const opsConfig = require('./ops.config');
+const opsConfig = require('./config/ops.config');
 
 export const ORMCONFIG: MysqlConnectionOptions = {
   type: 'mysql',
-  host: '172.16.50.10',
   ...opsConfig,
   database: 'telescope',
   entities: [__dirname + '/**/*.model{.ts,.js}'],
@@ -60,4 +59,11 @@ export const REDIS = {
 export const ES_CONFIG = {
   host: '127.0.0.1:7002',
   log: 'trace'
+};
+
+export const LOGGER_CONFIG = {
+  path: path.join(__dirname, '../logs/telescope-'),
+  daysToKeep: 30,
+  pattern: 'yyyy-MM-dd.log',
+  level: 'debug'
 };
