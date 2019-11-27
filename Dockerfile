@@ -5,5 +5,5 @@ ENV  APP_NAME=telescope
 COPY --chown=app:app  ./server/   /app/src/
 WORKDIR /app/src
 USER app
-RUN npm install  && npm cache clean -f
+RUN npm install --registry=https://registry.npm.taobao.org  && npm cache clean -f
 CMD appctl run prod:91jkys

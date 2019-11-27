@@ -37,7 +37,6 @@
     "bull": "^3.10.0",
     "cache-manager": "^2.9.0",
     "cache-manager-redis-store": "^1.5.0",
-    "canvas": "^2.6.0",
     "chalk": "^3.0.0",
     "circular-json-es6": "^2.0.2",
     "class-transformer": "^0.2.0",
