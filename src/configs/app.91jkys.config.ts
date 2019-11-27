@@ -49,7 +49,7 @@ export const ORMCONFIG: MysqlConnectionOptions = {
   synchronize: true
 };
 
-const opsRedisConfig = require('/data/www/91jkys/config/redis');
+const opsRedisConfig = require('/app/config/redis.js');
 export const REDIS = {
   ...opsRedisConfig,
   db: 10
@@ -61,7 +61,7 @@ export const ES_CONFIG = {
 };
 
 export const LOGGER_CONFIG = {
-  path: path.join(__dirname, '/app/logs/telescope-'),
+  path: path.join(__dirname, '/app/logs/telescope-server'),
   daysToKeep: 30,
   pattern: 'yyyy-MM-dd.log',
   level: 'debug'
