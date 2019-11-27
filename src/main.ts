@@ -101,5 +101,5 @@ async function bootstrap() {
 }
 bootstrap().then(() => {
   // tslint:disable-next-line:no-console
-  console.info('running');
+  console.info('running listen ' + APP.port);
 });

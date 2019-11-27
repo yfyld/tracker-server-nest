@@ -9,7 +9,7 @@
     "build": "tsc -p tsconfig.build.json",
     "format": "prettier --write \"src/**/*.ts\"",
     "start": "ts-node -r tsconfig-paths/register src/main.ts",
-    "prod:91jkys": "NODE_ENV=91jkys ts-node -r tsconfig-paths/register src/main.ts",
+    "prod:91jkys": "NODE_ENV=91jkys npm run env && ts-node -r tsconfig-paths/register src/main.ts",
     "prod:dev": "npm run build&& npm run prod",
     "debug:yfyld": "NODE_ENV=yfyld npm run env && npm run debug",
     "dev": "npm run env && nodemon",
