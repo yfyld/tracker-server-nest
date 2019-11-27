@@ -1,8 +1,16 @@
 import { ReportModel } from './../report/report.model';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, FindManyOptions } from 'typeorm';
+import { Repository, FindManyOptions, In } from 'typeorm';
 import { BoardModel } from './board.model';
-import { AddBoardDto, QueryBoardListDto, QueryBoardInfoDto, BoardInfoDto, UpdateBoardDto } from './board.dto';
+import {
+  AddBoardDto,
+  QueryBoardListDto,
+  QueryBoardInfoDto,
+  BoardInfoDto,
+  UpdateBoardDto,
+  AddReportToBoardDto,
+  RemoveReportBoardDto
+} from './board.dto';
 import { Injectable } from '@nestjs/common';
 import { UserModel } from '../user/user.model';
 import { QueryListQuery, PageData } from '@/interfaces/request.interface';
@@ -67,23 +75,61 @@ export class BoardService {
     };
   }
 
-  public async getBoardInfo(query: QueryBoardInfoDto): Promise<BoardInfoDto> {
-    const boardInfo = await this.boardModel.findOne({ where: { id: query.id, project: { id: query.projectId } } });
+  public async getBoardInfo(query: QueryBoardInfoDto): Promise<BoardModel> {
+    const boardInfo = await this.boardModel.findOne({
+      relations: ['reports'],
+      where: { id: query.id, project: { id: query.projectId } }
+    });
 
     if (!boardInfo.layout) {
       (boardInfo as any).layout = [];
-      return { ...boardInfo, reportList: [] };
+    } else {
+      (boardInfo as any).layout = JSON.parse(boardInfo.layout);
     }
-    const layout: any[] = JSON.parse(boardInfo.layout);
-    (boardInfo as any).layout = layout;
-    const reportIds = layout.map(item => Number(item.i));
-    const reportList = await this.reportModel
-      .createQueryBuilder('')
-      .where('id IN (:...reportIds) ', {
-        reportIds
-      })
-      .getMany();
 
-    return { ...boardInfo, reportList };
+    return boardInfo;
+  }
+
+  public async appendReportBoard(body: AddReportToBoardDto): Promise<void> {
+    const { projectId, reportId, boardIds } = body;
+
+    const report = await this.reportModel.findOne({
+      where: {
+        projectId,
+        id: reportId
+      }
+    });
+
+    if (!report) {
+      throw '报表不存在';
+    }
+
+    const boards = await this.boardModel.find({
+      id: In(boardIds)
+    });
+    if (!report.boards) {
+      report.boards = [];
+    }
+    report.boards.push(...boards);
+    await this.reportModel.save(report);
+    return;
+  }
+
+  public async removeReportBoard(body: RemoveReportBoardDto): Promise<void> {
+    const { projectId, reportId, boardId } = body;
+
+    const board = await this.boardModel.findOne({
+      where: {
+        projectId,
+        id: boardId
+      }
+    });
+
+    if (!board) {
+      throw '看板不存在';
+    }
+    board.reports = board.reports.filter(item => item.id !== reportId);
+    await this.boardModel.save(board);
+    return;
   }
 }

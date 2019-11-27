@@ -35,6 +35,10 @@ export class BoardModel {
   @Column()
   status: number;
 
+  @ManyToMany(type => ReportModel, report => report.boards)
+  @JoinTable()
+  reports: ReportModel[];
+
   @ManyToOne(type => UserModel, { cascade: true, onDelete: 'CASCADE' })
   creator: UserModel;
 
@@ -51,36 +55,4 @@ export class BoardModel {
 
   @UpdateDateColumn()
   updatedAt: Date;
-}
-
-@Entity()
-export class BoardReportModel {
-  @PrimaryGeneratedColumn()
-  id: string;
-
-  @OneToOne(type => BoardModel)
-  @JoinColumn()
-  board: BoardModel;
-
-  @OneToOne(type => ReportModel)
-  @JoinColumn()
-  report: ReportModel;
-
-  @Column()
-  dateType: string;
-
-  @Column()
-  dateStart: number;
-
-  @Column()
-  dateEnd: number;
-
-  @Column()
-  showType: string;
-
-  @Column()
-  timeType: string;
-
-  @Column()
-  subtitle: string;
 }

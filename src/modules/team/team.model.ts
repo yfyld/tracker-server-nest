@@ -28,10 +28,13 @@ export class TeamModel {
   @Column()
   description: string;
 
+  @Column()
+  public: boolean;
+
   @ManyToMany(type => UserModel)
   @JoinTable()
   members: UserModel[];
 
-  @ManyToOne(type => UserModel, { cascade: true, onDelete: 'CASCADE' })
+  @ManyToOne(type => UserModel, user => user.teams)
   creator: UserModel;
 }

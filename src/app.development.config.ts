@@ -39,13 +39,13 @@ export const BASE_URL = {
   serverUrl: 'http://127.0.0.1:7009'
 };
 
+const opsConfig = require('./ops.config');
+
 export const ORMCONFIG: MysqlConnectionOptions = {
   type: 'mysql',
-  host: '127.0.0.1',
-  port: 7007,
-  username: 'root',
-  password: '342531',
-  database: 'tracker',
+  host: '172.16.50.10',
+  ...opsConfig,
+  database: 'telescope',
   entities: [__dirname + '/**/*.model{.ts,.js}'],
   synchronize: true
 };

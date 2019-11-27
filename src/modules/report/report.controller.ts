@@ -25,8 +25,9 @@ import { JwtAuthGuard } from '@/guards/auth.guard';
 import { ApiBearerAuth, ApiOperation, ApiUseTags, ApiResponse } from '@nestjs/swagger';
 import { Permissions } from '@/decotators/permissions.decotators';
 import { PermissionsGuard } from '@/guards/permission.guard';
-import { QueryReportListDto, UpdateReportDto, AddReportDto, QueryFieldListDto } from './report.dto';
+import { QueryReportListDto, UpdateReportDto, AddReportDto, QueryFieldListDto, QueryReportInfoDto } from './report.dto';
 import { Auth } from '@/decotators/user.decorators';
+import { ParseIntPipe } from '@/pipes/parse-int.pipe';
 
 @ApiUseTags('报告单')
 @Controller('report')
@@ -49,6 +50,13 @@ export class ReportController {
     query: QueryListQuery<QueryReportListDto>
   ): Promise<PageData<ReportModel>> {
     return this.reportService.getReports(query);
+  }
+
+  @HttpProcessor.handle('获取报告详情')
+  @UseGuards(JwtAuthGuard)
+  @Get('/info')
+  getReportInfo(@Query(new ParseIntPipe(['projectId', 'id'])) query: QueryReportInfoDto): Promise<ReportModel> {
+    return this.reportService.getReportInfo(query);
   }
 
   @HttpProcessor.handle('删除报告单')

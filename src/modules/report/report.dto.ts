@@ -56,9 +56,7 @@ export class QueryReportListDto {
   @IsOptional()
   @IsString()
   name: string;
-  @IsOptional()
-  @IsNumber()
-  inBoard: number;
+
   @IsOptional()
   @IsNumber()
   boardId: number;
@@ -88,4 +86,11 @@ export class QueryFieldListDto {
   type: number;
   status: number;
   name?: string;
+}
+
+export class QueryReportInfoDto {
+  @IsDefined()
+  projectId: number;
+  @IsDefined()
+  id: number;
 }

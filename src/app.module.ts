@@ -11,6 +11,7 @@ import { DatabaseModule } from './providers/database/database.module';
 import { PermissionsGuard } from './guards/permission.guard';
 import { MetadataModule } from './modules/metadata/metadata.module';
 import { BoardModule } from './modules/board/board.module';
+import { TeamModule } from './modules/team/team.module';
 import { ReportModule } from './modules/report/report.module';
 @Module({
   imports: [
@@ -23,7 +24,8 @@ import { ReportModule } from './modules/report/report.module';
     BullQueueModule,
     ReportModule,
     BoardModule,
-    MetadataModule
+    MetadataModule,
+    TeamModule
   ],
   controllers: [AppController],
   providers: [PermissionsGuard]

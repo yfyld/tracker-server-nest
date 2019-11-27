@@ -4,7 +4,8 @@ import {
   SourceCodeDto,
   UpdateReportDto,
   AddReportDto,
-  QueryFieldListDto
+  QueryFieldListDto,
+  QueryReportInfoDto
 } from './report.dto';
 
 import { ReportModel } from './report.model';
@@ -34,22 +35,9 @@ export class ReportService {
       data: JSON.stringify(body.data)
     };
 
-    if (body.boardId) {
-      var board = await this.boardModel.findOne({
-        where: {
-          id: body.boardId,
-          projectId: body.projectId
-        }
-      });
-      reportInfo.board = board;
-    }
     const report = this.reportModel.create(reportInfo);
     await this.reportModel.save(report);
-    if (board) {
-      const layout = board.layout ? JSON.parse(board.layout) : [];
-      board.layout = JSON.stringify(layout.concat({ y: Infinity, x: 0, w: 12, h: 9, i: String(report.id) }));
-      this.boardModel.save(board);
-    }
+
     return;
   }
 
@@ -57,6 +45,7 @@ export class ReportService {
     const searchBody: FindManyOptions<ReportModel> = {
       skip: query.skip,
       take: query.take,
+      relations: ['boards'],
       where: {},
       order: {}
     };
@@ -67,10 +56,6 @@ export class ReportService {
 
     if (typeof query.query.status !== 'undefined') {
       (searchBody.where as any).status = query.query.status;
-    }
-
-    if (!query.query.inBoard) {
-      (searchBody.where as any).boardId = IsNull();
     }
 
     if (typeof query.query.boardId !== 'undefined') {
@@ -110,5 +95,14 @@ export class ReportService {
     const report = await this.reportModel.findOne(id);
     await this.reportModel.remove(report);
     return;
+  }
+
+  public async getReportInfo(query: QueryReportInfoDto): Promise<ReportModel> {
+    const report = await this.reportModel.findOne({
+      relations: ['boards'],
+      where: query
+    });
+
+    return report;
   }
 }

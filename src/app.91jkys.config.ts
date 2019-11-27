@@ -19,15 +19,9 @@ export const CROSS_DOMAIN = {
 
 export const BULLCONFIG = {};
 
-export const CCONFIG = {};
-
 export const MULTER_OPTIONS = {
   fileSize: 10000000,
   path: path.join(__dirname, 'publics/uploads')
-};
-
-export const ALARMCONFIG = {
-  alarmWithlevelType: [1, 10, 100]
 };
 
 export const STAT_USER_NUM_INTERVAL = 30000;
@@ -35,26 +29,24 @@ export const ALARM_INTERVAL = 30000;
 export const GENERATE_IMG_CRON = '0 0 11 * *';
 
 export const BASE_URL = {
-  webUrl: 'http://127.0.0.1:5000',
-  serverUrl: 'http://127.0.0.1:7009'
+  webUrl: 'http://telescope.qa.91jkys.com',
+  serverUrl: 'http://telescope.qa.91jkys.com/api'
 };
 
 const opsConfig = require('./ops.config');
 
 export const ORMCONFIG: MysqlConnectionOptions = {
   type: 'mysql',
-  host: '172.16.50.10',
   ...opsConfig,
   database: 'telescope',
   entities: [__dirname + '/**/*.model{.ts,.js}'],
   synchronize: true
 };
 
+const redisConfig = require('/data/www/91jkys/config/redis');
 export const REDIS = {
-  host: '127.0.0.1',
-  port: 7008,
-  ttl: null,
-  defaultCacheTTL: 60 * 60 * 24
+  redisConfig,
+  db: 10
 };
 
 export const ES_CONFIG = {

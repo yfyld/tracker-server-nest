@@ -52,7 +52,6 @@ export class AddBoardDto {
     h: number;
     i: string;
   }[];
-  reports: number[];
   type: string;
   status: number;
 }
@@ -77,7 +76,20 @@ export class UpdateBoardDto {
   status: number;
 }
 
-export class AddBoardReportDto {
-  @IsOptional()
-  name: string;
+export class AddReportToBoardDto {
+  @IsDefined()
+  projectId: number;
+  @IsDefined()
+  boardIds: number[];
+  @IsDefined()
+  reportId: number;
+}
+
+export class RemoveReportBoardDto {
+  @IsDefined()
+  projectId: number;
+  @IsDefined()
+  boardId: number;
+  @IsDefined()
+  reportId: number;
 }
