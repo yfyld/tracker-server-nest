@@ -1,8 +1,8 @@
-import { ChartService } from './helper.chart.service';
+// import { ChartService } from './helper.chart.service';
 import { UaService } from './helper.ua.service';
 import { Module, Global, HttpModule } from '@nestjs/common';
 
-const services = [UaService, ChartService];
+const services = [UaService];
 
 @Global()
 @Module({
