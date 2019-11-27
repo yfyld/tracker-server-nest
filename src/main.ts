@@ -16,19 +16,33 @@ import { PermissionsGuard } from './guards/permission.guard';
 import { AuthGuard } from '@nestjs/passport';
 import { HttpExceptionFilter } from './filters/error.filter';
 import { ErrorInterceptor } from './interceptors/error.intercptor';
-import { LoggingInterceptor } from './interceptors/logging.intercptor';
+import { LoggerInterceptor } from './interceptors/logger.intercptor';
 import * as cookieParser from 'cookie-parser';
 import { renderFile } from 'ejs';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { dirExists } from './utils/dirExists';
+import { Logger } from './utils/logger';
 
-const { log, warn, info } = console;
+const { log, warn, debug, info } = console;
 const color = c => (isDevMode ? c : '');
 global.console = Object.assign(console, {
   log: (...args) => log('[log]', ...args),
-  warn: (...args) => warn(color('\x1b[33m%s\x1b[0m'), '[warn]', '[tracker]', ...args),
-  info: (...args) => info(color('\x1b[34m%s\x1b[0m'), '[info]', '[tracker]', ...args),
-  error: (...args) => info(color('\x1b[31m%s\x1b[0m'), '[error]', '[tracker]', ...args)
+  warn: (...args) => {
+    Logger.warn(...args);
+    return warn(color('\x1b[33m%s\x1b[0m'), '[warn]', '[nodepress]', ...args);
+  },
+  info: (...args) => {
+    Logger.info(...args);
+    return info(color('\x1b[34m%s\x1b[0m'), '[info]', '[nodepress]', ...args);
+  },
+  error: (...args) => {
+    Logger.error(...args);
+    return info(color('\x1b[31m%s\x1b[0m'), '[error]', '[nodepress]', ...args);
+  },
+  debug: (...args) => {
+    Logger.debug(...args);
+    return debug(color('\x1b[33m%s\x1b[0m'), '[debug]', '[nodepress]', ...args);
+  }
 });
 
 dirExists(path.join(__dirname, 'publics/doc'));
@@ -62,7 +76,7 @@ async function bootstrap() {
   app.useGlobalInterceptors(
     new TransformInterceptor(new Reflector()),
     new ErrorInterceptor(new Reflector()),
-    new LoggingInterceptor()
+    new LoggerInterceptor()
   );
 
   app.use('/public', serveStatic(path.join(__dirname, 'publics'), {}));

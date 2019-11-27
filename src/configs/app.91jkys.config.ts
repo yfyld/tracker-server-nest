@@ -53,3 +53,10 @@ export const ES_CONFIG = {
   host: '127.0.0.1:7002',
   log: 'trace'
 };
+
+export const LOGGER_CONFIG = {
+  path: path.join(__dirname, '../logs/telescope-'),
+  daysToKeep: 30,
+  pattern: 'yyyy-MM-dd.log',
+  level: 'debug'
+};

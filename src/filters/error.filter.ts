@@ -2,6 +2,7 @@ import * as lodash from 'lodash';
 import { isDevMode } from '@/app.environment';
 import { EHttpStatus, THttpErrorResponse, TExceptionOption, TMessage } from '@/interfaces/http.interface';
 import { ExceptionFilter, Catch, HttpException, ArgumentsHost, HttpStatus } from '@nestjs/common';
+import { stringify } from 'circular-json-es6';
 
 /**
  * @class HttpExceptionFilter
@@ -34,6 +35,21 @@ export class HttpExceptionFilter implements ExceptionFilter {
       data.error = `资源不存在`;
       data.message = `接口 ${request.method} -> ${request.url} 无效`;
     }
+
+    console.error(`request:${this.requestFormat(request)}   response:${stringify(data)}`);
+
     return response.status(HttpStatus.OK).jsonp(data);
+  }
+  requestFormat(httpRequest: any): string {
+    return stringify({
+      url: httpRequest.url,
+      method: httpRequest.method,
+      params: httpRequest.params,
+      query: httpRequest.query,
+      body: httpRequest.body,
+      httpVersion: httpRequest.httpVersion,
+      headers: httpRequest.headers,
+      route: httpRequest.route
+    });
   }
 }
