@@ -2,7 +2,7 @@ import { MysqlConnectionOptions } from 'typeorm/driver/mysql/MysqlConnectionOpti
 import * as path from 'path';
 
 export const APP = {
-  port: 7009,
+  port: 5000,
   version: '1.0.0'
 };
 
@@ -19,9 +19,15 @@ export const CROSS_DOMAIN = {
 
 export const BULLCONFIG = {};
 
+export const CCONFIG = {};
+
 export const MULTER_OPTIONS = {
   fileSize: 10000000,
   path: path.join(__dirname, 'publics/uploads')
+};
+
+export const ALARMCONFIG = {
+  alarmWithlevelType: [1, 10, 100]
 };
 
 export const STAT_USER_NUM_INTERVAL = 30000;
@@ -33,7 +39,7 @@ export const BASE_URL = {
   serverUrl: 'http://telescope.qa.91jkys.com/api'
 };
 
-const opsConfig = require('./configs/ops.config');
+const opsConfig = require('/app/config/config.ts');
 
 export const ORMCONFIG: MysqlConnectionOptions = {
   type: 'mysql',
@@ -43,9 +49,9 @@ export const ORMCONFIG: MysqlConnectionOptions = {
   synchronize: true
 };
 
-const redisConfig = require('/data/www/91jkys/config/redis');
+const opsRedisConfig = require('/data/www/91jkys/config/redis');
 export const REDIS = {
-  redisConfig,
+  ...opsRedisConfig,
   db: 10
 };
 
@@ -55,7 +61,7 @@ export const ES_CONFIG = {
 };
 
 export const LOGGER_CONFIG = {
-  path: path.join(__dirname, '../logs/telescope-'),
+  path: path.join(__dirname, '/app/logs/telescope-'),
   daysToKeep: 30,
   pattern: 'yyyy-MM-dd.log',
   level: 'debug'

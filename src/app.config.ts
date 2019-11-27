@@ -43,7 +43,6 @@ const opsConfig = require('./configs/ops.config');
 
 export const ORMCONFIG: MysqlConnectionOptions = {
   type: 'mysql',
-  host: '172.16.50.10',
   ...opsConfig,
   database: 'telescope',
   entities: [__dirname + '/**/*.model{.ts,.js}'],

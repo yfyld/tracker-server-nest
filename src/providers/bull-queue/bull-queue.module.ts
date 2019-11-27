@@ -8,7 +8,7 @@ export const BullQueueModule = BullModule.forRoot({
     redis: {
       host: REDIS.host,
       port: REDIS.port,
-      db: 1
+      db: 10
     }
   },
   processors: []
