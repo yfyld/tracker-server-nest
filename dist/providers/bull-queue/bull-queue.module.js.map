@@ -1,0 +1,1 @@
+{"version":3,"file":"bull-queue.module.js","sourceRoot":"","sources":["../../../src/providers/bull-queue/bull-queue.module.ts"],"names":[],"mappings":";;AAAA,mDAA2C;AAE3C,yCAAuC;AAE1B,QAAA,eAAe,GAAG,sBAAU,CAAC,OAAO,CAAC;IAEhD,OAAO,EAAE;QACP,KAAK,EAAE;YACL,IAAI,EAAE,kBAAK,CAAC,IAAI;YAChB,IAAI,EAAE,kBAAK,CAAC,IAAI;YAChB,EAAE,EAAE,CAAC;SACN;KACF;IACD,UAAU,EAAE,EAAE;CACf,CAAC,CAAC"}

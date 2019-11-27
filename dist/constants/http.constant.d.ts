@@ -1,0 +1,17 @@
+export declare const HTTP_ERROR_CODE = 400;
+export declare const HTTP_SUCCESS_CODE = 200;
+export declare const HTTP_ERROR_MESSAGE = "HTTP_ERROR_MESSAGE";
+export declare const HTTP_SUCCESS_MESSAGE = "HTTP_SUCCESS_MESSAGE";
+export declare const HTTP_RES_TRANSFORM_PAGINATE = "HTTP_RES_TRANSFORM_PAGINATE";
+export declare const HTTP_ERROR_SUFFIX = "\u5931\u8D25";
+export declare const HTTP_SUCCESS_SUFFIX = "\u6210\u529F";
+export declare const HTTP_DEFAULT_TEXT = "\u6570\u636E\u8BF7\u6C42";
+export declare const HTTP_DEFAULT_ERROR_TEXT: string;
+export declare const HTTP_DEFAULT_SUCCESS_TEXT: string;
+export declare const HTTP_ANONYMOUSE_TEXT = "\u6765\u8005\u4F55\u4EBA";
+export declare const HTTP_UNAUTHORIZED_TEXT_DEFAULT = "\u6743\u9650\u9A8C\u8BC1\u5931\u8D25";
+export declare const HTTP_BAD_REQUEST_TEXT_DEFAULT = "\u672A\u77E5\u9519\u8BEF";
+export declare const HTTP_PERMISSION_ERROR_DEFAULT = "\u65E0\u6743\u6743\u9650\u8BBF\u95EE";
+export declare const VALIDATION_ERROR_DEFAULT = "\u53C2\u6570\u9A8C\u8BC1\u5931\u8D25";
+export declare const HTTP_CACHE_KEY_METADATA = "cache_module:cache_key";
+export declare const HTTP_CACHE_TTL_METADATA = "__customHttpCacheTTL__";
