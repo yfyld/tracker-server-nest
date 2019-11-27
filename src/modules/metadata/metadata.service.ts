@@ -2,8 +2,8 @@ import {
   QueryMetadataListDto,
   MetadataDto,
   SourceCodeDto,
-  UpdateMetadataDto,
   AddMetadataDto,
+  UpdateMetadataDto,
   QueryFieldListDto,
   AddMetadataTagDto,
   QueryMetadataTagListDto
@@ -62,69 +62,142 @@ export class MetadataService {
     return fields;
   }
 
-  public async addMetadata(body: AddMetadataDto): Promise<void> {
-    const oldmetadata = await this.metadataModel.findOne({
-      code: body.code,
-      projectId: body.projectId
+  public async getMetadataList(query: QueryListQuery<QueryMetadataListDto>): Promise<PageData<MetadataModel>> {
+    let {
+      skip,
+      take,
+      sort: { key: sortKey, value: sortValue },
+      query: { status, type, name, tags, log }
+    } = query;
+
+    // 排序
+    let orderBy: {
+      [propName: string]: any;
+    } = {};
+    if (sortKey && sortValue) {
+      orderBy[`metadata.${sortKey}`] = sortValue;
+    }
+    orderBy = Object.assign(orderBy, {
+      'metadata.updatedAt': 'DESC'
     });
-    if (oldmetadata) {
-      throw new HttpBadRequestError('元数据code重复');
-    }
-    const metadata = this.metadataModel.create({
-      ...body
-    });
-    await this.metadataModel.save(metadata);
-    return;
-  }
 
-  public async getMetadatas(query: QueryListQuery<QueryMetadataListDto>): Promise<PageData<MetadataModel>> {
-    const searchBody: FindManyOptions<MetadataModel> = {
-      skip: query.skip,
-      take: query.take,
-      where: {
-        name: Like(`%${query.query.name || ''}%`)
-      },
-      order: {}
-    };
+    // 查询条件
+    let condition: string = '';
+    let params: {
+      [propName: string]: any;
+    } = {};
+    condition = 'metadata.name like :name';
+    params.name = `%${name || ''}%`;
 
-    if (query.sort.key) {
-      searchBody.order[query.sort.key] = query.sort.value;
-    }
-    if (typeof query.query.status !== 'undefined') {
-      (searchBody.where as any).status = query.query.status;
+    if (typeof status !== 'undefined') {
+      condition += ' and metadata.status = :status';
+      params.status = status;
     }
 
-    const [metadata, totalCount] = await this.metadataModel.findAndCount(searchBody);
+    if (type) {
+      condition += ' and metadata.type = :type';
+      params.type = type;
+    }
+
+    if (tags) {
+      condition += ' and tag.id in (:tags)';
+      params.tags = tags.split(',');
+    }
+
+    if (log) {
+      condition += ' and metadata.log = :log';
+      params.log = log;
+    }
+
+    const [metadata, totalCount] = await this.metadataModel
+      .createQueryBuilder('metadata')
+      .leftJoinAndSelect('metadata.tags', 'tag')
+      .where(condition, params)
+      .skip(skip)
+      .take(take)
+      .orderBy(orderBy)
+      .getManyAndCount();
+
     return {
       totalCount,
       list: metadata
     };
   }
 
-  public async updateMetadata(body: UpdateMetadataDto): Promise<void> {
-    const updateBody: any = {};
-    if (body.actionType === 'LEVEL') {
-      updateBody.level = body.level;
-    } else if (body.actionType === 'STATUS') {
-      updateBody.status = body.status;
-    } else {
-      updateBody.guarder = { id: body.guarderId };
+  public async addMetadata(body: AddMetadataDto): Promise<void> {
+    const { projectId, tags, newTags } = body;
+    const oldMetadata = await this.metadataModel.findOne({
+      code: body.code,
+      projectId
+    });
+    if (oldMetadata) {
+      throw new HttpBadRequestError('元数据code重复');
     }
-    await this.metadataModel
-      .createQueryBuilder()
-      .update()
-      .set(updateBody)
-      .where('id IN (:...metadataIds)', { metadataIds: body.metadataIds })
-      .execute();
+    // 获取已有的标签
+    const metadataTags = await this.metadataTagModel.findByIds(tags);
+    // 处理新增的标签
+    if (newTags && newTags.length) {
+      const newMetadataTagModels = [];
+      newTags.forEach(item => {
+        newMetadataTagModels.push(this.metadataTagModel.create({ name: item, project: { id: projectId } }));
+      });
+      const newMetadataTags = await this.metadataTagModel.save(newMetadataTagModels);
+      metadataTags.push(...newMetadataTags);
+    }
+    const metadata = this.metadataModel.create({
+      ...body,
+      tags: []
+    });
+    metadata.tags.push(...metadataTags);
+    await this.metadataModel.save(metadata);
+    return;
+  }
+
+  public async updateMetadata(body: UpdateMetadataDto): Promise<void> {
+    let metadata = await this.metadataModel.findOne(body.id);
+    // 获取已有的标签
+    const metadataTags = await this.metadataTagModel.findByIds(body.tags);
+    // 处理新增的标签
+    if (body.newTags && body.newTags.length) {
+      const newMetadataTagModels = [];
+      body.newTags.forEach(item => {
+        newMetadataTagModels.push(this.metadataTagModel.create({ name: item, project: { id: body.projectId } }));
+      });
+      const newMetadataTags = await this.metadataTagModel.save(newMetadataTagModels);
+      metadataTags.push(...newMetadataTags);
+    }
+    metadata = { ...metadata, ...body, tags: [] };
+    metadata.tags.push(...metadataTags);
+    await this.metadataModel.save(metadata);
+    return;
+  }
+
+  public async deleteMetadata(id: number): Promise<void> {
+    const metadata = await this.metadataModel.findOne(id);
+    await this.metadataModel.remove(metadata);
+    return;
+  }
+
+  public async enableMetadata(id: number): Promise<void> {
+    let metadata = await this.metadataModel.findOne(id);
+    metadata = { ...metadata, status: 1 };
+    await this.metadataModel.save(metadata);
+    return;
+  }
+
+  public async disableMetadata(id: number): Promise<void> {
+    let metadata = await this.metadataModel.findOne(id);
+    metadata = { ...metadata, status: 0 };
+    await this.metadataModel.save(metadata);
     return;
   }
 
   public async addMetadataTag(body: AddMetadataTagDto): Promise<void> {
-    const oldmetadata = await this.metadataTagModel.findOne({
+    const oldMetadata = await this.metadataTagModel.findOne({
       name: body.name,
       project: { id: body.projectId }
     });
-    if (oldmetadata) {
+    if (oldMetadata) {
       throw new HttpBadRequestError('标签已经存在');
     }
     const metadata = this.metadataTagModel.create({

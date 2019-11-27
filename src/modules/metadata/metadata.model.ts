@@ -44,7 +44,7 @@ export class FieldModel {
 @Entity()
 export class MetadataModel {
   @PrimaryGeneratedColumn()
-  id: string;
+  id: number;
 
   @Column()
   name: string;
@@ -53,7 +53,13 @@ export class MetadataModel {
   code: string;
 
   @Column()
+  type: number;
+
+  @Column()
   status: number;
+
+  @Column()
+  log: number;
 
   @Column()
   description: string;

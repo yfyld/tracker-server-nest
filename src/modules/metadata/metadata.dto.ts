@@ -1,17 +1,52 @@
 import { IsNotEmpty, IsDefined, IsInt, IsString, IsOptional, IsNumber } from 'class-validator';
 import { ApiModelProperty } from '@nestjs/swagger';
 import { ProjectModel } from '../project/project.model';
+import { MetadataTagModel } from './metadata.model';
 
 export class AddMetadataDto {
   @IsString()
   code: string;
   @IsString()
   name: string;
+  @IsNumber()
+  type: number;
   @IsOptional()
   @IsString()
   description?: string;
   @IsNumber()
   status: number;
+
+  tags: number[];
+
+  newTags?: string[];
+
+  @IsNumber()
+  log: number;
+  @IsNumber()
+  projectId: number;
+}
+
+export class UpdateMetadataDto {
+  @IsNumber()
+  id: number;
+  @IsString()
+  code: string;
+  @IsString()
+  name: string;
+  @IsNumber()
+  type: number;
+  @IsOptional()
+  @IsString()
+  description?: string;
+  @IsNumber()
+  status: number;
+
+  tags: number[];
+
+  newTags?: string[];
+
+  @IsNumber()
+  log: number;
   @IsNumber()
   projectId: number;
 }
@@ -19,7 +54,7 @@ export class AddMetadataDto {
 export class MetadataDto {
   @ApiModelProperty()
   @IsDefined()
-  @IsNotEmpty({ message: '项目名称不能为空' })
+  @IsNotEmpty({ message: '元数据名称不能为空' })
   name: string;
   @ApiModelProperty()
   id: string;
@@ -42,28 +77,21 @@ export class MetadataDto {
 export class QueryMetadataListDto {
   @ApiModelProperty()
   @IsDefined()
-  @IsNotEmpty({ message: '项目名称不能为空' })
+  @IsNotEmpty({ message: '项目不能为空' })
   projectId: string;
 
-  @IsOptional()
-  @IsString()
-  tag: string;
   @IsOptional()
   @IsNumber()
   status: number;
   @IsOptional()
   @IsString()
   name: string;
-}
-
-export class UpdateMetadataDto {
-  guarderId?: number;
-  level?: number;
-  status?: number;
-  @IsDefined()
-  metadataIds: string[];
-  @IsDefined()
-  actionType: string;
+  @IsNumber()
+  type: number;
+  @IsString()
+  tags: string;
+  @IsNumber()
+  log: number;
 }
 
 export class AddMetadataTagDto {

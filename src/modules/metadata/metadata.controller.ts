@@ -1,4 +1,5 @@
 import { ParsePageQueryIntPipe } from '../../pipes/parse-page-query-int.pipe';
+import { ParseIntPipe } from './../../pipes/parse-int.pipe';
 
 import { QueryListQuery } from '@/interfaces/request.interface';
 import { QueryList } from '../../decotators/query-list.decorators';
@@ -27,8 +28,8 @@ import { Permissions } from '@/decotators/permissions.decotators';
 import { PermissionsGuard } from '@/guards/permission.guard';
 import {
   QueryMetadataListDto,
-  UpdateMetadataDto,
   AddMetadataTagDto,
+  UpdateMetadataDto,
   AddMetadataDto,
   QueryFieldListDto,
   QueryMetadataTagListDto
@@ -47,14 +48,42 @@ export class MetadataController {
     return this.metadataService.addMetadata(body);
   }
 
+  @HttpProcessor.handle('更新元数据')
+  @Put('/')
+  @UseGuards(JwtAuthGuard)
+  updateMetadata(@Body() body: UpdateMetadataDto): Promise<void> {
+    return this.metadataService.updateMetadata(body);
+  }
+
+  @HttpProcessor.handle('删除元数据')
+  @Delete('/:metadataId')
+  @UseGuards(JwtAuthGuard)
+  deleteMetadata(@Param('metadataId', new ParseIntPipe()) metadataId: number): Promise<void> {
+    return this.metadataService.deleteMetadata(metadataId);
+  }
+
+  @HttpProcessor.handle('启用元数据')
+  @Put('/enable/:metadataId')
+  @UseGuards(JwtAuthGuard)
+  enableMetadata(@Param('metadataId', new ParseIntPipe()) metadataId: number): Promise<void> {
+    return this.metadataService.enableMetadata(metadataId);
+  }
+
+  @HttpProcessor.handle('停用元数据')
+  @Put('/disable/:metadataId')
+  @UseGuards(JwtAuthGuard)
+  disableMetadata(@Param('metadataId', new ParseIntPipe()) metadataId: number): Promise<void> {
+    return this.metadataService.disableMetadata(metadataId);
+  }
+
   @HttpProcessor.handle('获取元数据列表')
   // @UseGuards(JwtAuthGuard)
   @Get('/')
-  getMetadatas(
+  getMetadataList(
     @QueryList(new ParsePageQueryIntPipe(['projectId', 'status']))
     query: QueryListQuery<QueryMetadataListDto>
   ): Promise<PageData<MetadataModel>> {
-    return this.metadataService.getMetadatas(query);
+    return this.metadataService.getMetadataList(query);
   }
   @HttpProcessor.handle('获取元数据列表')
   // @UseGuards(JwtAuthGuard)
