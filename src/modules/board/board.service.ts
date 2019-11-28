@@ -112,6 +112,14 @@ export class BoardService {
     }
     report.boards.push(...boards);
     await this.reportModel.save(report);
+    for (let board of boards) {
+      board.layout = JSON.stringify(
+        JSON.parse(board.layout || '[]').concat([
+          { w: 12, h: 8, x: 0, y: 0, i: '' + report.id, moved: false, static: false }
+        ])
+      );
+      await this.boardModel.save(board);
+    }
     return;
   }
 

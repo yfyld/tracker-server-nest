@@ -29,7 +29,7 @@ export class BoardModel {
   @Column()
   type: string;
 
-  @Column()
+  @Column({ type: 'mediumtext' })
   layout: string;
 
   @Column()
