@@ -1,3 +1,4 @@
+import { SingleLoginService } from './../../providers/singleLogin/single-login.service';
 import { UserModel, RoleModel, PermissionModel, ProjectRoleModel } from './user.model';
 import { Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
@@ -19,7 +20,8 @@ export class UserService {
     private readonly roleModel: Repository<RoleModel>,
     // @InjectRepository(ProjectRole)
     // private readonly projectRoleModel: Repository<ProjectRole>,
-    private readonly jwtService: JwtService
+    private readonly jwtService: JwtService,
+    private readonly singleLoginService: SingleLoginService
   ) {}
 
   // 密码编码
@@ -54,6 +56,7 @@ export class UserService {
     const permissions = await this.getPermissionsById(user.id);
     const data = {
       username: user.username,
+      nickname: user.nickname,
       id: user.id,
       password: user.password,
       permissions: permissions.map(item => item.code)
@@ -155,19 +158,25 @@ export class UserService {
     return;
   }
 
-  // public async singleSignOn(cookie): Promise<TokenResult> {
-  //   const userInfo: any = await this.singleLoginService.getUserInfo(cookie);
-  //   const user = await this.userModel.findOne({
-  //     username: userInfo.username,
-  //   });
-  //   if (user) {
-  //     return this.createToken(user);
-  //   } else {
-  //     const newUser = await this.addUser({
-  //       username: userInfo.username,
-  //       password: '123456',
-  //     });
-  //     return this.createToken(newUser);
-  //   }
-  // }
+  public async singleSignOn(cookie): Promise<TokenResult> {
+    // tslint:disable-next-line: no-console
+    console.debug(cookie);
+    const userInfo: any = await this.singleLoginService.getUserInfo(cookie);
+    const user = await this.userModel.findOne({
+      select: ['password', 'id', 'username', 'nickname'],
+      where: {
+        username: userInfo.username
+      }
+    });
+    if (user) {
+      return this.createToken(user);
+    } else {
+      const newUser = await this.addUser({
+        username: userInfo.username,
+        nickname: userInfo.nickname,
+        password: '123456'
+      });
+      return this.createToken(newUser);
+    }
+  }
 }

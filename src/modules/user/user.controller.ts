@@ -1,3 +1,4 @@
+import { BASE_URL } from './../../app.config';
 import { Cookie } from './../../decotators/cookie.decorators';
 import { QueryList } from './../../decotators/query-list.decorators';
 import { Auth } from '@/decotators/user.decorators';
@@ -10,7 +11,8 @@ import {
   HttpStatus,
   Put,
   ClassSerializerInterceptor,
-  Res
+  Res,
+  Query
 } from '@nestjs/common';
 import { UserModel, RoleModel } from './user.model';
 import { UserService } from './user.service';
@@ -23,6 +25,7 @@ import { PermissionsGuard } from '@/guards/permission.guard';
 import { SignupDto, SigninDto, TokenDto, UserListReqDto, UpdateUserDto } from './user.dto';
 import { QueryListQuery, PageData } from '@/interfaces/request.interface';
 import { UseInterceptors } from '@nestjs/common';
+import { Response } from 'express';
 @ApiUseTags('账号权限')
 @Controller('user')
 export class UserController {
@@ -65,19 +68,16 @@ export class UserController {
     return this.userService.createToken(newUser);
   }
 
-  // @Get('single-signon')
-  // async singleSignOn(
-  //   @Cookie() cookie,
-  //   @Res() response: Response,
-  // ): Promise<void> {
-  //   const result = await this.userService.singleSignOn(cookie);
-  //   response.cookie('OVERMIND_TOKEN', result.accessToken, {
-  //     maxAge: result.expiresIn,
-  //     httpOnly: false,
-  //     path: '/',
-  //   });
-  //   return response.redirect(303, `${BASE_URL.webUrl}/project-list`);
-  // }
+  @Get('single-signon')
+  async singleSignOn(@Cookie() cookie, @Query('from') fromURL, @Res() response: Response): Promise<void> {
+    const result = await this.userService.singleSignOn(cookie);
+    response.cookie('TELESCOPE_TOKEN', result.accessToken, {
+      maxAge: result.expiresIn,
+      httpOnly: false,
+      path: '/'
+    });
+    return response.redirect(303, fromURL || `${BASE_URL.webUrl}/project-list`);
+  }
 
   @ApiOperation({ title: '修改用户信息', description: '' })
   @HttpProcessor.handle('修改用户信息')

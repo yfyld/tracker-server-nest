@@ -24,6 +24,7 @@
     "test:e2e": "NODE_ENV=test jest --config ./test/jest-e2e.json"
   },
   "dependencies": {
+    "@91jkys/sso-client": "http://npmreg.qa.91jkys.com/@91jkys/sso-client/-/sso-client-0.1.2.tgz",
     "@nestjs/common": "^6.0.0",
     "@nestjs/core": "^6.0.0",
     "@nestjs/elasticsearch": "^6.0.1",

@@ -1,3 +1,5 @@
+import { SingleLoginModule } from './../../providers/singleLogin/single-login.module';
+import { SingleLoginService } from './../../providers/singleLogin/single-login.service';
 import { Module } from '@nestjs/common';
 import { UserController } from './user.controller';
 import { UserService } from './user.service';
@@ -19,7 +21,8 @@ import { ValidationPipe } from '@/pipes/validation.pipe';
     JwtModule.register({
       secretOrPrivateKey: AUTH.jwtTokenSecret,
       signOptions: { expiresIn: AUTH.expiresIn }
-    })
+    }),
+    SingleLoginModule
   ],
   providers: [
     UserService,

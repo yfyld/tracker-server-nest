@@ -34,6 +34,8 @@ export class HttpExceptionFilter implements ExceptionFilter {
     if (status === HttpStatus.NOT_FOUND) {
       data.error = `资源不存在`;
       data.message = `接口 ${request.method} -> ${request.url} 无效`;
+    } else if (status === HttpStatus.FORBIDDEN) {
+      data.message = `请先登录`;
     }
 
     console.error(`request:${this.requestFormat(request)}   response:${stringify(data)}`);
