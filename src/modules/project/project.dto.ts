@@ -9,6 +9,10 @@ export class AddProjectDto {
   @IsOptional()
   @IsString({ message: '账号必须为字符串' })
   description?: string;
+
+  @IsOptional()
+  @IsString({ message: '封面必须为字符串' })
+  image?: string;
 }
 
 export class AddProjectResDto {
@@ -49,6 +53,7 @@ export class QueryProjectsDto {
 export class ProjectDto {
   id: number;
   name: string;
+  image: string;
   description: string;
   creator: UserModel;
   members: any[];
@@ -64,6 +69,10 @@ export class UpdateProjectDto {
   @IsOptional()
   @IsString({ message: '描述必须为字符串' })
   description: string;
+
+  @IsOptional()
+  @IsString({ message: '封面必须为字符串' })
+  image: string;
 }
 
 export class AddSourcemapsDto {
