@@ -24,8 +24,6 @@ import { MetadataService } from './metadata.service';
 import { HttpProcessor } from '@/decotators/http.decotator';
 import { JwtAuthGuard } from '@/guards/auth.guard';
 import { ApiBearerAuth, ApiOperation, ApiUseTags, ApiResponse } from '@nestjs/swagger';
-import { Permissions } from '@/decotators/permissions.decotators';
-import { PermissionsGuard } from '@/guards/permission.guard';
 import {
   QueryMetadataListDto,
   UpdateMetadataDto,

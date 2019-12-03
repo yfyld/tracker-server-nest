@@ -93,3 +93,14 @@ export class RemoveReportBoardDto {
   @IsDefined()
   reportId: number;
 }
+
+export class QueryMyBoardListDto {
+  @IsOptional()
+  projectId: number;
+  @IsOptional()
+  isPublic: boolean;
+  @IsOptional()
+  name: string;
+  @IsOptional()
+  type: number;
+}

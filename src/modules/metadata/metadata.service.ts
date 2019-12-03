@@ -135,7 +135,10 @@ export class MetadataService {
       throw new HttpBadRequestError('元数据code重复');
     }
     // 获取已有的标签
-    const metadataTags = await this.metadataTagModel.findByIds(tags);
+    let metadataTags = [];
+    if (tags && tags.length) {
+      metadataTags = await this.metadataTagModel.findByIds(tags);
+    }
     // 处理新增的标签
     if (newTags && newTags.length) {
       const newMetadataTagModels = [];
