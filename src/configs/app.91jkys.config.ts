@@ -2,7 +2,7 @@ import { MysqlConnectionOptions } from 'typeorm/driver/mysql/MysqlConnectionOpti
 import * as path from 'path';
 
 export const APP = {
-  port: 5000,
+  port: 9236,
   version: '1.0.0'
 };
 
@@ -35,8 +35,8 @@ export const ALARM_INTERVAL = 30000;
 export const GENERATE_IMG_CRON = '0 0 11 * *';
 
 export const BASE_URL = {
-  webUrl: 'http://telescope.qa.91jkys.com',
-  serverUrl: 'http://telescope.qa.91jkys.com/api'
+  webUrl: 'http://telescope.91jkys.com',
+  serverUrl: 'http://telescope.91jkys.com/api'
 };
 
 const opsConfig = require('/app/config/config.ts');
