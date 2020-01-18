@@ -1,17 +1,25 @@
 import { ApiOperation, ApiUseTags } from '@nestjs/swagger';
 import { MULTER_OPTIONS, BASE_URL } from './../../app.config';
-import { Controller, Post, UseInterceptors, UploadedFile, UseGuards } from '@nestjs/common';
+import { Controller, Post, UseInterceptors, UploadedFile, UseGuards, Get, Body } from '@nestjs/common';
 import { diskStorage } from 'multer';
 import { HttpProcessor } from '@/decotators/http.decotator';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { existsSync, mkdirSync } from 'fs';
 import { extname } from 'path';
 import { JwtAuthGuard } from '@/guards/auth.guard';
+import { SlsService } from '@/providers/sls/sls.service';
 
 @ApiUseTags('公共')
 @Controller('common')
-@UseGuards(JwtAuthGuard)
 export class CommonController {
+  constructor(private readonly slsService: SlsService) {}
+
+  @HttpProcessor.handle('test')
+  @Post('/test')
+  test(@Body() body: any): Promise<any> {
+    return this.slsService.query(body);
+  }
+
   @ApiOperation({ title: '上传文件', description: '' })
   @HttpProcessor.handle('上传文件')
   @Post('/upload')

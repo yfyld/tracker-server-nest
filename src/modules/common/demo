@@ -1,0 +1,3 @@
+{"query":"* | select time_series(__time__, '1d', '%Y-%m-%d' ,'0') as time, count(1) as all, approx_distinct(utoken) as uall group by time order by time limit 100"}
+
+

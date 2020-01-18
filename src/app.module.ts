@@ -1,6 +1,7 @@
 import { BullQueueModule } from './providers/bull-queue/bull-queue.module';
 import { EsModule } from './providers/es/es.module';
 import { HelperModule } from './providers/helper/helper.module';
+import { SlsModule } from './providers/sls/sls.module';
 import { Module, NestModule, MiddlewareConsumer } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { UserModule } from './modules/user/user.module';
@@ -25,7 +26,8 @@ import { ReportModule } from './modules/report/report.module';
     ReportModule,
     BoardModule,
     MetadataModule,
-    TeamModule
+    TeamModule,
+    SlsModule
   ],
   controllers: [AppController],
   providers: [PermissionsGuard]
