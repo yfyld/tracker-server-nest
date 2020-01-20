@@ -1,4 +1,4 @@
-FROM reg.qa.91jkys.com/appenv/node:10
+FROM reg.qa.91jkys.com/appenv/node:12
 
 ENV  APP_NAME=telescope-server
 
