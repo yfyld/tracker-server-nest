@@ -14,6 +14,7 @@ import { MetadataModule } from './modules/metadata/metadata.module';
 import { BoardModule } from './modules/board/board.module';
 import { TeamModule } from './modules/team/team.module';
 import { ReportModule } from './modules/report/report.module';
+import { RedisModule } from './providers/redis/redis.module';
 @Module({
   imports: [
     DatabaseModule,
@@ -27,7 +28,8 @@ import { ReportModule } from './modules/report/report.module';
     BoardModule,
     MetadataModule,
     TeamModule,
-    SlsModule
+    SlsModule,
+    RedisModule
   ],
   controllers: [AppController],
   providers: [PermissionsGuard]

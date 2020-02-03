@@ -1,3 +1,4 @@
+import { MetadataSchedule } from './metadata.schedule';
 import { Module } from '@nestjs/common';
 import { MetadataController } from './metadata.controller';
 import { MetadataService } from './metadata.service';
@@ -9,7 +10,7 @@ import { ProjectModel } from '../project/project.model';
 
 @Module({
   imports: [TypeOrmModule.forFeature([MetadataModel, MetadataTagModel, ProjectModel, FieldModel])],
-  providers: [MetadataService],
+  providers: [MetadataService, MetadataSchedule],
   controllers: [MetadataController],
   exports: [MetadataService]
 })

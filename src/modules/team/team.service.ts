@@ -74,4 +74,8 @@ export class TeamService {
     await this.teamModel.remove(team);
     return;
   }
+
+  public async getTeamById(id: number): Promise<TeamModel> {
+    return await this.teamModel.findOne({ relations: ['creator', 'members'], where: { id } });
+  }
 }

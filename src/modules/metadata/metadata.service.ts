@@ -1,3 +1,6 @@
+import { ListData } from './../../interfaces/request.interface';
+import { IEventAttr } from './metadata.interface';
+import { EVENT_ATTRS } from './../../constants/event.constant';
 import {
   QueryMetadataListDto,
   MetadataDto,
@@ -6,7 +9,8 @@ import {
   UpdateMetadataDto,
   QueryFieldListDto,
   AddMetadataTagDto,
-  QueryMetadataTagListDto
+  QueryMetadataTagListDto,
+  EventAttrsListDto
 } from './metadata.dto';
 
 import { MetadataModel, FieldModel, MetadataTagModel } from './metadata.model';
@@ -17,6 +21,9 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { QueryListQuery, PageData } from '@/interfaces/request.interface';
 
 import { HttpBadRequestError } from '@/errors/bad-request.error';
+import { SlsService } from '@/providers/sls/sls.service';
+import { RedisService } from 'nestjs-redis';
+
 @Injectable()
 export class MetadataService {
   constructor(
@@ -27,40 +34,10 @@ export class MetadataService {
     private readonly metadataTagModel: Repository<MetadataTagModel>,
 
     @InjectRepository(FieldModel)
-    private readonly fieldModel: Repository<FieldModel>
+    private readonly fieldModel: Repository<FieldModel>,
+    private readonly slsService: SlsService,
+    private readonly redisService: RedisService
   ) {}
-
-  public async getFields(query: QueryListQuery<QueryFieldListDto>): Promise<PageData<FieldModel>> {
-    const searchBody: FindManyOptions<FieldModel> = {
-      skip: query.skip,
-      take: query.take,
-      where: {},
-      order: {}
-    };
-
-    if (query.sort.key) {
-      searchBody.order[query.sort.key] = query.sort.value;
-    }
-
-    if (query.query.name) {
-      (searchBody.where as any).name = Like(`%${query.query.name || ''}%`);
-    }
-
-    if (typeof query.query.status !== 'undefined') {
-      (searchBody.where as any).status = query.query.status;
-    }
-
-    const [fields, totalCount] = await this.fieldModel.findAndCount(searchBody);
-    return {
-      totalCount,
-      list: fields
-    };
-  }
-
-  public async getActiveFields(query: any): Promise<any> {
-    const fields = await this.fieldModel.find();
-    return fields;
-  }
 
   public async getMetadataList(query: QueryListQuery<QueryMetadataListDto>): Promise<PageData<MetadataModel>> {
     let {
@@ -105,7 +82,7 @@ export class MetadataService {
     }
 
     if (log) {
-      condition += ' and metadata.log = :log';
+      condition += log == 1 ? ' and metadata.log >= :log' : ' and metadata.log = :log';
       params.log = log;
     }
 
@@ -221,5 +198,61 @@ export class MetadataService {
       totalCount,
       list: metadataTag
     };
+  }
+
+  public async scheduleIntervalCheckMetadata(): Promise<void> {
+    const client = await this.redisService.getClient();
+    const metadataId = Number(await client.get('metadataCheckedId')) || 1;
+
+    const metadata = await this.metadataModel.findOne({
+      where: {
+        status: 1,
+        id: metadataId
+      }
+    });
+    client.set('metadataCheckedId', metadataId + 1);
+    if (!metadata) {
+      const metadataMaxId = Number(await client.get('metadataMaxId')) || 10;
+      if (metadataId >= metadataMaxId) {
+        client.set('metadataCheckedId', 1);
+        const newmetadata = await this.metadataModel.findOne({
+          where: {
+            status: 1
+          },
+          order: {
+            id: 'DESC'
+          }
+        });
+        if (newmetadata) {
+          client.set('metadataMaxId', newmetadata.id);
+        }
+      }
+      return;
+    }
+    const result = await this.slsService.queryMetadata(metadata);
+    if (result.all === metadata.log) {
+      return;
+    }
+    metadata.log = result.all;
+    metadata.recentLog = result.recent;
+    await this.metadataModel.save(metadata);
+  }
+
+  public async scheduleCronComputedEventAttrRecommend(): Promise<void> {
+    const client = await this.redisService.getClient();
+    const eventAttrs = EVENT_ATTRS;
+
+    for (let attr of eventAttrs) {
+      const result = await this.slsService.queryEventValues(attr.value);
+      attr.recommend = result;
+    }
+    client.set('eventAttrsRecommend', JSON.stringify(eventAttrs));
+  }
+
+  public async getFieldList(): Promise<ListData<EventAttrsListDto>> {
+    const client = await this.redisService.getClient();
+    let eventAttrsStr = await client.get('eventAttrsRecommend');
+    const eventAttrs: EventAttrsListDto[] = eventAttrsStr ? JSON.parse(eventAttrsStr) : EVENT_ATTRS;
+    return { list: eventAttrs };
   }
 }

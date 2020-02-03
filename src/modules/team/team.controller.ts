@@ -27,6 +27,7 @@ import { Permissions } from '@/decotators/permissions.decotators';
 import { PermissionsGuard } from '@/guards/permission.guard';
 import { QueryTeamListDto, UpdateTeamDto, AddTeamDto } from './team.dto';
 import { Auth } from '@/decotators/user.decorators';
+import { ParseIntPipe } from '@/pipes/parse-int.pipe';
 
 @ApiUseTags('团队')
 @Controller('team')
@@ -66,14 +67,12 @@ export class TeamController {
     return this.teamService.updateTeam(body);
   }
 
-  // @HttpProcessor.handle('获取团队信息')
-  // @Get('/info')
-  // @UseGuards(JwtAuthGuard)
-  // getTeamInfo(
-  //   @Query('teamId') teamId: string,
-  // ): Promise<TeamModel> {
-  //   return this.teamService.getTeamById(teamId);
-  // }
+  @HttpProcessor.handle('获取团队信息')
+  @Get('/info')
+  @UseGuards(JwtAuthGuard)
+  getTeamInfo(@Query('id', new ParseIntPipe()) id: number): Promise<TeamModel> {
+    return this.teamService.getTeamById(id);
+  }
 
   // @HttpProcessor.handle('获取团队列表')
   // // @UseGuards(JwtAuthGuard)

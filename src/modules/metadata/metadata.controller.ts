@@ -1,7 +1,7 @@
 import { ParsePageQueryIntPipe } from '../../pipes/parse-page-query-int.pipe';
 import { ParseIntPipe } from './../../pipes/parse-int.pipe';
 
-import { QueryListQuery } from '@/interfaces/request.interface';
+import { QueryListQuery, ListData } from '@/interfaces/request.interface';
 import { QueryList } from '../../decotators/query-list.decorators';
 import { PageData } from '../../interfaces/request.interface';
 import {
@@ -32,7 +32,8 @@ import {
   UpdateMetadataDto,
   AddMetadataDto,
   QueryFieldListDto,
-  QueryMetadataTagListDto
+  QueryMetadataTagListDto,
+  EventAttrsListDto
 } from './metadata.dto';
 
 @ApiUseTags('元数据')
@@ -85,23 +86,6 @@ export class MetadataController {
   ): Promise<PageData<MetadataModel>> {
     return this.metadataService.getMetadataList(query);
   }
-  @HttpProcessor.handle('获取元数据列表')
-  // @UseGuards(JwtAuthGuard)
-  @Get('/fields')
-  getFields(
-    @QueryList(new ParsePageQueryIntPipe(['projectId', 'status', 'type']))
-    query: QueryListQuery<QueryFieldListDto>
-  ): Promise<PageData<FieldModel>> {
-    return this.metadataService.getFields(query);
-  }
-
-  @Get('/active-fields')
-  getActiveFields(
-    @Query()
-    query: any
-  ): Promise<FieldModel> {
-    return this.metadataService.getActiveFields(query);
-  }
 
   @HttpProcessor.handle('新增标签')
   @Post('/tag')
@@ -118,6 +102,13 @@ export class MetadataController {
     query: QueryListQuery<QueryMetadataTagListDto>
   ): Promise<PageData<MetadataTagModel>> {
     return this.metadataService.getMetadataTags(query);
+  }
+
+  @HttpProcessor.handle('获取事件属性')
+  // @UseGuards(JwtAuthGuard)
+  @Get('/fields')
+  getEventAttrs(): Promise<ListData<EventAttrsListDto>> {
+    return this.metadataService.getFieldList();
   }
 
   // @HttpProcessor.handle('获取元数据信息')

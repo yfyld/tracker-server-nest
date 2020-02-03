@@ -3,6 +3,10 @@ export interface PageData<T> {
   list: T[];
 }
 
+export interface ListData<T> {
+  list: T[];
+}
+
 export type PageQuery<T> = {
   page: number;
   pageSize: number;

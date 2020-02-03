@@ -62,6 +62,9 @@ export class MetadataModel {
   log: number;
 
   @Column()
+  recentLog: number;
+
+  @Column()
   description: string;
 
   @ManyToOne(type => ProjectModel)

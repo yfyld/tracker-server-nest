@@ -22,6 +22,10 @@ export class AddMetadataDto {
 
   @IsNumber()
   log: number;
+
+  @IsNumber()
+  logRecent: number;
+
   @IsNumber()
   projectId: number;
 }
@@ -123,4 +127,11 @@ export class QueryFieldListDto {
   type: number;
   status: number;
   name?: string;
+}
+
+export class EventAttrsListDto {
+  name: string;
+  value: string;
+  type: string;
+  recommend: any[];
 }
