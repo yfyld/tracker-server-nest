@@ -23,7 +23,7 @@ export class SlsService {
         if (error) {
           reject(error);
         } else {
-          resolve(data.body);
+          resolve(Object.values(data.body));
         }
       });
     });
@@ -55,6 +55,6 @@ export class SlsService {
     };
     const result = await this.query(opt);
 
-    return Object.values(result).map(item => item[key]);
+    return result.map(item => item[key]);
   };
 }

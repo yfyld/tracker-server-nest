@@ -1,3 +1,40 @@
+import { IFilterInfo } from './analyse.interface';
+
+export function timeUtilToParam(type: string) {
+  let result = {
+    window: '1d',
+    format: '%Y-%m-%d %H:%i:%s'
+  };
+
+  if (type === 'HOURS') {
+    result = {
+      window: '1h',
+      format: '%H'
+    };
+  } else if (type === 'DAY') {
+    result = {
+      window: '1d',
+      format: '%Y-%m-%d'
+    };
+  } else if (type === 'WEEK') {
+    result = {
+      window: '7d',
+      format: '%Y-%m-%d'
+    };
+  } else if (type === 'MONTH') {
+    result = {
+      window: '30d',
+      format: '%Y-%m'
+    };
+  } else if (type === 'YEAR') {
+    result = {
+      window: '1y',
+      format: '%Y'
+    };
+  }
+  return result;
+}
+
 // <Option value='equal'>等于</Option>
 // <Option value='notEqual'>不等于</Option>
 // <Option value='isSet'>有值</Option>
@@ -13,9 +50,9 @@
 // <Option value='isNotEmpty'>不为空</Option>
 // <Option value='rlike'>正则匹配</Option>
 // <Option value='notrlike'>正则不匹配</Option>
-export function filterToQuery(filters, filterType) {
-  const filterStrs = filters.reduce((total, item) => {
-    switch (filterType) {
+export function filterToQuery({ filterValues, filterType }: IFilterInfo): string {
+  const filterStrs = filterValues.reduce((total, item) => {
+    switch (item.type) {
       case 'equal':
         {
           if (item.value.length === 1) {
@@ -139,7 +176,8 @@ export function filterToQuery(filters, filterType) {
       default:
         break;
     }
+    return total;
   }, []);
 
-  return filterStrs.join(` ${filterType ? 'and' : 'or'} `);
+  return filterStrs.length ? filterStrs.join(` ${filterType ? 'and' : 'or'} `) + ' and' : '';
 }
