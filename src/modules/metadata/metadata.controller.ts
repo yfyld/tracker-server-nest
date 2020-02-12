@@ -28,16 +28,11 @@ import {
   QueryMetadataListDto,
   UpdateMetadataDto,
   AddMetadataDto,
-<<<<<<< HEAD
-  QueryFieldListDto,
-  QueryMetadataTagListDto,
-  EventAttrsListDto
-=======
+  EventAttrsListDto,
   QueryMetadataTagListDto,
   AddMetadataTagDto,
   UpdateMetadataTagDto,
   QueryFieldListDto
->>>>>>> 073f552fead4d3fbaefb2e55f4db2c840fe647da
 } from './metadata.dto';
 
 @ApiUseTags('元数据')
