@@ -90,6 +90,8 @@ export class QueryMetadataListDto {
   @IsOptional()
   @IsString()
   name: string;
+  @IsString()
+  code: string;
   @IsNumber()
   type: number;
   @IsString()
@@ -99,6 +101,18 @@ export class QueryMetadataListDto {
 }
 
 export class AddMetadataTagDto {
+  @IsString()
+  name: string;
+  @IsOptional()
+  @IsString()
+  description?: string;
+  @IsNumber()
+  projectId: number;
+}
+
+export class UpdateMetadataTagDto {
+  @IsNumber()
+  id: number;
   @IsString()
   name: string;
   @IsOptional()

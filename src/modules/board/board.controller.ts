@@ -9,7 +9,8 @@ import {
   QueryBoardInfoDto,
   BoardInfoDto,
   UpdateBoardDto,
-  AddReportToBoardDto
+  AddReportToBoardDto,
+  QueryMyBoardListDto
 } from './board.dto';
 import { BoardService } from './board.service';
 import { ApiOperation, ApiUseTags } from '@nestjs/swagger';
@@ -63,5 +64,15 @@ export class BoardController {
   @UseGuards(JwtAuthGuard)
   async appendReport(@Body() body: AddReportToBoardDto) {
     return this.boardService.appendReportBoard(body);
+  }
+
+  @HttpProcessor.handle('我的看板')
+  @Get('/my-board')
+  @UseGuards(JwtAuthGuard)
+  async getMyBoards(
+    @QueryList(new ParsePageQueryIntPipe(['type'])) query: QueryListQuery<QueryMyBoardListDto>,
+    @Auth() user
+  ): Promise<PageData<BoardModel>> {
+    return this.boardService.getMyBoards(query, user);
   }
 }

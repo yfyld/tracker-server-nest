@@ -1,6 +1,6 @@
 import { ReportModel } from './../report/report.model';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, FindManyOptions, In } from 'typeorm';
+import { Repository, FindManyOptions, In, Like } from 'typeorm';
 import { BoardModel } from './board.model';
 import {
   AddBoardDto,
@@ -9,7 +9,8 @@ import {
   BoardInfoDto,
   UpdateBoardDto,
   AddReportToBoardDto,
-  RemoveReportBoardDto
+  RemoveReportBoardDto,
+  QueryMyBoardListDto
 } from './board.dto';
 import { Injectable } from '@nestjs/common';
 import { UserModel } from '../user/user.model';
@@ -139,5 +140,31 @@ export class BoardService {
     board.reports = board.reports.filter(item => item.id !== reportId);
     await this.boardModel.save(board);
     return;
+  }
+
+  public async getMyBoards(query: QueryListQuery<QueryMyBoardListDto>, user: UserModel): Promise<PageData<BoardModel>> {
+    let {
+      skip,
+      take,
+      query: { name, type }
+    } = query;
+    const searchBody: FindManyOptions<BoardModel> = {
+      skip,
+      take,
+      where: {
+        name: Like(`%${name || ''}%`)
+      },
+      relations: ['creator']
+    };
+
+    if (type === 1) {
+      (searchBody.where as any).creator = { id: user.id };
+    }
+
+    const [boards, totalCount] = await this.boardModel.findAndCount(searchBody);
+    return {
+      totalCount,
+      list: boards
+    };
   }
 }

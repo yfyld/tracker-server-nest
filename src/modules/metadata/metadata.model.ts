@@ -25,6 +25,8 @@ export class MetadataTagModel {
   description: string;
   @ManyToOne(type => ProjectModel)
   project: ProjectModel;
+  @Column()
+  projectId: number;
 }
 
 @Entity()

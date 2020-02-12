@@ -3,14 +3,13 @@ import { IEventAttr } from './metadata.interface';
 import { EVENT_ATTRS } from './../../constants/event.constant';
 import {
   QueryMetadataListDto,
-  MetadataDto,
-  SourceCodeDto,
   AddMetadataDto,
   UpdateMetadataDto,
   QueryFieldListDto,
   AddMetadataTagDto,
   QueryMetadataTagListDto,
-  EventAttrsListDto
+  EventAttrsListDto,
+  UpdateMetadataTagDto
 } from './metadata.dto';
 
 import { MetadataModel, FieldModel, MetadataTagModel } from './metadata.model';
@@ -49,7 +48,7 @@ export class MetadataService {
       skip,
       take,
       sort: { key: sortKey, value: sortValue },
-      query: { status, type, name, tags, log }
+      query: { projectId, status, type, name, code, tags, log }
     } = query;
 
     // 排序
@@ -68,8 +67,10 @@ export class MetadataService {
     let params: {
       [propName: string]: any;
     } = {};
-    condition = 'metadata.name like :name';
+    condition = 'metadata.projectId = :projectId and metadata.name like :name and metadata.code like :code';
+    params.projectId = projectId;
     params.name = `%${name || ''}%`;
+    params.code = `%${code || ''}%`;
 
     if (typeof status !== 'undefined') {
       condition += ' and metadata.status = :status';
@@ -107,21 +108,24 @@ export class MetadataService {
   }
 
   public async addMetadata(body: AddMetadataDto): Promise<void> {
-    const { projectId, tags, newTags } = body;
+    const { code, projectId, tags, newTags } = body;
     const oldMetadata = await this.metadataModel.findOne({
-      code: body.code,
+      code: code,
       projectId
     });
     if (oldMetadata) {
       throw new HttpBadRequestError('元数据code重复');
     }
     // 获取已有的标签
-    const metadataTags = await this.metadataTagModel.findByIds(tags);
+    let metadataTags = [];
+    if (tags && tags.length) {
+      metadataTags = await this.metadataTagModel.findByIds(tags);
+    }
     // 处理新增的标签
     if (newTags && newTags.length) {
       const newMetadataTagModels = [];
       newTags.forEach(item => {
-        newMetadataTagModels.push(this.metadataTagModel.create({ name: item, project: { id: projectId } }));
+        newMetadataTagModels.push(this.metadataTagModel.create({ name: item, project: { id: projectId }, projectId }));
       });
       const newMetadataTags = await this.metadataTagModel.save(newMetadataTagModels);
       metadataTags.push(...newMetadataTags);
@@ -136,14 +140,15 @@ export class MetadataService {
   }
 
   public async updateMetadata(body: UpdateMetadataDto): Promise<void> {
-    let metadata = await this.metadataModel.findOne(body.id);
+    let { id, tags, projectId } = body;
+    let metadata = await this.metadataModel.findOne(id);
     // 获取已有的标签
-    const metadataTags = await this.metadataTagModel.findByIds(body.tags);
+    const metadataTags = await this.metadataTagModel.findByIds(tags);
     // 处理新增的标签
     if (body.newTags && body.newTags.length) {
       const newMetadataTagModels = [];
       body.newTags.forEach(item => {
-        newMetadataTagModels.push(this.metadataTagModel.create({ name: item, project: { id: body.projectId } }));
+        newMetadataTagModels.push(this.metadataTagModel.create({ name: item, project: { id: projectId }, projectId }));
       });
       const newMetadataTags = await this.metadataTagModel.save(newMetadataTagModels);
       metadataTags.push(...newMetadataTags);
@@ -174,21 +179,9 @@ export class MetadataService {
     return;
   }
 
-  public async addMetadataTag(body: AddMetadataTagDto): Promise<void> {
-    const oldMetadata = await this.metadataTagModel.findOne({
-      name: body.name,
-      project: { id: body.projectId }
-    });
-    if (oldMetadata) {
-      throw new HttpBadRequestError('标签已经存在');
-    }
-    const metadata = this.metadataTagModel.create({
-      ...body,
-      project: { id: body.projectId }
-    });
-    await this.metadataTagModel.save(metadata);
-    return;
-  }
+  /**
+   * 标签相关接口
+   */
 
   public async getMetadataTags(query: QueryListQuery<QueryMetadataTagListDto>): Promise<PageData<MetadataTagModel>> {
     const searchBody: FindManyOptions<MetadataTagModel> = {
@@ -203,6 +196,36 @@ export class MetadataService {
       totalCount,
       list: metadataTag
     };
+  }
+
+  public async addMetadataTag(body: AddMetadataTagDto): Promise<void> {
+    const oldMetadata = await this.metadataTagModel.findOne({
+      name: body.name,
+      project: { id: body.projectId },
+      projectId: body.projectId
+    });
+    if (oldMetadata) {
+      throw new HttpBadRequestError('标签已经存在');
+    }
+    const metadata = this.metadataTagModel.create({
+      ...body,
+      project: { id: body.projectId }
+    });
+    await this.metadataTagModel.save(metadata);
+    return;
+  }
+
+  public async updateMetadataTag(body: UpdateMetadataTagDto): Promise<void> {
+    let metadataTag = await this.metadataTagModel.findOne(body.id);
+    metadataTag = { ...metadataTag, ...body };
+    await this.metadataTagModel.save(metadataTag);
+    return;
+  }
+
+  public async deleteMetadataTag(id: number): Promise<void> {
+    const metadataTag = await this.metadataTagModel.findOne(id);
+    await this.metadataTagModel.remove(metadataTag);
+    return;
   }
 
   public async scheduleIntervalCheckMetadata(): Promise<void> {
