@@ -12,7 +12,7 @@ const sls = new ALY.SLS({
 @Injectable()
 export class SlsService {
   constructor() {}
-  public query = function(opt) {
+  public query = function(opt): Promise<any[]> {
     const newOpt = {
       projectName: 'ua-test',
       logStoreName: 'data',

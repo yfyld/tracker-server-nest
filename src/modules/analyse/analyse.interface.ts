@@ -11,7 +11,9 @@ export interface IFilterInfo {
 }
 
 export interface IIndicatorInfo {
-  trackId: string;
+  trackId?: string;
+  metadataCode: string;
+  metadataName: string;
   type: string;
   filter: IFilterInfo;
   id: number;

@@ -24,11 +24,11 @@ export function timeUtilToParam(type: string) {
   } else if (type === 'MONTH') {
     result = {
       window: '30d',
-      format: '%Y-%m'
+      format: '%Y-%m-%d'
     };
   } else if (type === 'YEAR') {
     result = {
-      window: '1y',
+      window: '365d',
       format: '%Y'
     };
   }

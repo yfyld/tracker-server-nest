@@ -39,6 +39,11 @@ export class MetadataService {
     private readonly redisService: RedisService
   ) {}
 
+  public async getMetadataByCode(code: string, projectId: number): Promise<MetadataModel> {
+    let metadata = await this.metadataModel.findOne({ code, projectId });
+    return metadata;
+  }
+
   public async getMetadataList(query: QueryListQuery<QueryMetadataListDto>): Promise<PageData<MetadataModel>> {
     let {
       skip,
