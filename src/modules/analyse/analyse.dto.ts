@@ -11,5 +11,5 @@ export class QueryEventAnalyseDataDto {
   @IsOptional()
   time: { date: string[]; type: string };
   type: string;
-  timeUlit: string;
+  timeUnit: string;
 }
