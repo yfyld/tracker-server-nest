@@ -69,7 +69,7 @@ export class AnalyseService {
         metadataMap[indicator.trackId] = true;
       }
 
-      const aaa = await this.diff(filterStr, timeParam);
+      const compare = await this.diff(filterStr, timeParam);
 
       result.list.push({
         key: metadataMap[indicator.trackId] ? indicator.trackId + Date.now() : indicator.trackId,
@@ -77,7 +77,7 @@ export class AnalyseService {
         metadataCode: metadata.code,
         metadataName: metadata.name,
         data,
-        aaa
+        compare
       });
     }
     result.dimensionValues = Object.keys(dimensionMap);
