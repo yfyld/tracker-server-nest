@@ -38,7 +38,13 @@ export class AnalyseService {
       ? `,${param.dimension} GROUP BY time, ${param.dimension} ORDER BY time`
       : 'group by time order by time';
 
-    const result = { list: [], dimension: param.dimension, dimensionValues: [], timeUnit: param.timeUnit };
+    const result = {
+      list: [],
+      dimension: param.dimension,
+      dimensionValues: [],
+      timeUnit: param.timeUnit,
+      type: param.type
+    };
 
     for (let indicator of param.indicators) {
       const indicatorFilterStr = filterToQuery(indicator.filter);
