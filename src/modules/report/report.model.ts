@@ -29,15 +29,6 @@ export class ReportModel {
   type: string;
 
   @Column()
-  dateStart: number;
-
-  @Column()
-  dateEnd: number;
-
-  @Column()
-  dateType: string;
-
-  @Column()
   model: string;
 
   @Column()
