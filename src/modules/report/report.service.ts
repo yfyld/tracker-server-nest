@@ -103,6 +103,8 @@ export class ReportService {
       where: query
     });
 
+    report.data = report.data ? JSON.parse(report.data) : {};
+
     return report;
   }
 }

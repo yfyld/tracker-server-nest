@@ -70,6 +70,7 @@ export class BoardService {
     }
 
     const [boards, totalCount] = await this.boardModel.findAndCount(searchBody);
+
     return {
       totalCount,
       list: boards
@@ -87,6 +88,8 @@ export class BoardService {
     } else {
       (boardInfo as any).layout = JSON.parse(boardInfo.layout);
     }
+
+    boardInfo.reports.forEach(item => (item.data = JSON.parse(item.data)));
 
     return boardInfo;
   }

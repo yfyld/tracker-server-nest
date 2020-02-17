@@ -31,7 +31,7 @@ export class ReportModel {
   @Column()
   model: string;
 
-  @Column()
+  @Column('text')
   data: string;
 
   @Column()
