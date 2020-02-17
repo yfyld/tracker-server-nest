@@ -30,6 +30,10 @@ export class PermissionModel {
 
   @Column()
   @ApiModelProperty()
+  type: string;
+
+  @Column()
+  @ApiModelProperty()
   status: number;
 }
 
@@ -50,9 +54,9 @@ export class RoleModel {
   @ApiModelProperty()
   status: number;
 
-  @Column('int')
+  @Column()
   @ApiModelProperty()
-  global: number;
+  type: string;
 
   @ManyToMany(type => PermissionModel)
   @JoinTable()
@@ -96,7 +100,6 @@ export class UserModel {
 export class ProjectRoleModel {
   @PrimaryGeneratedColumn()
   id: number;
-
   @OneToOne(type => UserModel)
   @JoinColumn()
   user: UserModel;
