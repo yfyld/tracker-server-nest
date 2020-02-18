@@ -34,6 +34,15 @@ export class ReportModel {
   @Column('text')
   data: string;
 
+  @Column({ type: 'bigint' })
+  dateStart: number;
+
+  @Column({ type: 'bigint' })
+  dateEnd: number;
+
+  @Column()
+  dateType: string;
+
   @Column()
   description: string;
 

@@ -117,36 +117,36 @@ export function getDynamicTime(dateStart: number, dateEnd: number, dateType: str
   } else if (dateType === 'TODAY') {
     dateStart = new Date().setHours(0, 0, 0, 0);
     dateEnd = now;
-    type = '今天';
+    dateType = '今天';
   } else if (dateType === 'WEEK') {
     dateStart = getWeekStartDate();
     dateEnd = now;
-    type = '本周';
+    dateType = '本周';
   } else if (dateType === 'MONTH') {
     dateStart = getMonthStartDate();
     dateEnd = now;
-    type = '本月';
+    dateType = '本月';
   } else if (dateType === 'LAST_MONTH') {
     dateStart = getLastMonthStartDate();
     dateEnd = getLastMonthEndDate();
-    type = '上个月';
+    dateType = '上个月';
   } else if (dateType === 'QUARTER') {
     dateStart = getQuarterStartDate();
     dateEnd = now;
-    type = '本季度';
+    dateType = '本季度';
   } else if (dateType === 'LAST_QUARTER') {
     dateStart = getLastQuarterStartDate();
     dateEnd = getQuarterStartDate() - 1;
-    type = '上季度';
+    dateType = '上季度';
   } else if (dateType === 'YEAR') {
     dateStart = getYearStartDate();
     dateEnd = now;
-    type = '今年';
+    dateType = '今年';
   } else if (dateType === 'LAST_YEAR') {
     dateStart = getLastYearStartDate();
     dateEnd = getYearStartDate() - 1;
-    type = '去年';
+    dateType = '去年';
   }
 
-  return { dateStart, dateEnd, type };
+  return { dateStart, dateEnd, dateType };
 }

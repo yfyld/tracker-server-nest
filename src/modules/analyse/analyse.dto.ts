@@ -9,7 +9,9 @@ export class QueryEventAnalyseDataDto {
   @IsOptional()
   dimension: string;
   @IsOptional()
-  time: { date: string[]; type: string };
+  dateStart: number;
+  dateEnd: number;
+  dateType: string;
   type: string;
   timeUnit: string;
 }

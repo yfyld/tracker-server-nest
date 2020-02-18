@@ -1,3 +1,4 @@
+import { IResponseId } from './../../interfaces/request.interface';
 import {
   QueryReportListDto,
   ReportDto,
@@ -27,7 +28,7 @@ export class ReportService {
     private readonly boardModel: Repository<BoardModel>
   ) {}
 
-  public async addReport(body: AddReportDto, user: UserModel): Promise<void> {
+  public async addReport(body: AddReportDto, user: UserModel): Promise<IResponseId> {
     const reportInfo = {
       ...body,
       board: null,
@@ -38,7 +39,7 @@ export class ReportService {
     const report = this.reportModel.create(reportInfo);
     await this.reportModel.save(report);
 
-    return;
+    return { id: report.id };
   }
 
   public async getReports(query: QueryListQuery<QueryReportListDto>): Promise<PageData<ReportModel>> {
@@ -74,20 +75,10 @@ export class ReportService {
   }
 
   public async updateReport(body: UpdateReportDto): Promise<void> {
-    const updateBody: any = {};
-    if (body.actionType === 'LEVEL') {
-      updateBody.level = body.level;
-    } else if (body.actionType === 'STATUS') {
-      updateBody.status = body.status;
-    } else {
-      updateBody.guarder = { id: body.guarderId };
-    }
-    await this.reportModel
-      .createQueryBuilder()
-      .update()
-      .set(updateBody)
-      .where('id IN (:...reportIds)', { reportIds: body.reportIds })
-      .execute();
+    body.data = JSON.stringify(body.data);
+    const report = await this.reportModel.findOne(body.id);
+    const newReport = { ...report, ...body };
+    await this.reportModel.save(newReport);
     return;
   }
 
@@ -104,7 +95,8 @@ export class ReportService {
     });
 
     report.data = report.data ? JSON.parse(report.data) : {};
-
+    // report.dateEnd = Number(report.dateEnd);
+    // report.dateStart = Number(report.dateStart);
     return report;
   }
 }

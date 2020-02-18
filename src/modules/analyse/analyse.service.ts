@@ -25,11 +25,7 @@ export class AnalyseService {
   public async eventAnalyse(param: QueryEventAnalyseDataDto): Promise<any> {
     const globalFilterStr = filterToQuery(param.filter);
 
-    const timeParam = getDynamicTime(
-      new Date(param.time.date[0] || '').getTime(),
-      new Date(param.time.date[1] || '').getTime(),
-      param.time.type
-    );
+    const timeParam = getDynamicTime(param.dateStart, param.dateEnd, param.dateType);
 
     const dimensionMap = {};
     const metadataMap = {};

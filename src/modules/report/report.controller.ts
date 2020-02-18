@@ -1,3 +1,4 @@
+import { IResponseId } from './../../interfaces/request.interface';
 import { ParsePageQueryIntPipe } from '../../pipes/parse-page-query-int.pipe';
 
 import { QueryListQuery } from '@/interfaces/request.interface';
@@ -38,7 +39,7 @@ export class ReportController {
   @HttpProcessor.handle('新增报告单')
   @Post('/')
   @UseGuards(JwtAuthGuard)
-  addReport(@Body() body: AddReportDto, @Auth() user): Promise<void> {
+  addReport(@Body() body: AddReportDto, @Auth() user): Promise<IResponseId> {
     return this.reportService.addReport(body, user);
   }
 
@@ -59,10 +60,17 @@ export class ReportController {
     return this.reportService.getReportInfo(query);
   }
 
+  @HttpProcessor.handle('更新报告单')
+  @Put('/')
+  @UseGuards(JwtAuthGuard)
+  updateReport(@Body() body: UpdateReportDto): Promise<void> {
+    return this.reportService.updateReport(body);
+  }
+
   @HttpProcessor.handle('删除报告单')
   @Delete('/:reportId')
   @UseGuards(JwtAuthGuard)
-  updateReport(@Param('reportId') reportId: number): Promise<void> {
+  deleteReport(@Param('reportId') reportId: number): Promise<void> {
     return this.reportService.deleteReport(reportId);
   }
 

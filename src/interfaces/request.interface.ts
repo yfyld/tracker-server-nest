@@ -7,6 +7,10 @@ export interface ListData<T> {
   list: T[];
 }
 
+export interface IResponseId {
+  id: number;
+}
+
 export type PageQuery<T> = {
   page: number;
   pageSize: number;

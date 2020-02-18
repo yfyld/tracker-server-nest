@@ -63,13 +63,20 @@ export class QueryReportListDto {
 }
 
 export class UpdateReportDto {
-  guarderId?: number;
-  level?: number;
-  status?: number;
+  id: number;
+  @IsString()
+  name: string;
+  @IsOptional()
+  @IsString()
+  description?: string;
+  @IsOptional()
+  boardId?: number;
+  @IsString()
+  type: string;
   @IsDefined()
-  reportIds: string[];
-  @IsDefined()
-  actionType: string;
+  data: any;
+  @IsNumber()
+  projectId: number;
 }
 
 export class SourceCodeDto {
