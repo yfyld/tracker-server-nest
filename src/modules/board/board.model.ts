@@ -21,7 +21,7 @@ import { ProjectModel } from '../project/project.model';
 @Entity()
 export class BoardModel {
   @PrimaryGeneratedColumn()
-  id: string;
+  id: number;
 
   @Column()
   name: string;

@@ -8,9 +8,14 @@ export class BoardDto {
   @IsDefined()
   @IsNotEmpty({ message: '项目名称不能为空' })
   name: string;
-  id: string;
+  id: number;
 
   project: ProjectModel | { id: number };
+}
+
+export class DeleteBoardDto {
+  id: number;
+  projectId: number;
 }
 
 export class QueryBoardListDto {
@@ -62,7 +67,7 @@ export class UpdateBoardDto {
   @IsOptional()
   description?: string;
   @IsDefined()
-  id: string;
+  id: number;
   @IsDefined()
   projectId: number;
   @IsOptional()

@@ -10,12 +10,25 @@ import {
   BoardInfoDto,
   UpdateBoardDto,
   AddReportToBoardDto,
-  QueryMyBoardListDto
+  QueryMyBoardListDto,
+  DeleteBoardDto
 } from './board.dto';
 import { BoardService } from './board.service';
 import { ApiOperation, ApiUseTags } from '@nestjs/swagger';
 import { MULTER_OPTIONS, BASE_URL } from '../../app.config';
-import { Controller, Post, UseInterceptors, UploadedFile, UseGuards, Body, Get, Query, Req, Put } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  UseInterceptors,
+  UploadedFile,
+  UseGuards,
+  Body,
+  Get,
+  Query,
+  Req,
+  Put,
+  Delete
+} from '@nestjs/common';
 
 import { JwtAuthGuard } from '@/guards/auth.guard';
 import { Auth } from '@/decotators/user.decorators';
@@ -39,6 +52,13 @@ export class BoardController {
   @UseGuards(JwtAuthGuard)
   async updateBoard(@Body() body: UpdateBoardDto) {
     return this.boardService.updateBoard(body);
+  }
+
+  @HttpProcessor.handle('删除看板')
+  @Delete('/')
+  @UseGuards(JwtAuthGuard)
+  async deleteBoard(@Query() query: DeleteBoardDto) {
+    return this.boardService.deleteBoard(query);
   }
 
   @HttpProcessor.handle('看板列表')

@@ -1,3 +1,4 @@
+import { IResponseId } from './../../interfaces/request.interface';
 import { ReportModel } from './../report/report.model';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, FindManyOptions, In, Like } from 'typeorm';
@@ -10,7 +11,8 @@ import {
   UpdateBoardDto,
   AddReportToBoardDto,
   RemoveReportBoardDto,
-  QueryMyBoardListDto
+  QueryMyBoardListDto,
+  DeleteBoardDto
 } from './board.dto';
 import { Injectable } from '@nestjs/common';
 import { UserModel } from '../user/user.model';
@@ -28,14 +30,14 @@ export class BoardService {
   /**
    * addBoard
    */
-  public async addBoard(body: AddBoardDto, user: UserModel): Promise<void> {
+  public async addBoard(body: AddBoardDto, user: UserModel): Promise<IResponseId> {
     const board = this.boardModel.create({
       creator: user,
       ...body,
       layout: JSON.stringify(body.layout)
     });
     await this.boardModel.save(board);
-    return;
+    return { id: board.id };
   }
 
   public async updateBoard(body: UpdateBoardDto): Promise<void> {
@@ -47,6 +49,17 @@ export class BoardService {
     });
     board = { ...board, ...body, layout: JSON.stringify(body.layout) };
     await this.boardModel.save(board);
+    return;
+  }
+
+  public async deleteBoard(body: DeleteBoardDto): Promise<void> {
+    let board = await this.boardModel.findOne({
+      where: {
+        id: body.id,
+        projectId: body.projectId
+      }
+    });
+    await this.boardModel.remove(board);
     return;
   }
 
