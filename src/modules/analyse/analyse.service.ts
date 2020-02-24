@@ -22,6 +22,82 @@ export class AnalyseService {
     return data[0];
   }
 
+
+  private getGroup(dimension:string,hasTime:boolean) {
+
+    if(dimension&&!hasTime){
+      return `,${dimension}  GROUP BY time ${dimension}`
+    }else if(dimension&&hasTime){
+      return `,${dimension} GROUP BY time, ${dimension} ORDER BY time`
+    }else if(hasTime){
+      return `group by time order by time`
+    }else{
+      return ``
+    }
+
+  }
+
+
+  public async funnelAnalyse(param:any):Promise<any>{
+    const globalFilterStr = filterToQuery(param.filter);
+    const timeParam = getDynamicTime(param.dateStart, param.dateEnd, param.dateType);
+    const dimensionMap = {};
+    const metadataMap = {};
+    const result = {
+      list: [],
+      dimension: param.dimension,
+      dimensionValues: [],
+      type: param.type
+    };
+
+    const group = param.dimension
+      ? `,${param.dimension} GROUP BY time, ${param.dimension} ORDER BY time`
+      : 'group by time order by time';
+
+    for (let indicator of param.indicators) {
+      const indicatorFilterStr = filterToQuery(indicator.filter);
+
+      const metadataStr = indicator.metadataCode ? `and trackId:${indicator.trackId}` : '';
+      const filterStr = `${globalFilterStr} ${indicatorFilterStr} projectId:${param.projectId} ${metadataStr} `;
+      // tslint:disable-next-line: max-line-length
+      const query = `${filterStr} | select date_trunc('${param.timeUnit.toLowerCase()}', trackTime) as time , count(1) as pv, approx_distinct(utoken) as uv ${group} limit 1000`;
+
+      const metadata = indicator.metadataCode
+        ? await this.metadataService.getMetadataByCode(indicator.metadataCode, param.projectId)
+        : { code: '', name: '所有事件' };
+
+      const data = await this.slsService.query({
+        query,
+        from: Math.floor(timeParam.dateStart / 1000),
+        to: Math.floor(timeParam.dateEnd / 1000)
+      });
+      if (param.dimension) {
+        data.forEach(item => {
+          dimensionMap[item[param.dimension]] = true;
+        });
+      }
+
+      if (typeof metadataMap[indicator.trackId] === 'undefined') {
+        metadataMap[indicator.trackId] = false;
+      } else {
+        metadataMap[indicator.trackId] = true;
+      }
+
+
+
+      result.list.push({
+        key: metadataMap[indicator.trackId] ? indicator.trackId + Date.now() : indicator.trackId,
+        metadataCode: metadata.code,
+        metadataName: metadata.name,
+        data
+      });
+    }
+
+    return result;
+
+  }
+
+
   public async eventAnalyse(param: QueryEventAnalyseDataDto): Promise<any> {
     const globalFilterStr = filterToQuery(param.filter);
 
