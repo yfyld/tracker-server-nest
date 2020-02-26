@@ -8,7 +8,12 @@ import { MetadataService } from '../metadata/metadata.service';
 @Injectable()
 export class AnalyseService {
   constructor(private readonly slsService: SlsService, private readonly metadataService: MetadataService) {}
-
+  /**
+   *
+   * @param 过滤条件
+   * @param 时间
+   * 环比同比
+   */
   public async diff(filers, timeParam): Promise<any> {
     const window = Math.floor((timeParam.dateEnd - timeParam.dateStart) / 1000);
     // tslint:disable-next-line:max-line-length
@@ -22,23 +27,42 @@ export class AnalyseService {
     return data[0];
   }
 
-
-  private getGroup(dimension:string,hasTime:boolean) {
-
-    if(dimension&&!hasTime){
-      return `,${dimension}  GROUP BY time ${dimension}`
-    }else if(dimension&&hasTime){
-      return `,${dimension} GROUP BY time, ${dimension} ORDER BY time`
-    }else if(hasTime){
-      return `group by time order by time`
-    }else{
-      return ``
+  private getGroup(dimension: string, hasTime: boolean) {
+    if (dimension && !hasTime) {
+      return `,${dimension}  GROUP BY time ${dimension}`;
+    } else if (dimension && hasTime) {
+      return `,${dimension} GROUP BY time, ${dimension} ORDER BY time`;
+    } else if (hasTime) {
+      return `group by time order by time`;
+    } else {
+      return ``;
     }
-
   }
 
+  private getSelect(indicatorType: string, showType: string, timeUnit = 'day', demension = '') {
+    const key = [];
+    let hasTime = false;
+    const isTrend = showType === 'LINE' || showType === 'BAR' || showType === 'TABLE';
+    if (indicatorType === 'PV' || indicatorType === 'DPV') {
+      key.push(`count(1) as count`);
+    } else if (indicatorType === `UV` || indicatorType === 'DUV') {
+      key.push(`approx_distinct(utoken) as count`);
+    } else if (indicatorType === 'APV') {
+      key.push(`count(1) / approx_distinct(utoken) as count`);
+    }
 
-  public async funnelAnalyse(param:any):Promise<any>{
+    if (indicatorType === 'DUV' || indicatorType === 'DPV') {
+      key.push(`date_format(trackTime,'%H') as time`);
+      hasTime = true;
+    } else if (isTrend) {
+      key.push(`date_trunc('${timeUnit.toLowerCase()}', trackTime) as time`);
+      hasTime = true;
+    }
+    const group = this.getGroup(demension, hasTime);
+    return ' select ' + key.join(',') + group + ' limit 1000';
+  }
+
+  public async funnelAnalyse(param: any): Promise<any> {
     const globalFilterStr = filterToQuery(param.filter);
     const timeParam = getDynamicTime(param.dateStart, param.dateEnd, param.dateType);
     const dimensionMap = {};
@@ -50,17 +74,14 @@ export class AnalyseService {
       type: param.type
     };
 
-    const group = param.dimension
-      ? `,${param.dimension} GROUP BY time, ${param.dimension} ORDER BY time`
-      : 'group by time order by time';
+    const select = this.getSelect(param.indicatorType, param.type, 'day');
 
     for (let indicator of param.indicators) {
       const indicatorFilterStr = filterToQuery(indicator.filter);
-
       const metadataStr = indicator.metadataCode ? `and trackId:${indicator.trackId}` : '';
       const filterStr = `${globalFilterStr} ${indicatorFilterStr} projectId:${param.projectId} ${metadataStr} `;
       // tslint:disable-next-line: max-line-length
-      const query = `${filterStr} | select date_trunc('${param.timeUnit.toLowerCase()}', trackTime) as time , count(1) as pv, approx_distinct(utoken) as uv ${group} limit 1000`;
+      const query = `${filterStr} |${select}`;
 
       const metadata = indicator.metadataCode
         ? await this.metadataService.getMetadataByCode(indicator.metadataCode, param.projectId)
@@ -76,17 +97,17 @@ export class AnalyseService {
           dimensionMap[item[param.dimension]] = true;
         });
       }
-
-      if (typeof metadataMap[indicator.trackId] === 'undefined') {
-        metadataMap[indicator.trackId] = false;
+      //生成唯一key
+      if (typeof metadataMap[indicator.metadataCode] === 'undefined') {
+        metadataMap[indicator.metadataCode] = 0;
       } else {
-        metadataMap[indicator.trackId] = true;
+        metadataMap[indicator.metadataCode]++;
       }
 
-
-
       result.list.push({
-        key: metadataMap[indicator.trackId] ? indicator.trackId + Date.now() : indicator.trackId,
+        key: metadataMap[indicator.metadataCode]
+          ? indicator.metadataCode
+          : indicator.metadataCode + '__' + metadataMap[indicator.metadataCode],
         metadataCode: metadata.code,
         metadataName: metadata.name,
         data
@@ -94,9 +115,7 @@ export class AnalyseService {
     }
 
     return result;
-
   }
-
 
   public async eventAnalyse(param: QueryEventAnalyseDataDto): Promise<any> {
     const globalFilterStr = filterToQuery(param.filter);

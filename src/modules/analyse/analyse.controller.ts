@@ -8,7 +8,7 @@ import { existsSync, mkdirSync } from 'fs';
 import { extname } from 'path';
 import { JwtAuthGuard } from '@/guards/auth.guard';
 import { AnalyseService } from './analyse.service';
-import { QueryEventAnalyseDataDto } from './analyse.dto';
+import { QueryEventAnalyseDataDto, QueryFunnelAnalyseDataDto } from './analyse.dto';
 
 @ApiUseTags('分析')
 @Controller('analyse')
@@ -19,5 +19,11 @@ export class AnalyseController {
   @Post('/event')
   eventAnalyse(@Body() body: QueryEventAnalyseDataDto): Promise<any> {
     return this.analyseService.eventAnalyse(body);
+  }
+
+  @HttpProcessor.handle('funnel')
+  @Post('/funnel')
+  funnelAnalyse(@Body() body: QueryFunnelAnalyseDataDto): Promise<any> {
+    return this.analyseService.funnelAnalyse(body);
   }
 }

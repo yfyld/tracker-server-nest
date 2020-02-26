@@ -14,7 +14,7 @@ export interface IIndicatorInfo {
   trackId?: string;
   metadataCode: string;
   metadataName: string;
-  type: string;
+  type?: string;
   filter: IFilterInfo;
   id: number;
 }

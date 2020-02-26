@@ -15,3 +15,21 @@ export class QueryEventAnalyseDataDto {
   type: string;
   timeUnit: string;
 }
+
+export class QueryFunnelAnalyseDataDto {
+  projectId: number;
+  indicators: IIndicatorInfo[];
+  @IsOptional()
+  filter: IFilterInfo;
+  @IsOptional()
+  dimension: string;
+  @IsOptional()
+  dateStart: number;
+  dateEnd: number;
+  dateType: string;
+  indicatorType: string;
+  type: string;
+  @IsOptional()
+  timeUnit: string;
+  trend: boolean;
+}
