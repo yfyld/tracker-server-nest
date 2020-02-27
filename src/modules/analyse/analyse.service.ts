@@ -33,7 +33,7 @@ export class AnalyseService {
     } else if (dimension && hasTime) {
       return `,${dimension} GROUP BY time, ${dimension} ORDER BY time`;
     } else if (hasTime) {
-      return `group by time order by time`;
+      return ` group by time order by time`;
     } else {
       return ``;
     }
@@ -62,6 +62,16 @@ export class AnalyseService {
     return ' select ' + key.join(',') + group + ' limit 1000';
   }
 
+  private getConversionRate(list: { count: number }[]) {
+    if (list.length === 1) {
+      return 100;
+    } else if (Number(list[0].count) === 0 || Number(list[list.length - 1].count) === 0) {
+      return 0;
+    } else {
+      return Math.floor((Number(list[list.length - 1].count) / Number(list[0].count)) * 100);
+    }
+  }
+
   public async funnelAnalyse(param: any): Promise<any> {
     const globalFilterStr = filterToQuery(param.filter);
     const timeParam = getDynamicTime(param.dateStart, param.dateEnd, param.dateType);
@@ -71,7 +81,8 @@ export class AnalyseService {
       list: [],
       dimension: param.dimension,
       dimensionValues: [],
-      type: param.type
+      type: param.type,
+      conversionRate: 0
     };
 
     const select = this.getSelect(param.indicatorType, param.type, 'day');
@@ -106,13 +117,16 @@ export class AnalyseService {
 
       result.list.push({
         key: metadataMap[indicator.metadataCode]
-          ? indicator.metadataCode
-          : indicator.metadataCode + '__' + metadataMap[indicator.metadataCode],
+          ? indicator.metadataCode + '__' + metadataMap[indicator.metadataCode]
+          : indicator.metadataCode,
         metadataCode: metadata.code,
         metadataName: metadata.name,
+        customName: indicator.customName,
+        count: data.reduce((total, item) => (total += Number(item.count)), 0),
         data
       });
     }
+    result.conversionRate = this.getConversionRate(result.list);
 
     return result;
   }
