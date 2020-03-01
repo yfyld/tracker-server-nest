@@ -1,3 +1,9 @@
+import {
+  IFunnelQueryDataItem,
+  IFunnelData,
+  IAnalyseQueryDataItem,
+  IFunnelDataByDimensionItem
+} from './analyse.interface';
 import { SlsService } from '@/providers/sls/sls.service';
 import { Injectable } from '@nestjs/common';
 import { QueryEventAnalyseDataDto } from './analyse.dto';
@@ -27,9 +33,14 @@ export class AnalyseService {
     return data[0];
   }
 
+  /**
+   * 生成sql group order
+   * @param dimension
+   * @param hasTime
+   */
   private getGroup(dimension: string, hasTime: boolean) {
     if (dimension && !hasTime) {
-      return `,${dimension}  GROUP BY time ${dimension}`;
+      return `,${dimension}  GROUP BY ${dimension}`;
     } else if (dimension && hasTime) {
       return `,${dimension} GROUP BY time, ${dimension} ORDER BY time`;
     } else if (hasTime) {
@@ -39,10 +50,17 @@ export class AnalyseService {
     }
   }
 
+  /**
+   * 生成sql
+   * @param indicatorType
+   * @param showType
+   * @param timeUnit
+   * @param demension
+   */
   private getSelect(indicatorType: string, showType: string, timeUnit = 'day', demension = '') {
     const key = [];
     let hasTime = false;
-    const isTrend = showType === 'LINE' || showType === 'BAR' || showType === 'TABLE';
+    const isTrend = showType === 'LINE' || showType === 'BAR' || showType === 'TABLE' || showType === 'LIST';
     if (indicatorType === 'PV' || indicatorType === 'DPV') {
       key.push(`count(1) as count`);
     } else if (indicatorType === `UV` || indicatorType === 'DUV') {
@@ -62,30 +80,213 @@ export class AnalyseService {
     return ' select ' + key.join(',') + group + ' limit 1000';
   }
 
-  private getConversionRate(list: { count: number }[]) {
-    if (list.length === 1) {
-      return 100;
-    } else if (Number(list[0].count) === 0 || Number(list[list.length - 1].count) === 0) {
-      return 0;
+  private computedRate(n: number, m: number) {
+    if (!n) {
+      return null;
     } else {
-      return Math.floor((Number(list[list.length - 1].count) / Number(list[0].count)) * 100);
+      return Math.floor((m / n) * 100);
     }
   }
 
-  public async funnelAnalyse(param: any): Promise<any> {
+  private computedConversionRateMap(steps, stepLength: number, topKey: string, rootKey: string) {
+    const conversionRateMap = steps.reduce(
+      (total, step) => {
+        total[step.key] = step.conversionRate || 0;
+        return total;
+      },
+      { _ALL: 0 }
+    );
+    conversionRateMap._ALL =
+      typeof conversionRateMap[topKey] !== 'undefined' && typeof conversionRateMap[rootKey] !== 'undefined'
+        ? this.computedRate(steps[0].count, steps[stepLength - 1].count)
+        : 0;
+
+    return conversionRateMap;
+  }
+
+  private getFunnelListData(list: IFunnelQueryDataItem[], dimension?: string): IFunnelDataByDimensionItem[] {
+    //少于2step 和第一个step 为0 return []
+    if (list.length <= 1 || list[0].data.length === 0 || list[0].count === 0) {
+      return [];
+    }
+
+    //跟step 顶部step
+    const stepLength = list.length;
+    const rootStepData = list[0];
+    const topStepData = list[stepLength - 1];
+
+    //dateMap.dimension.time
+    const dataMap: {
+      [prop: string]: {
+        [prop: string]: {
+          count: number;
+          key: string;
+          metadataName: string;
+          metadataCode: string;
+          customName?: string;
+        }[];
+      };
+    } = {};
+
+    const dimensionCountMap = {};
+    const timeCountMap = {};
+
+    const allDataMap: {
+      [prop: string]: {
+        count: number;
+        conversionRate: number;
+        key: string;
+        metadataName: string;
+        metadataCode: string;
+        customName: string;
+      }[];
+    } = { '': [] };
+
+    let oldCount = null;
+    list.forEach(item => {
+      const conversionRate = this.computedRate(oldCount, item.count);
+      oldCount = item.count;
+      allDataMap[''].push({
+        count: Number(item.count),
+        conversionRate,
+        key: item.key,
+        metadataName: item.metadataName,
+        metadataCode: item.metadataCode,
+        customName: item.customName
+      });
+
+      item.data.forEach(val => {
+        if (val.time) {
+          if (!timeCountMap[val.time]) {
+            timeCountMap[val.time] = {};
+          }
+          if (!timeCountMap[val.time][item.key]) {
+            timeCountMap[val.time][item.key] = 0;
+          }
+
+          timeCountMap[val.time][item.key] += Number(val.count);
+        }
+        if (dimension) {
+          if (!dimensionCountMap[val[dimension]]) {
+            dimensionCountMap[val[dimension]] = {};
+          }
+          if (!dimensionCountMap[val[dimension]][item.key]) {
+            dimensionCountMap[val[dimension]][item.key] = 0;
+          }
+          dimensionCountMap[val[dimension]][item.key] += Number(val.count);
+        }
+
+        if (val.time && dimension) {
+          if (!dataMap[val[dimension]]) {
+            dataMap[val[dimension]] = {};
+          }
+          if (!dataMap[val[dimension]][val.time]) {
+            dataMap[val[dimension]][val.time] = [];
+          }
+          dataMap[val[dimension]][val.time].push({
+            count: Number(val.count),
+            key: item.key,
+            metadataName: item.metadataName,
+            metadataCode: item.metadataCode,
+            customName: item.customName
+          });
+        }
+      });
+    });
+
+    Object.entries(dimensionCountMap).forEach(([key, value]) => {
+      let oldCount = null;
+      allDataMap[key] = Object.entries(value).map(([key2, value2]) => {
+        const item = list.find(item => item.key === key2);
+        const conversionRate = this.computedRate(oldCount, value2);
+        oldCount = value2;
+        return {
+          count: Number(value2),
+          key: item.key,
+          conversionRate,
+          metadataName: item.metadataName,
+          metadataCode: item.metadataCode,
+          customName: item.customName
+        };
+      });
+    });
+
+    const result: IFunnelDataByDimensionItem[] = Object.entries(dataMap).map(([key, value]) => {
+      return {
+        dimension: key,
+        allData: allDataMap[key],
+        conversionRateMap: this.computedConversionRateMap(
+          allDataMap[key],
+          stepLength,
+          topStepData.key,
+          rootStepData.key
+        ),
+        data: Object.entries(value)
+          .map(([key2, value2]) => {
+            let oldCount = null;
+            const steps = value2.map(item => {
+              const conversionRate = this.computedRate(oldCount, item.count);
+              oldCount = item.count;
+              return { ...item, conversionRate };
+            });
+            return {
+              time: key2,
+              conversionRateMap: this.computedConversionRateMap(steps, stepLength, topStepData.key, rootStepData.key),
+              steps
+            };
+          })
+          .sort((n, m) => (n.time > m.time ? 1 : -1))
+      };
+    });
+
+    result.push({
+      dimension: '总值',
+      allData: allDataMap[''],
+      conversionRateMap: this.computedConversionRateMap(allDataMap[''], stepLength, topStepData.key, rootStepData.key),
+      data: Object.entries(timeCountMap)
+        .map(([key, value]) => {
+          let oldcount = 0;
+          const steps = Object.entries(value).map(([key2, value2]) => {
+            const item = list.find(item => item.key === key2);
+            const conversionRate = this.computedRate(oldcount, value2);
+            oldcount = value2;
+            return {
+              key: key2,
+              count: Number(value2),
+              conversionRate,
+
+              metadataName: item.metadataName,
+              metadataCode: item.metadataCode,
+              customName: item.customName
+            };
+          });
+
+          return {
+            time: key,
+            conversionRateMap: this.computedConversionRateMap(steps, stepLength, topStepData.key, rootStepData.key),
+            steps
+          };
+        })
+        .sort((n, m) => (n.time > m.time ? 1 : -1))
+    });
+    return result.reverse();
+  }
+
+  public async funnelAnalyse(param: any): Promise<IFunnelData> {
     const globalFilterStr = filterToQuery(param.filter);
     const timeParam = getDynamicTime(param.dateStart, param.dateEnd, param.dateType);
     const dimensionMap = {};
     const metadataMap = {};
-    const result = {
-      list: [],
+    const queryData: IFunnelQueryDataItem[] = [];
+    const result: IFunnelData = {
       dimension: param.dimension,
       dimensionValues: [],
       type: param.type,
-      conversionRate: 0
+      conversionRate: 0,
+      list: []
     };
 
-    const select = this.getSelect(param.indicatorType, param.type, 'day');
+    const select = this.getSelect(param.indicatorType, param.type, 'day', param.dimension);
 
     for (let indicator of param.indicators) {
       const indicatorFilterStr = filterToQuery(indicator.filter);
@@ -96,9 +297,9 @@ export class AnalyseService {
 
       const metadata = indicator.metadataCode
         ? await this.metadataService.getMetadataByCode(indicator.metadataCode, param.projectId)
-        : { code: '', name: '所有事件' };
+        : { code: '_ALL_METADATA', name: '所有事件' };
 
-      const data = await this.slsService.query({
+      const data = await this.slsService.query<IAnalyseQueryDataItem>({
         query,
         from: Math.floor(timeParam.dateStart / 1000),
         to: Math.floor(timeParam.dateEnd / 1000)
@@ -109,16 +310,14 @@ export class AnalyseService {
         });
       }
       //生成唯一key
-      if (typeof metadataMap[indicator.metadataCode] === 'undefined') {
-        metadataMap[indicator.metadataCode] = 0;
+      if (typeof metadataMap[metadata.code] === 'undefined') {
+        metadataMap[metadata.code] = 0;
       } else {
-        metadataMap[indicator.metadataCode]++;
+        metadataMap[metadata.code]++;
       }
 
-      result.list.push({
-        key: metadataMap[indicator.metadataCode]
-          ? indicator.metadataCode + '__' + metadataMap[indicator.metadataCode]
-          : indicator.metadataCode,
+      queryData.push({
+        key: metadataMap[metadata.code] ? metadata.code + '__' + metadataMap[metadata.code] : metadata.code,
         metadataCode: metadata.code,
         metadataName: metadata.name,
         customName: indicator.customName,
@@ -126,7 +325,11 @@ export class AnalyseService {
         data
       });
     }
-    result.conversionRate = this.getConversionRate(result.list);
+    if (queryData.length > 1) {
+      result.conversionRate = this.computedRate(queryData[0].count, queryData[queryData.length - 1].count);
+    }
+
+    result.list = this.getFunnelListData(queryData, result.dimension);
 
     return result;
   }
