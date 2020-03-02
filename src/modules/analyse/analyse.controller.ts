@@ -1,3 +1,4 @@
+import { IFunnelData } from './analyse.interface';
 import { ApiOperation, ApiUseTags } from '@nestjs/swagger';
 import { MULTER_OPTIONS, BASE_URL } from '../../app.config';
 import { Controller, Post, UseInterceptors, UploadedFile, UseGuards, Get, Body } from '@nestjs/common';
@@ -23,7 +24,7 @@ export class AnalyseController {
 
   @HttpProcessor.handle('funnel')
   @Post('/funnel')
-  funnelAnalyse(@Body() body: QueryFunnelAnalyseDataDto): Promise<any> {
+  funnelAnalyse(@Body() body: QueryFunnelAnalyseDataDto): Promise<IFunnelData> {
     return this.analyseService.funnelAnalyse(body);
   }
 }

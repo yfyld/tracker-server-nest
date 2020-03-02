@@ -2,11 +2,14 @@ import {
   IFunnelQueryDataItem,
   IFunnelData,
   IAnalyseQueryDataItem,
-  IFunnelDataByDimensionItem
+  IFunnelDataByDimensionItem,
+  IAnalyseEventData,
+  IAnalyseEventDataListDataItem,
+  ICompare
 } from './analyse.interface';
 import { SlsService } from '@/providers/sls/sls.service';
 import { Injectable } from '@nestjs/common';
-import { QueryEventAnalyseDataDto } from './analyse.dto';
+import { QueryEventAnalyseDataDto, QueryFunnelAnalyseDataDto } from './analyse.dto';
 import { filterToQuery } from './analyse.util';
 import { getDynamicTime } from '@/utils/date';
 import { MetadataService } from '../metadata/metadata.service';
@@ -20,16 +23,19 @@ export class AnalyseService {
    * @param 时间
    * 环比同比
    */
-  public async diff(filers, timeParam): Promise<any> {
+  public async diff(filers, timeParam): Promise<ICompare> {
     const window = Math.floor((timeParam.dateEnd - timeParam.dateStart) / 1000);
     // tslint:disable-next-line:max-line-length
     const query = `${filers}|select qoq[1] as qoqCurrent, qoq[2] as qoqPrev, qoq[3] as qoqPercentage, yoy[1] as yoyCurrent, yoy[2] as yoyPrev, yoy[3] as yoyPercentage from(select  compare( pv , ${window}) as qoq ,compare( pv , ${window +
       86400 * 365}) as yoy  from (select count(1) as pv  from log ))`;
-    const data = await this.slsService.query({
+    const data = await this.slsService.query<ICompare>({
       query,
       from: Math.floor(timeParam.dateStart / 1000),
       to: Math.floor(timeParam.dateEnd / 1000)
     });
+    for (let i in data[0]) {
+      data[0][i] = Number(data[0][i]);
+    }
     return data[0];
   }
 
@@ -57,7 +63,7 @@ export class AnalyseService {
    * @param timeUnit
    * @param demension
    */
-  private getSelect(indicatorType: string, showType: string, timeUnit = 'day', demension = '') {
+  private getFunnelSelect(indicatorType: string, showType: string, timeUnit = 'day', demension = '') {
     const key = [];
     let hasTime = false;
     const isTrend = showType === 'LINE' || showType === 'BAR' || showType === 'TABLE' || showType === 'LIST';
@@ -80,14 +86,26 @@ export class AnalyseService {
     return ' select ' + key.join(',') + group + ' limit 1000';
   }
 
-  private computedRate(n: number, m: number) {
-    if (!n) {
+  /**
+   * 计算百分比
+   * @param all
+   * @param part
+   */
+  private computedRate(all: number, part: number) {
+    if (!all) {
       return null;
     } else {
-      return Math.floor((m / n) * 100);
+      return Math.floor((part / all) * 100);
     }
   }
 
+  /**
+   * 计算总转化率
+   * @param steps
+   * @param stepLength
+   * @param topKey
+   * @param rootKey
+   */
   private computedConversionRateMap(steps, stepLength: number, topKey: string, rootKey: string) {
     const conversionRateMap = steps.reduce(
       (total, step) => {
@@ -104,6 +122,11 @@ export class AnalyseService {
     return conversionRateMap;
   }
 
+  /**
+   * queryList 转 deimension>time>steps 格式
+   * @param list
+   * @param dimension
+   */
   private getFunnelListData(list: IFunnelQueryDataItem[], dimension?: string): IFunnelDataByDimensionItem[] {
     //少于2step 和第一个step 为0 return []
     if (list.length <= 1 || list[0].data.length === 0 || list[0].count === 0) {
@@ -240,7 +263,7 @@ export class AnalyseService {
     });
 
     result.push({
-      dimension: '总值',
+      dimension: '总体',
       allData: allDataMap[''],
       conversionRateMap: this.computedConversionRateMap(allDataMap[''], stepLength, topStepData.key, rootStepData.key),
       data: Object.entries(timeCountMap)
@@ -272,12 +295,22 @@ export class AnalyseService {
     return result.reverse();
   }
 
-  public async funnelAnalyse(param: any): Promise<IFunnelData> {
+  /**
+   * 漏斗分析service
+   * @param QueryFunnelAnalyseDataDto
+   */
+  public async funnelAnalyse(param: QueryFunnelAnalyseDataDto): Promise<IFunnelData> {
+    //全家过滤
     const globalFilterStr = filterToQuery(param.filter);
+
     const timeParam = getDynamicTime(param.dateStart, param.dateEnd, param.dateType);
+
     const dimensionMap = {};
     const metadataMap = {};
+    //查询结果
     const queryData: IFunnelQueryDataItem[] = [];
+
+    //返回结果初始化
     const result: IFunnelData = {
       dimension: param.dimension,
       dimensionValues: [],
@@ -286,18 +319,19 @@ export class AnalyseService {
       list: []
     };
 
-    const select = this.getSelect(param.indicatorType, param.type, 'day', param.dimension);
+    const select = this.getFunnelSelect(param.indicatorType, param.type, 'day', param.dimension);
 
     for (let indicator of param.indicators) {
       const indicatorFilterStr = filterToQuery(indicator.filter);
-      const metadataStr = indicator.metadataCode ? `and trackId:${indicator.trackId}` : '';
+      const metadataStr = indicator.metadataCode !== '_ALL_METADATA' ? `and trackId:${indicator.metadataCode}` : '';
       const filterStr = `${globalFilterStr} ${indicatorFilterStr} projectId:${param.projectId} ${metadataStr} `;
       // tslint:disable-next-line: max-line-length
       const query = `${filterStr} |${select}`;
 
-      const metadata = indicator.metadataCode
-        ? await this.metadataService.getMetadataByCode(indicator.metadataCode, param.projectId)
-        : { code: '_ALL_METADATA', name: '所有事件' };
+      const metadata =
+        indicator.metadataCode === '_ALL_METADATA'
+          ? { code: '_ALL_METADATA', name: '所有事件' }
+          : await this.metadataService.getMetadataByCode(indicator.metadataCode, param.projectId);
 
       const data = await this.slsService.query<IAnalyseQueryDataItem>({
         query,
@@ -334,7 +368,34 @@ export class AnalyseService {
     return result;
   }
 
-  public async eventAnalyse(param: QueryEventAnalyseDataDto): Promise<any> {
+  private getEventSelect(indicatorType: string, showType: string, timeUnit = 'day', dimension = '') {
+    const key = [];
+    let hasTime = false;
+    const isTrend = showType === 'LINE' || showType === 'BAR' || showType === 'TABLE';
+    if (indicatorType === 'PV' || indicatorType === 'DPV') {
+      key.push(`count(1) as count`);
+    } else if (indicatorType === `UV` || indicatorType === 'DUV') {
+      key.push(`approx_distinct(utoken) as count`);
+    } else if (indicatorType === 'APV') {
+      key.push(`count(1) / approx_distinct(utoken) as count`);
+    }
+    if (indicatorType === 'DUV' || indicatorType === 'DPV') {
+      key.push(`date_format(trackTime,'%H') as time`);
+      hasTime = true;
+    } else if (isTrend) {
+      key.push(`date_trunc('${timeUnit.toLowerCase()}', trackTime) as time`);
+      hasTime = true;
+    }
+    const group = this.getGroup(dimension, hasTime);
+    return ' select ' + key.join(',') + group + ' limit 1000';
+  }
+
+  /**
+   * 事件分析service
+   * @param param
+   */
+  public async eventAnalyse(param: QueryEventAnalyseDataDto): Promise<IAnalyseEventData> {
+    //全局过滤
     const globalFilterStr = filterToQuery(param.filter);
 
     const timeParam = getDynamicTime(param.dateStart, param.dateEnd, param.dateType);
@@ -342,11 +403,7 @@ export class AnalyseService {
     const dimensionMap = {};
     const metadataMap = {};
 
-    const group = param.dimension
-      ? `,${param.dimension} GROUP BY time, ${param.dimension} ORDER BY time`
-      : 'group by time order by time';
-
-    const result = {
+    const result: IAnalyseEventData = {
       list: [],
       dimension: param.dimension,
       dimensionValues: [],
@@ -355,18 +412,20 @@ export class AnalyseService {
     };
 
     for (let indicator of param.indicators) {
+      const select = this.getEventSelect(indicator.type, param.type, param.timeUnit, param.dimension);
       const indicatorFilterStr = filterToQuery(indicator.filter);
 
-      const metadataStr = indicator.metadataCode ? `and trackId:${indicator.trackId}` : '';
+      const metadataStr = indicator.metadataCode !== '_ALL_METADATA' ? `and trackId:${indicator.metadataCode}` : '';
       const filterStr = `${globalFilterStr} ${indicatorFilterStr} projectId:${param.projectId} ${metadataStr} `;
       // tslint:disable-next-line: max-line-length
-      const query = `${filterStr} | select date_trunc('${param.timeUnit.toLowerCase()}', trackTime) as time , count(1) as pv, approx_distinct(utoken) as uv ${group} limit 1000`;
+      const query = `${filterStr} | ${select}`;
 
-      const metadata = indicator.metadataCode
-        ? await this.metadataService.getMetadataByCode(indicator.metadataCode, param.projectId)
-        : { code: '', name: '所有事件' };
+      const metadata =
+        indicator.metadataCode !== '_ALL_METADATA'
+          ? await this.metadataService.getMetadataByCode(indicator.metadataCode, param.projectId)
+          : { code: '_ALL_METADATA', name: '所有事件' };
 
-      const data = await this.slsService.query({
+      const data = await this.slsService.query<IAnalyseEventDataListDataItem>({
         query,
         from: Math.floor(timeParam.dateStart / 1000),
         to: Math.floor(timeParam.dateEnd / 1000)
@@ -377,17 +436,17 @@ export class AnalyseService {
         });
       }
 
-      if (typeof metadataMap[indicator.trackId] === 'undefined') {
-        metadataMap[indicator.trackId] = false;
+      //生成唯一key
+      if (typeof metadataMap[metadata.code] === 'undefined') {
+        metadataMap[metadata.code] = 0;
       } else {
-        metadataMap[indicator.trackId] = true;
+        metadataMap[metadata.code]++;
       }
 
       const compare = await this.diff(filterStr, timeParam);
 
       result.list.push({
-        key: metadataMap[indicator.trackId] ? indicator.trackId + Date.now() : indicator.trackId,
-        trackId: indicator.trackId,
+        key: metadataMap[metadata.code] ? metadata.code + '__' + metadataMap[metadata.code] : metadata.code,
         metadataCode: metadata.code,
         metadataName: metadata.name,
         data,

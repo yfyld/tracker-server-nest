@@ -75,7 +75,9 @@ export class ReportService {
   }
 
   public async updateReport(body: UpdateReportDto): Promise<void> {
-    body.data = JSON.stringify(body.data);
+    if (body.data) {
+      body.data = JSON.stringify(body.data);
+    }
     const report = await this.reportModel.findOne(body.id);
     const newReport = { ...report, ...body };
     await this.reportModel.save(newReport);

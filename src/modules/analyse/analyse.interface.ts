@@ -14,9 +14,40 @@ export interface IIndicatorInfo {
   trackId?: string;
   metadataCode: string;
   metadataName: string;
+  customName?: string;
   type?: string;
   filter: IFilterInfo;
   id: number;
+}
+
+export interface IAnalyseEventData {
+  dimension: string;
+  dimensionValues: string[];
+  type: string;
+  timeUnit: string;
+  list: IAnalyseEventDataListItem[];
+}
+
+export interface ICompare {
+  qoqCurrent: number;
+  qoqPercentage: number;
+  qoqPrev: number;
+  yoyCurrent: number;
+  yoyPercentage: number;
+  yoyPrev: number;
+}
+
+export interface IAnalyseEventDataListDataItem {
+  count: string;
+  time: string;
+}
+
+export interface IAnalyseEventDataListItem {
+  key: string;
+  metadataCode: string;
+  metadataName: string;
+  data: IAnalyseEventDataListDataItem[];
+  compare: ICompare;
 }
 
 export interface IAnalyseQueryDataItem {
