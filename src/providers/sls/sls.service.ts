@@ -1,6 +1,5 @@
 import { Injectable } from '@nestjs/common';
 import * as ALY from 'aliyun-sdk';
-import { MetadataModel } from '@/modules/metadata/metadata.model';
 
 const sls = new ALY.SLS({
   accessKeyId: 'LTAI4FiudjsTsY8LAAVH26CT', // 步骤2获取的密钥
@@ -27,34 +26,5 @@ export class SlsService {
         }
       });
     });
-  };
-
-  public queryMetadata = async function(metadata: MetadataModel) {
-    const opt = {
-      query: `trackId : "${metadata.code}"|SELECT COUNT(*) as pv`,
-      from: Math.floor(new Date(metadata.createdAt).getTime() / 1000),
-      to: Math.floor(Date.now() / 1000)
-    };
-
-    const all = await this.query(opt);
-    opt.from = Math.floor((Date.now() - 86400000 * 3) / 1000);
-    const recent = await this.query(opt);
-
-    return {
-      all: Number(all[0].pv),
-      recent: Number(recent[0].pv)
-    };
-  };
-
-  public queryEventValues = async function(key) {
-    const opt = {
-      // tslint:disable-next-line: max-line-length
-      query: `* | select "${key}" , pv from( select count(1) as pv , "${key}" from (select "${key}" from log limit 100000) group by "${key}" order by pv desc) order by pv desc limit 10`,
-      from: Math.floor(Date.now() / 1000 - 86400 * 30),
-      to: Math.floor(Date.now() / 1000)
-    };
-    const result = await this.query(opt);
-
-    return result.map(item => item[key]);
   };
 }

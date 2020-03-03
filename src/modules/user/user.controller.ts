@@ -87,11 +87,6 @@ export class UserController {
     return this.userService.updateUser(body, user.id);
   }
 
-  // @HttpProcessor.handle('注销')
-  // @Post('/signout')
-  // signout(): void {
-  //   return null;
-  // }
   @UseInterceptors(ClassSerializerInterceptor)
   @ApiOperation({ title: '获取用户信息', description: '' })
   @ApiBearerAuth()

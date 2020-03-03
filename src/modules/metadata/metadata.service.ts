@@ -257,7 +257,22 @@ export class MetadataService {
       }
       return;
     }
-    const result = await this.slsService.queryMetadata(metadata);
+
+    const opt = {
+      query: `trackId : "${metadata.code}"|SELECT COUNT(*) as pv`,
+      from: Math.floor(new Date(metadata.createdAt).getTime() / 1000),
+      to: Math.floor(Date.now() / 1000)
+    };
+
+    const all = await this.slsService.query<any>(opt);
+    opt.from = Math.floor((Date.now() - 86400000 * 3) / 1000);
+    const recent = await this.slsService.query<any>(opt);
+
+    const result = {
+      all: Number(all[0].pv),
+      recent: Number(recent[0].pv)
+    };
+
     if (result.all === metadata.log) {
       return;
     }
@@ -271,8 +286,15 @@ export class MetadataService {
     const eventAttrs = EVENT_ATTRS;
 
     for (let attr of eventAttrs) {
-      const result = await this.slsService.queryEventValues(attr.value);
-      attr.recommend = result;
+      const opt = {
+        // tslint:disable-next-line: max-line-length
+        query: `* | select "${attr.value}" , pv from( select count(1) as pv , "${attr.value}" from (select "${attr.value}" from log limit 100000) group by "${attr.value}" order by pv desc) order by pv desc limit 10`,
+        from: Math.floor(Date.now() / 1000 - 86400 * 30),
+        to: Math.floor(Date.now() / 1000)
+      };
+      const result = await this.slsService.query(opt);
+
+      attr.recommend = result.map(item => item[attr.value]);
     }
     client.set('eventAttrsRecommend', JSON.stringify(eventAttrs));
   }
