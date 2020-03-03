@@ -43,15 +43,15 @@ const opsConfig = require('/app/config/config.ts');
 
 export const ORMCONFIG: MysqlConnectionOptions = {
   type: 'mysql',
-  ...opsConfig,
+  ...opsConfig.db,
   database: 'telescope',
   entities: [__dirname + '/**/*.model{.ts,.js}'],
   synchronize: true
 };
 
-const opsRedisConfig = require('/app/config/redis.js');
+//const opsRedisConfig = require('/app/config/redis.js');
 export const REDIS = {
-  ...opsRedisConfig,
+  ...opsConfig.redis,
   db: 10
 };
 

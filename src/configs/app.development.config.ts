@@ -39,21 +39,18 @@ export const BASE_URL = {
   serverUrl: 'http://127.0.0.1:7009'
 };
 
-const opsConfig = require('./configs/ops.config');
+const opsConfig = require('./configs/ops.config.dev');
 
 export const ORMCONFIG: MysqlConnectionOptions = {
   type: 'mysql',
-  ...opsConfig,
+  ...opsConfig.db,
   database: 'telescope',
   entities: [__dirname + '/**/*.model{.ts,.js}'],
   synchronize: true
 };
 
 export const REDIS = {
-  host: '127.0.0.1',
-  port: 7008,
-  ttl: null,
-  defaultCacheTTL: 60 * 60 * 24
+  ...opsConfig.redis
 };
 
 export const ES_CONFIG = {
