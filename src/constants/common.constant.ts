@@ -1,1 +1,10 @@
 export const DB_CONNECTION_TOKEN = 'DB_CONNECTION_TOKEN';
+export const MALICIOUS_OPS_MESSAGE = { message: '请勿恶意操作' };
+export const ROLE_CODE_GLOBAL_ADMIN = 'GLOBAL_ADMIN'; // 平台超管权限角色标识CODE
+export const REDIS_EX_SHORT_TIME = 600; // 十分钟的秒数
+export const REDIS_EX_LONG_TIME = 86400; // 一天的秒数
+export const REDIS_PREFIX_KEY = 'telescope_';
+export const REDIS_KEY_ROLE_GLOBAL_ADMIN_ID = REDIS_PREFIX_KEY + 'role_global_admin_id';
+export const REDIS_KEY_ALL_PERMISSIONS = REDIS_PREFIX_KEY + 'all_permissions';
+export const REDIS_KEY_ALL_ROLES = REDIS_PREFIX_KEY + 'all_roles';
+export const GLOBAL_ADMIN_USERNAME = 'admin';

@@ -1,4 +1,3 @@
-import { RoleModel } from './../user/user.model';
 import { HttpBadRequestError } from './../../errors/bad-request.error';
 import { ProjectModel, MemberModel, SourcemapModel } from './project.model';
 import { Injectable } from '@nestjs/common';
@@ -19,6 +18,7 @@ import {
 import { UserModel } from '@/modules/user/user.model';
 import { QueryListQuery, PageData } from '@/interfaces/request.interface';
 import { UseInterceptors, ClassSerializerInterceptor } from '@nestjs/common';
+import { RoleModel } from '../role/role.model';
 @Injectable()
 export class ProjectService {
   constructor(

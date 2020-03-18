@@ -1,13 +1,8 @@
-import { UserService } from './../modules/user/user.service';
-import { Permissions } from '@/decotators/permissions.decotators';
-import { Observable } from 'rxjs';
 import { AuthGuard } from '@nestjs/passport';
 import { ExecutionContext, Injectable } from '@nestjs/common';
 import { HttpUnauthorizedError } from '@/errors/unauthorized.error';
 import { ExtractJwt } from 'passport-jwt';
-import * as passport from 'passport';
-
-type Type<T = any> = new (...args: any[]) => T;
+import { AuthService } from '@/modules/auth/auth.service';
 
 /**
  * @class JwtAuthGuard
@@ -16,7 +11,7 @@ type Type<T = any> = new (...args: any[]) => T;
  */
 @Injectable()
 export class JwtAuthGuard extends AuthGuard('jwt') {
-  constructor(private readonly userService: UserService) {
+  constructor(private readonly authService: AuthService) {
     super();
   }
 
@@ -27,7 +22,7 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
       if (TokenExpiredError.response.error === 'jwt expired') {
         const request = context.switchToHttp().getRequest();
         const token = ExtractJwt.fromAuthHeaderAsBearerToken()(request);
-        const result = await this.userService.refreshToken(token);
+        const result = await this.authService.refreshToken(token);
         // tslint:disable-next-line: max-line-length
         if (result) {
           request.headers.authorization = `Bearer ${result.accessToken}`;

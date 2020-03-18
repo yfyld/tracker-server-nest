@@ -1,4 +1,3 @@
-import { RoleModel, PermissionModel } from './../user/user.model';
 import { UserModel } from '@/modules/user/user.model';
 import { SlsService } from '@/providers/sls/sls.service';
 import { Injectable } from '@nestjs/common';
@@ -6,6 +5,8 @@ import { Injectable } from '@nestjs/common';
 import { MetadataService } from '../metadata/metadata.service';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { RoleModel } from '../role/role.model';
+import { PermissionModel } from '../permission/permission.model';
 
 @Injectable()
 export class AdminService {
