@@ -38,11 +38,24 @@ export class MetadataService {
     private readonly redisService: RedisService
   ) {}
 
+  /**
+   *根据code查询metadata
+   *
+   * @param {string} code
+   * @param {number} projectId
+   * @returns {Promise<MetadataModel>}
+   * @memberof MetadataService
+   */
   public async getMetadataByCode(code: string, projectId: number): Promise<MetadataModel> {
     let metadata = await this.metadataModel.findOne({ code, projectId });
     return metadata;
   }
 
+  /**
+   *获取metadata List
+   *
+   * @memberof MetadataService
+   */
   public async getMetadataList(query: QueryListQuery<QueryMetadataListDto>): Promise<PageData<MetadataModel>> {
     let {
       skip,
@@ -107,6 +120,13 @@ export class MetadataService {
     };
   }
 
+  /**
+   *添加metadata
+   *
+   * @param {AddMetadataDto} body
+   * @returns {Promise<void>}
+   * @memberof MetadataService
+   */
   public async addMetadata(body: AddMetadataDto): Promise<void> {
     const { code, projectId, tags, newTags } = body;
     const oldMetadata = await this.metadataModel.findOne({
@@ -139,6 +159,13 @@ export class MetadataService {
     return;
   }
 
+  /**
+   *修改metadata
+   *
+   * @param {UpdateMetadataDto} body
+   * @returns {Promise<void>}
+   * @memberof MetadataService
+   */
   public async updateMetadata(body: UpdateMetadataDto): Promise<void> {
     let { id, tags, projectId } = body;
     let metadata = await this.metadataModel.findOne(id);
@@ -159,9 +186,21 @@ export class MetadataService {
     return;
   }
 
+  /**
+   *删除metadata  如果有日志则不能真删除
+   *
+   * @param {number} id
+   * @returns {Promise<void>}
+   * @memberof MetadataService
+   */
   public async deleteMetadata(id: number): Promise<void> {
     const metadata = await this.metadataModel.findOne(id);
-    await this.metadataModel.remove(metadata);
+    if (metadata.log) {
+      metadata.isDeleted = true;
+      await this.metadataModel.save(metadata);
+    } else {
+      await this.metadataModel.remove(metadata);
+    }
     return;
   }
 
@@ -259,7 +298,7 @@ export class MetadataService {
     }
 
     const opt = {
-      query: `trackId : "${metadata.code}"|SELECT COUNT(*) as pv`,
+      query: `trackId : "${metadata.code}"|SELECT COUNT(*) as count`,
       from: Math.floor(new Date(metadata.createdAt).getTime() / 1000),
       to: Math.floor(Date.now() / 1000)
     };
@@ -269,13 +308,22 @@ export class MetadataService {
     const recent = await this.slsService.query<any>(opt);
 
     const result = {
-      all: Number(all[0].pv),
-      recent: Number(recent[0].pv)
+      all: Number(all[0].count),
+      recent: Number(recent[0].count)
     };
 
     if (result.all === metadata.log) {
       return;
     }
+
+    if (!metadata.url) {
+      const url = await this.slsService.query<any>({
+        ...opt,
+        query: `trackId : "${metadata.code}"|SELECT url group by url`
+      });
+      metadata.url = url[0].url;
+    }
+
     metadata.log = result.all;
     metadata.recentLog = result.recent;
     await this.metadataModel.save(metadata);

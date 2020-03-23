@@ -57,14 +57,20 @@ export class MetadataModel {
   @Column()
   type: number;
 
-  @Column()
+  @Column({ default: 1 })
   status: number;
+
+  @Column({ default: false })
+  isDeleted: boolean;
 
   @Column()
   log: number;
 
   @Column()
   recentLog: number;
+
+  @Column()
+  url: string;
 
   @Column()
   description: string;

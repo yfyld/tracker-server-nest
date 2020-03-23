@@ -9,7 +9,9 @@ import {
   ManyToMany,
   JoinTable,
   ManyToOne,
-  JoinColumn
+  JoinColumn,
+  CreateDateColumn,
+  UpdateDateColumn
 } from 'typeorm';
 import { UserModel } from '../user/user.model';
 
@@ -27,8 +29,20 @@ export class ProjectModel {
   @Column()
   description: string;
 
+  @Column({ default: 1 })
+  status: number;
+
+  @Column({ default: false })
+  isDeleted: boolean;
+
   @ManyToOne(type => UserModel, { cascade: true, onDelete: 'CASCADE' })
   creator: UserModel;
+
+  @CreateDateColumn()
+  createdAt: Date;
+
+  @UpdateDateColumn()
+  updatedAt: Date;
 }
 
 @Entity()

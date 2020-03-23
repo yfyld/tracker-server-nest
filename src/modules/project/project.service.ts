@@ -73,7 +73,8 @@ export class ProjectService {
       skip: query.skip,
       take: query.take,
       where: {
-        name: Like(`%${query.query.projectName || ''}%`)
+        name: Like(`%${query.query.projectName || ''}%`),
+        status: 1
       },
       relations: ['creator']
     });
@@ -85,7 +86,7 @@ export class ProjectService {
 
   public async getMyProjects(user: UserModel): Promise<any> {
     const projects = await this.memberModel.find({
-      where: { user },
+      where: { user, status: 1 },
       relations: ['project', 'role']
     });
     return {
@@ -120,7 +121,8 @@ export class ProjectService {
 
   public async deleteProject(projectId: number): Promise<void> {
     const project = await this.projectModel.findOne(projectId);
-    await this.projectModel.remove(project);
+    project.isDeleted = true;
+    await this.projectModel.save(project);
     return;
   }
 
