@@ -1,4 +1,3 @@
-import { RoleModel } from './../user/user.model';
 import { IsString, IsDefined, IsNotEmpty } from 'class-validator';
 import { ApiModelProperty } from '@nestjs/swagger';
 import {
@@ -14,6 +13,7 @@ import {
   UpdateDateColumn
 } from 'typeorm';
 import { UserModel } from '../user/user.model';
+import { RoleModel } from '../role/role.model';
 
 @Entity()
 export class ProjectModel {

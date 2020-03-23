@@ -1,6 +1,4 @@
-import { BASE_URL } from './../../app.config';
-import { Cookie } from './../../decotators/cookie.decorators';
-import { QueryList } from './../../decotators/query-list.decorators';
+import { QueryList } from '@/decotators/query-list.decorators';
 import { Auth } from '@/decotators/user.decorators';
 import {
   Controller,
@@ -8,37 +6,28 @@ import {
   Post,
   Body,
   UseGuards,
-  HttpStatus,
   Put,
-  ClassSerializerInterceptor,
-  Res,
-  Query
+  ClassSerializerInterceptor, Param, ParseIntPipe, Delete,
 } from '@nestjs/common';
-import { UserModel, RoleModel } from './user.model';
+import { UserModel } from './user.model';
 import { UserService } from './user.service';
 import { HttpProcessor } from '@/decotators/http.decotator';
 import { JwtAuthGuard } from '@/guards/auth.guard';
-import { TokenResult } from './user.interface';
 import { ApiBearerAuth, ApiUseTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
-import { Permissions } from '@/decotators/permissions.decotators';
-import { PermissionsGuard } from '@/guards/permission.guard';
-import { SignupDto, SigninDto, TokenDto, UserListReqDto, UpdateUserDto } from './user.dto';
+import { UserListReqDto, UpdateUserDto, UserListItemDto, BaseUserDto, SignUpDto, UpdateUserRoles } from './user.dto';
 import { QueryListQuery, PageData } from '@/interfaces/request.interface';
 import { UseInterceptors } from '@nestjs/common';
-import { Response } from 'express';
+import { AuthService } from '../auth/auth.service';
+import { TokenDto } from '../auth/auth.dto';
+import { RolePermission, UpdateRolePermissions } from '@/modules/role/role.dto';
+
 @ApiUseTags('账号权限')
 @Controller('user')
 export class UserController {
-  constructor(private readonly userService: UserService) {}
-
-  @ApiOperation({ title: '获取权限列表', description: '' })
-  @ApiBearerAuth()
-  @ApiResponse({ status: 200, type: RoleModel, isArray: true })
-  @HttpProcessor.handle('获取权限列表')
-  @Get('/role')
-  getRoles(): Promise<RoleModel[]> {
-    return this.userService.getRoles();
-  }
+  constructor(
+    private readonly userService: UserService,
+    private readonly authService: AuthService
+  ) {}
 
   // 检测 Token 有效性
   @ApiOperation({ title: '检测 Token', description: '' })
@@ -48,54 +37,31 @@ export class UserController {
     return 'ok';
   }
 
-  // @HttpProcessor.handle('获取用户权限')
-  // @Get('/permissions')
-  // getPermissions(@Query('username') username: string): Promise<Permission[]> {
-  //   return this.userService.getPermissionsByusername(username);
-  // }
-  @ApiOperation({ title: '登陆', description: '' })
-  @Post('/signin')
-  @HttpProcessor.handle({ message: '登陆', error: HttpStatus.BAD_REQUEST })
-  signin(@Body() body: SigninDto): Promise<TokenDto> {
-    return this.userService.signin(body);
-  }
-
   @ApiOperation({ title: '注册', description: '' })
   @HttpProcessor.handle('注册')
-  @Post('/signup')
-  async signup(@Body() user: SignupDto): Promise<TokenDto> {
+  @Post('/signUp')
+  async signUp(@Body() user: SignUpDto): Promise<TokenDto> {
     const newUser = await this.userService.addUser(user);
-    return this.userService.createToken(newUser);
-  }
-
-  @Get('single-signon')
-  async singleSignOn(@Cookie() cookie, @Query('from') fromURL, @Res() response: Response): Promise<void> {
-    const result = await this.userService.singleSignOn(cookie);
-    response.cookie('TELESCOPE_TOKEN', result.accessToken, {
-      maxAge: result.expiresIn,
-      httpOnly: false,
-      path: '/'
-    });
-    return response.redirect(303, fromURL || `${BASE_URL.webUrl}/project-list`);
+    return this.authService.createToken(newUser);
   }
 
   @ApiOperation({ title: '修改用户信息', description: '' })
   @HttpProcessor.handle('修改用户信息')
   @UseGuards(JwtAuthGuard)
   @Put('/')
-  updateUser(@Body() body: UpdateUserDto, @Auth() user: UserModel): Promise<void> {
-    return this.userService.updateUser(body, user.id);
+  updateUser(@Auth() user: UserModel, @Body() body: UpdateUserDto): Promise<void> {
+    return this.userService.updateUser(user, body);
   }
 
   @UseInterceptors(ClassSerializerInterceptor)
-  @ApiOperation({ title: '获取用户信息', description: '' })
+  @ApiOperation({ title: '获取当前登录用户信息', description: '' })
   @ApiBearerAuth()
   @ApiResponse({ status: 200, type: UserModel })
-  @HttpProcessor.handle('获取用户信息')
+  @HttpProcessor.handle('获取当前登录用户信息')
   @Get('/info')
   @UseGuards(JwtAuthGuard)
-  getUserInfo(@Auth() user: UserModel): Promise<UserModel> {
-    return this.userService.getUserByUsername(user.username);
+  getUserInfo(@Auth() user: UserModel): Promise<BaseUserDto> {
+    return this.userService.getUserBaseInfoById(user.id);
   }
 
   @ApiOperation({ title: '获取用户列表', description: '' })
@@ -104,7 +70,31 @@ export class UserController {
   @HttpProcessor.handle('获取用户列表')
   @UseGuards(JwtAuthGuard)
   @Get('/')
-  getUsers(@QueryList() query: QueryListQuery<UserListReqDto>): Promise<PageData<UserModel>> {
-    return this.userService.getUsers(query);
+  getUsers(@Auth() user: UserModel, @QueryList() query: QueryListQuery<UserListReqDto>): Promise<PageData<UserListItemDto>> {
+    return this.userService.getUsers(user, query);
+  }
+
+  @ApiOperation({ title: '获取用户对应角色列表', description: '' })
+  @HttpProcessor.handle('获取用户对应角色列表')
+  @Get('/userRoles/:userId')
+  @UseGuards(JwtAuthGuard)
+  getUserRoles(@Auth() user: UserModel, @Param('userId', new ParseIntPipe()) userId: number): Promise<RolePermission[]> {
+    return this.userService.getUserRoles(userId);
+  }
+
+  @ApiOperation({ title: '更新用户下所有角色', description: '' })
+  @HttpProcessor.handle('更新用户下所有角色')
+  @Put('/userRoles')
+  @UseGuards(JwtAuthGuard)
+  updateRolePermissions(@Auth() user: UserModel, @Body() body: UpdateUserRoles): Promise<void> {
+    return this.userService.updateUserRoles(user, body.userId, body.roleIds);
+  }
+
+  @ApiOperation({ title: '删除用户', description: '' })
+  @HttpProcessor.handle('删除用户')
+  @Delete('/:userId')
+  @UseGuards(JwtAuthGuard)
+  deletePermission(@Auth() user: UserModel, @Param('userId', new ParseIntPipe()) userId: number): Promise<void> {
+    return this.userService.deleteUserById(user, userId);
   }
 }

@@ -9,59 +9,14 @@ import {
   JoinTable,
   OneToOne,
   JoinColumn,
-  PrimaryColumn
+  PrimaryColumn,
+  CreateDateColumn,
+  UpdateDateColumn
 } from 'typeorm';
 import { ProjectModel } from '../project/project.model';
 import { Exclude } from 'class-transformer';
 import { TeamModel } from '../team/team.model';
-
-@Entity()
-export class PermissionModel {
-  @PrimaryGeneratedColumn()
-  id: number;
-
-  @Column({ length: 500 })
-  @ApiModelProperty()
-  name: string;
-
-  @Column({ unique: true })
-  @ApiModelProperty()
-  code: string;
-
-  @Column()
-  @ApiModelProperty()
-  type: string;
-
-  @Column()
-  @ApiModelProperty()
-  status: number;
-}
-
-@Entity()
-export class RoleModel {
-  @PrimaryGeneratedColumn()
-  id: number;
-
-  @Column()
-  @ApiModelProperty()
-  name: string;
-
-  @Column()
-  @ApiModelProperty()
-  code: string;
-
-  @Column('int')
-  @ApiModelProperty()
-  status: number;
-
-  @Column()
-  @ApiModelProperty()
-  type: string;
-
-  @ManyToMany(type => PermissionModel)
-  @JoinTable()
-  permissions: PermissionModel[];
-}
+import { RoleModel } from '@/modules/role/role.model';
 
 @Entity()
 export class UserModel {
@@ -80,20 +35,27 @@ export class UserModel {
   @Column()
   mobile: string;
 
-  @Exclude()
-  @Column({ select: false })
+  @Column()
   password: string;
 
-  @ManyToMany(type => RoleModel)
-  @JoinTable()
-  roles: RoleModel[];
-
-  @ManyToMany(type => PermissionModel)
-  @JoinTable()
-  permissions: PermissionModel[];
+  // @ManyToMany(type => RoleModel)
+  // @JoinTable()
+  // roles: RoleModel[];
 
   @OneToMany(type => TeamModel, team => team.creator)
   teams: TeamModel[];
+
+  @CreateDateColumn()
+  createdAt: Date; // 创建时间
+
+  @UpdateDateColumn()
+  updatedAt: Date; // 更新时间
+
+  @Column({ type: 'tinyint', default: 0, comment: '0/1:，软删：否/是' })
+  isDeleted: number;
+
+  @Column()
+  updaterId: number; // 最后更新人ID
 }
 
 @Entity()

@@ -9,6 +9,7 @@ import { HttpException, HttpStatus } from '@nestjs/common';
  */
 export class HttpForbiddenError extends HttpException {
   constructor(error?: any) {
+    console.error(error);
     super(error || HTTP.HTTP_PERMISSION_ERROR_DEFAULT, HttpStatus.FORBIDDEN);
   }
 }
