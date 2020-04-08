@@ -14,12 +14,6 @@ import { SlsService } from '@/providers/sls/sls.service';
 export class CommonController {
   constructor(private readonly slsService: SlsService) {}
 
-  @HttpProcessor.handle('test')
-  @Post('/test')
-  test(@Body() body: any): Promise<any> {
-    return this.slsService.query(body);
-  }
-
   @ApiOperation({ title: '上传文件', description: '' })
   @HttpProcessor.handle('上传文件')
   @Post('/upload')
@@ -45,6 +39,7 @@ export class CommonController {
   async fileUpload(@UploadedFile() file) {
     return {
       url: BASE_URL.serverUrl + '/public/uploads/' + file.filename,
+      path: '/public/uploads/' + file.filename,
       filename: file.originalname
     };
   }

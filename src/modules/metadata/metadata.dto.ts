@@ -16,16 +16,28 @@ export class AddMetadataDto {
   @IsNumber()
   status: number;
 
-  tags: number[];
+  tags?: number[];
 
   newTags?: string[];
 
   @IsNumber()
-  log: number;
+  log?: number;
 
   @IsNumber()
-  logRecent: number;
+  logRecent?: number;
 
+  @IsNumber()
+  projectId: number;
+}
+
+export class AddMetadataByExcelDto {
+  @IsString()
+  @IsOptional()
+  path?: string;
+
+  @IsString()
+  @IsOptional()
+  url?: string;
   @IsNumber()
   projectId: number;
 }

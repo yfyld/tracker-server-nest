@@ -32,8 +32,10 @@ import {
   QueryMetadataTagListDto,
   AddMetadataTagDto,
   UpdateMetadataTagDto,
-  QueryFieldListDto
+  QueryFieldListDto,
+  AddMetadataByExcelDto
 } from './metadata.dto';
+import { XlsxService } from '@/providers/xlsx/xlsx.service';
 
 @ApiUseTags('元数据')
 @Controller('metadata')
@@ -46,6 +48,13 @@ export class MetadataController {
   @UseGuards(JwtAuthGuard)
   addMetadata(@Body() body: AddMetadataDto): Promise<void> {
     return this.metadataService.addMetadata(body);
+  }
+
+  @HttpProcessor.handle('上传元数据')
+  @Post('/upload')
+  @UseGuards(JwtAuthGuard)
+  addMetadataByExcel(@Body() body: AddMetadataByExcelDto): Promise<void> {
+    return this.metadataService.addMetadataByExcel(body.projectId, body.path);
   }
 
   @HttpProcessor.handle('更新元数据')

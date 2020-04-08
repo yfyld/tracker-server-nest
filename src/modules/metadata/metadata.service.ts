@@ -22,6 +22,9 @@ import { QueryListQuery, PageData } from '@/interfaces/request.interface';
 import { HttpBadRequestError } from '@/errors/bad-request.error';
 import { SlsService } from '@/providers/sls/sls.service';
 import { RedisService } from 'nestjs-redis';
+import { XlsxService } from '@/providers/xlsx/xlsx.service';
+
+import * as path from 'path';
 
 @Injectable()
 export class MetadataService {
@@ -35,7 +38,8 @@ export class MetadataService {
     @InjectRepository(FieldModel)
     private readonly fieldModel: Repository<FieldModel>,
     private readonly slsService: SlsService,
-    private readonly redisService: RedisService
+    private readonly redisService: RedisService,
+    private readonly xlsxervice: XlsxService
   ) {}
 
   /**
@@ -144,9 +148,12 @@ export class MetadataService {
     // 处理新增的标签
     if (newTags && newTags.length) {
       const newMetadataTagModels = [];
-      newTags.forEach(item => {
+      for (let item of newTags) {
+        if (await this.metadataTagModel.findOne({ name: item })) {
+          continue;
+        }
         newMetadataTagModels.push(this.metadataTagModel.create({ name: item, project: { id: projectId }, projectId }));
-      });
+      }
       const newMetadataTags = await this.metadataTagModel.save(newMetadataTagModels);
       metadataTags.push(...newMetadataTags);
     }
@@ -156,6 +163,27 @@ export class MetadataService {
     });
     metadata.tags.push(...metadataTags);
     await this.metadataModel.save(metadata);
+    return;
+  }
+
+  public async addMetadataByExcel(projectId: number, pathStr: string): Promise<void> {
+    const datas = await this.xlsxervice.parseByPath(
+      path.join(__dirname, '../../', pathStr),
+      ['名称', 'code', '类型', '启用', '标签', '备注'],
+      ['name', 'code', 'type', 'status', 'newTags', 'description']
+    );
+    for (let item of datas) {
+      await this.addMetadata({
+        projectId,
+        name: item.name,
+        code: item.code,
+        type: item.type === '页面' ? 1 : 2,
+        status: item.status === '是' ? 1 : 0,
+        newTags: item.newTags ? item.newTags.split(',') : [],
+        description: item.description
+      });
+    }
+
     return;
   }
 
@@ -195,7 +223,7 @@ export class MetadataService {
    */
   public async deleteMetadata(id: number): Promise<void> {
     const metadata = await this.metadataModel.findOne(id);
-    if (metadata.log) {
+    if (metadata.log || metadata.status) {
       metadata.isDeleted = true;
       await this.metadataModel.save(metadata);
     } else {

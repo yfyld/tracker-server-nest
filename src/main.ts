@@ -45,9 +45,9 @@ global.console = Object.assign(console, {
   }
 });
 
-dirExists(path.join(__dirname, 'publics/doc'));
-dirExists(path.join(__dirname, 'publics/uploads'));
-dirExists(path.join(__dirname, 'publics/charts'));
+dirExists(path.join(__dirname, 'public/doc'));
+dirExists(path.join(__dirname, 'public/uploads'));
+dirExists(path.join(__dirname, 'public/charts'));
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
@@ -79,7 +79,7 @@ async function bootstrap() {
     new LoggerInterceptor()
   );
 
-  app.use('/public', serveStatic(path.join(__dirname, 'publics'), {}));
+  app.use('/public', serveStatic(path.join(__dirname, 'public'), {}));
 
   app.setBaseViewsDir(path.join(__dirname, 'views'));
   app.engine('html', renderFile);
@@ -94,7 +94,7 @@ async function bootstrap() {
   //   .build();
 
   // const document = SwaggerModule.createDocument(app, options);
-  // fs.writeFileSync(path.join(__dirname, 'publics/doc/swagger.json'), JSON.stringify(document));
+  // fs.writeFileSync(path.join(__dirname, 'public/doc/swagger.json'), JSON.stringify(document));
   // SwaggerModule.setup('doc-api', app, document);
 
   await app.listen(APP.port);

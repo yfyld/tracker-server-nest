@@ -1,6 +1,7 @@
 import { BullQueueModule } from './providers/bull-queue/bull-queue.module';
-import { EsModule } from './providers/es/es.module';
+
 import { HelperModule } from './providers/helper/helper.module';
+import { XlsxModule } from './providers/xlsx/xlsx.module';
 import { SlsModule } from './providers/sls/sls.module';
 import { Module, NestModule, MiddlewareConsumer } from '@nestjs/common';
 import { AppController } from './app.controller';
@@ -24,7 +25,8 @@ import { AnalyseModule } from './modules/analyse/analyse.module';
     AnalyseModule,
     CommonModule,
     HelperModule,
-    EsModule,
+    XlsxModule,
+
     BullQueueModule,
     ReportModule,
     BoardModule,

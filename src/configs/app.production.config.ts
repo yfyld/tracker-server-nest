@@ -23,7 +23,7 @@ export const CCONFIG = {};
 
 export const MULTER_OPTIONS = {
   fileSize: 10000000,
-  path: path.join(__dirname, 'publics/uploads')
+  path: path.join(__dirname, '/uploads')
 };
 
 export const ALARMCONFIG = {
