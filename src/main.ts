@@ -7,7 +7,7 @@ import * as path from 'path';
 import * as bodyParser from 'body-parser';
 import * as rateLimit from 'express-rate-limit';
 import * as compression from 'compression';
-import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
+
 import { APP } from './app.config';
 import { isDevMode } from './app.environment';
 import { ValidationPipe } from '@nestjs/common';
@@ -86,16 +86,16 @@ async function bootstrap() {
   app.setViewEngine('ejs');
 
   // swagger
-  const options = new DocumentBuilder()
-    .setTitle('my xmind api')
-    .setDescription('The xmind API description')
-    .setVersion('1.0')
-    .addBearerAuth()
-    .build();
+  // const options = new DocumentBuilder()
+  //   .setTitle('my xmind api')
+  //   .setDescription('The xmind API description')
+  //   .setVersion('1.0')
+  //   .addBearerAuth()
+  //   .build();
 
-  const document = SwaggerModule.createDocument(app, options);
-  fs.writeFileSync(path.join(__dirname, 'publics/doc/swagger.json'), JSON.stringify(document));
-  SwaggerModule.setup('doc-api', app, document);
+  // const document = SwaggerModule.createDocument(app, options);
+  // fs.writeFileSync(path.join(__dirname, 'publics/doc/swagger.json'), JSON.stringify(document));
+  // SwaggerModule.setup('doc-api', app, document);
 
   await app.listen(APP.port);
 }

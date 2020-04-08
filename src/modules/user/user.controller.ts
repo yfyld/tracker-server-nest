@@ -7,27 +7,27 @@ import {
   Body,
   UseGuards,
   Put,
-  ClassSerializerInterceptor, Param, ParseIntPipe, Delete,
+  ClassSerializerInterceptor,
+  Param,
+  ParseIntPipe,
+  Delete
 } from '@nestjs/common';
 import { UserModel } from './user.model';
 import { UserService } from './user.service';
 import { HttpProcessor } from '@/decotators/http.decotator';
 import { JwtAuthGuard } from '@/guards/auth.guard';
 import { ApiBearerAuth, ApiUseTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
-import { UserListReqDto, UpdateUserDto, UserListItemDto, BaseUserDto, SignUpDto, UpdateUserRoles } from './user.dto';
+import { UserListReqDto, UpdateUserDto, UserListItemDto, BaseUserDto, UpdateUserRoles } from './user.dto';
 import { QueryListQuery, PageData } from '@/interfaces/request.interface';
 import { UseInterceptors } from '@nestjs/common';
 import { AuthService } from '../auth/auth.service';
-import { TokenDto } from '../auth/auth.dto';
+import { TokenDto, SignUpDto } from '../auth/auth.dto';
 import { RolePermission, UpdateRolePermissions } from '@/modules/role/role.dto';
 
 @ApiUseTags('账号权限')
 @Controller('user')
 export class UserController {
-  constructor(
-    private readonly userService: UserService,
-    private readonly authService: AuthService
-  ) {}
+  constructor(private readonly userService: UserService, private readonly authService: AuthService) {}
 
   // 检测 Token 有效性
   @ApiOperation({ title: '检测 Token', description: '' })
@@ -70,7 +70,10 @@ export class UserController {
   @HttpProcessor.handle('获取用户列表')
   @UseGuards(JwtAuthGuard)
   @Get('/')
-  getUsers(@Auth() user: UserModel, @QueryList() query: QueryListQuery<UserListReqDto>): Promise<PageData<UserListItemDto>> {
+  getUsers(
+    @Auth() user: UserModel,
+    @QueryList() query: QueryListQuery<UserListReqDto>
+  ): Promise<PageData<UserListItemDto>> {
     return this.userService.getUsers(user, query);
   }
 
@@ -78,7 +81,10 @@ export class UserController {
   @HttpProcessor.handle('获取用户对应角色列表')
   @Get('/userRoles/:userId')
   @UseGuards(JwtAuthGuard)
-  getUserRoles(@Auth() user: UserModel, @Param('userId', new ParseIntPipe()) userId: number): Promise<RolePermission[]> {
+  getUserRoles(
+    @Auth() user: UserModel,
+    @Param('userId', new ParseIntPipe()) userId: number
+  ): Promise<RolePermission[]> {
     return this.userService.getUserRoles(userId);
   }
 

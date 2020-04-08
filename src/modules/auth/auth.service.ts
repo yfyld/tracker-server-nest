@@ -3,13 +3,13 @@ import { UserService } from '@/modules/user/user.service';
 import { PermissionService } from '@/modules/permission/permission.service';
 import { RoleService } from '@/modules/role/role.service';
 import { UserModel } from '@/modules/user/user.model';
-import { RoleItemDto, PermissionItemDto, TokenDto, UsersRolesFormatDto } from '@/modules/auth/auth.dto';
+import { RoleItemDto, PermissionItemDto, TokenDto, UsersRolesFormatDto, SignInDto } from '@/modules/auth/auth.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { RolePermissionModel, UserRoleModel } from '@/modules/auth/auth.model';
 import { In, Repository } from 'typeorm';
 import { JwtService } from '@nestjs/jwt';
 import { AUTH } from '@/app.config';
-import { BaseUserDto, SignInDto } from '@/modules/user/user.dto';
+import { BaseUserDto } from '@/modules/user/user.dto';
 import { HttpUnauthorizedError } from '@/errors/unauthorized.error';
 import { CustomError } from '@/errors/custom.error';
 import Utils from '../../utils/utils';
@@ -25,7 +25,7 @@ export class AuthService {
     private readonly userService: UserService,
     private readonly permissionService: PermissionService,
     private readonly roleService: RoleService,
-    private readonly jwtService: JwtService,
+    private readonly jwtService: JwtService
   ) {}
 
   /**
@@ -79,8 +79,7 @@ export class AuthService {
    * @return Promise<UsersRolesFormatDto[]>: 格式化好的批量用户包含的角色信息
    */
   public async getRolesByUserIds(ids: number[]): Promise<UsersRolesFormatDto[]> {
-    if (ids.length > 1000)
-      throw new CustomError({ message: '批量查询的用户ID过多' }, HttpStatus.INTERNAL_SERVER_ERROR);
+    if (ids.length > 1000) throw new CustomError({ message: '批量查询的用户ID过多' }, HttpStatus.INTERNAL_SERVER_ERROR);
     const usersRoles = await this.userRoleModel.find({
       where: {
         userId: In(ids),
@@ -117,7 +116,7 @@ export class AuthService {
     const userRoleMap = new Map();
     if (!usersRolesFormat.length) return userRoleMap;
     usersRolesFormat.forEach(userRoles => userRoleMap.set(userRoles.userId, userRoles.roles));
-    return userRoleMap
+    return userRoleMap;
   }
 
   /**
@@ -138,7 +137,7 @@ export class AuthService {
     return {
       accessToken,
       expireIn: AUTH.expiresIn
-    }
+    };
   }
 
   /**
@@ -163,7 +162,13 @@ export class AuthService {
    */
   public async signIn(signInUser: SignInDto): Promise<TokenDto> {
     const user = await this.userService.getUserByUsername(signInUser.username);
-    if (!(user && (user.password || AuthService.encryptPassword(AUTH.defaultPassword)) === AuthService.encryptPassword(signInUser.password)))
+    if (
+      !(
+        user &&
+        (user.password || AuthService.encryptPassword(AUTH.defaultPassword)) ===
+          AuthService.encryptPassword(signInUser.password)
+      )
+    )
       throw new HttpUnauthorizedError('用户名或密码不正确');
     return this.createToken(user);
   }

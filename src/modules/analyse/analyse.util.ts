@@ -179,5 +179,11 @@ export function filterToQuery({ filterValues, filterType }: IFilterInfo): string
     return total;
   }, []);
 
-  return filterStrs.length ? filterStrs.join(` ${filterType ? 'and' : 'or'} `) + ' and' : '';
+  if (!filterStrs.length) {
+    return ' ';
+  }
+
+  return filterStrs.length > 1
+    ? '(' + filterStrs.join(` ${filterType ? 'and' : 'or'} `) + ') and '
+    : filterStrs.join(` ${filterType ? 'and' : 'or'} `) + ' and ';
 }

@@ -1,56 +1,70 @@
-import { ApiModelProperty } from '@nestjs/swagger';
-import { options } from 'tsconfig-paths/lib/options';
-import { defaultCacheOptions } from '@nestjs/common/cache/default-options';
+import { IsNotEmpty, IsString, Length } from 'class-validator';
 
 export class TokenDto {
-  @ApiModelProperty()
   accessToken: string;
-  @ApiModelProperty()
+
   expireIn: number;
 }
 
 export class RoleItemDto {
-  @ApiModelProperty()
   id: number;
-  @ApiModelProperty({ description: '角色名称' })
   name: string;
-  @ApiModelProperty({ description: '描述' })
   description?: string;
-  @ApiModelProperty()
+
   code: string;
-  @ApiModelProperty()
+
   status?: number;
-  @ApiModelProperty()
+
   type: number;
-  @ApiModelProperty()
+
   updaterId: number;
-  @ApiModelProperty()
+
   updatedAt: Date;
 }
 
 export class UsersRolesFormatDto {
-  @ApiModelProperty()
   userId: number;
-  @ApiModelProperty()
-  roles: RoleItemDto[]
+
+  roles: RoleItemDto[];
 }
 
 export class PermissionItemDto {
-  @ApiModelProperty()
   id: number;
-  @ApiModelProperty({ description: '角色名称' })
   name: string;
-  @ApiModelProperty({ description: '描述' })
   description?: string;
-  @ApiModelProperty()
+
   code: string;
-  @ApiModelProperty()
+
   status?: number;
-  @ApiModelProperty()
+
   type: number;
-  @ApiModelProperty()
+
   updaterId: number;
-  @ApiModelProperty()
+
   updatedAt: Date;
 }
 
+export class SignInDto {
+  @IsNotEmpty({ message: '账号不能为空' })
+  @IsString({ message: '账号必须为字符串' })
+  username: string;
+
+  @IsNotEmpty({ message: '账号不能为空' })
+  @IsString({ message: '账号必须为字符串' })
+  @Length(6, 50, { message: '至少6个字符组成' })
+  password: string;
+}
+
+export class SignUpDto {
+  @IsNotEmpty({ message: '账号不能为空' })
+  @IsString({ message: '账号必须为字符串' })
+  username: string;
+
+  @IsString({ message: '账号必须为字符串' })
+  nickname: string;
+
+  @IsNotEmpty({ message: '账号不能为空' })
+  @IsString({ message: '账号必须为字符串' })
+  @Length(6, 50, { message: '至少6个字符组成' })
+  password: string;
+}

@@ -33,3 +33,22 @@ export class QueryFunnelAnalyseDataDto {
   timeUnit: string;
   trend: boolean;
 }
+
+export class QueryPathAnalyseDataDto {
+  projectId: number;
+  indicators: IIndicatorInfo[];
+  @IsOptional()
+  filter: IFilterInfo;
+  @IsOptional()
+  dateStart: number;
+  dateEnd: number;
+  dateType: string;
+  indicatorType: string;
+  type: string;
+  childPageData: [
+    {
+      parentId: string;
+      children: [{ id: string; filter: IFilterInfo }];
+    }
+  ];
+}

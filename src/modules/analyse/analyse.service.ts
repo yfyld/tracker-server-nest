@@ -5,11 +5,13 @@ import {
   IFunnelDataByDimensionItem,
   IAnalyseEventData,
   IAnalyseEventDataListDataItem,
-  ICompare
+  ICompare,
+  IPathData,
+  IIndicatorInfo
 } from './analyse.interface';
 import { SlsService } from '@/providers/sls/sls.service';
 import { Injectable } from '@nestjs/common';
-import { QueryEventAnalyseDataDto, QueryFunnelAnalyseDataDto } from './analyse.dto';
+import { QueryEventAnalyseDataDto, QueryFunnelAnalyseDataDto, QueryPathAnalyseDataDto } from './analyse.dto';
 import { filterToQuery } from './analyse.util';
 import { getDynamicTime } from '@/utils/date';
 import { MetadataService } from '../metadata/metadata.service';
@@ -454,6 +456,80 @@ export class AnalyseService {
       });
     }
     result.dimensionValues = Object.keys(dimensionMap);
+    return result;
+  }
+
+  /**
+   * 漏斗分析service
+   * @param QueryFunnelAnalyseDataDto
+   */
+  public async pathAnalyse(param: QueryPathAnalyseDataDto): Promise<IPathData> {
+    //全家过滤
+    const globalFilterStr = filterToQuery(param.filter);
+
+    const timeParam = getDynamicTime(param.dateStart, param.dateEnd, param.dateType);
+
+    //返回结果初始化
+    const result: IPathData = {
+      data: [],
+      links: [],
+      indicatorType: param.indicatorType
+    };
+
+    const select = 'select count(*) as count';
+
+    //查询所有页面
+    const indicatorSqlMap: { [prop: string]: string } = {};
+    const indicatorMap: { [prop: string]: { id: string; value: number; name: string } } = {};
+    for (let indicator of param.indicators) {
+      const indicatorFilterStr = filterToQuery(indicator.filter);
+      const metadataStr = indicator.metadataCode !== '_ALL_METADATA' ? `and trackId:${indicator.metadataCode}` : '';
+      const filterStr = `${globalFilterStr} ${indicatorFilterStr} projectId:${param.projectId} ${metadataStr} `;
+      const query = `${filterStr} |${select}`;
+
+      indicatorSqlMap[indicator.id] = query;
+
+      const data = await this.slsService.query<any>({
+        query,
+        from: Math.floor(timeParam.dateStart / 1000),
+        to: Math.floor(timeParam.dateEnd / 1000)
+      });
+
+      const item = {
+        id: indicator.id,
+        name: indicator.customName || indicator.metadataName,
+        value: Number(data[0].count)
+      };
+
+      result.data.push(item);
+      indicatorMap[indicator.id] = item;
+    }
+
+    //查询父到子
+    for (let pageData of param.childPageData) {
+      for (let pageInfo of pageData.children) {
+        const indicatorSql = indicatorSqlMap[pageInfo.id];
+        const childrenFilterStr = filterToQuery(pageInfo.filter);
+        const query = `${childrenFilterStr}${indicatorSql}`;
+        const data = await this.slsService.query<any>({
+          query,
+          from: Math.floor(timeParam.dateStart / 1000),
+          to: Math.floor(timeParam.dateEnd / 1000)
+        });
+
+        result.links.push({
+          source: pageData.parentId,
+          target: pageInfo.id,
+          sourceName: indicatorMap[pageData.parentId].name,
+          targetName: indicatorMap[pageInfo.id].name,
+          conversionRate: indicatorMap[pageData.parentId].value
+            ? Math.floor((data[0].count / indicatorMap[pageData.parentId].value) * 100)
+            : 0,
+          value: Number(data[0].count)
+        });
+      }
+    }
+
     return result;
   }
 }

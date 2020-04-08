@@ -2,7 +2,7 @@ import { UserModel } from './user.model';
 import { Injectable, forwardRef, Inject } from '@nestjs/common';
 import { Repository, Like, In, getManager, EntityManager } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
-import { SignUpDto, UserListReqDto, UpdateUserDto, BaseUserDto, UserRoles, UserListItemDto } from './user.dto';
+import { UserListReqDto, UpdateUserDto, BaseUserDto, UserRoles, UserListItemDto } from './user.dto';
 import { PageData, QueryListQuery } from '@/interfaces/request.interface';
 import { ROLE_CODE_GLOBAL_ADMIN, GLOBAL_ADMIN_USERNAME } from '@/constants/common.constant';
 import { HttpUnauthorizedError } from '@/errors/unauthorized.error';
@@ -10,6 +10,7 @@ import { AuthService } from '../auth/auth.service';
 import { RoleService } from '../role/role.service';
 import { HttpBadRequestError } from '@/errors/bad-request.error';
 import { UserRoleModel } from '../auth/auth.model';
+import { SignUpDto } from '../auth/auth.dto';
 
 @Injectable()
 export class UserService {
@@ -19,7 +20,7 @@ export class UserService {
     @Inject(forwardRef(() => AuthService))
     private readonly authService: AuthService,
     @Inject(forwardRef(() => RoleService))
-    private readonly roleService: RoleService,
+    private readonly roleService: RoleService
   ) {}
 
   /**
@@ -72,10 +73,13 @@ export class UserService {
   public async deleteUserById(currentUser: UserModel, id: number): Promise<void> {
     if (currentUser.id === id) throw new HttpBadRequestError('不能删除自己');
     await this.checkGlobalAdmin(currentUser, true);
-    await this.userModel.update({ id }, {
-      isDeleted: 1,
-      updaterId: currentUser.id
-    });
+    await this.userModel.update(
+      { id },
+      {
+        isDeleted: 1,
+        updaterId: currentUser.id
+      }
+    );
   }
 
   /**
@@ -85,12 +89,15 @@ export class UserService {
    */
   public async updateUser(currentUser: UserModel, body: UpdateUserDto): Promise<void> {
     if (currentUser.id !== body.id) await this.checkGlobalAdmin(currentUser, true);
-    await this.userModel.update({ id: body.id }, {
-      nickname: body.nickname,
-      email: body.email,
-      mobile: body.mobile,
-      updaterId: currentUser.id,
-    });
+    await this.userModel.update(
+      { id: body.id },
+      {
+        nickname: body.nickname,
+        email: body.email,
+        mobile: body.mobile,
+        updaterId: currentUser.id
+      }
+    );
   }
 
   /**
@@ -156,7 +163,10 @@ export class UserService {
    * @param query: 查询对象
    * Promise<PageData<UserListItemDto>>
    */
-  public async getUsers(currentUser: UserModel, query: QueryListQuery<UserListReqDto>): Promise<PageData<UserListItemDto>> {
+  public async getUsers(
+    currentUser: UserModel,
+    query: QueryListQuery<UserListReqDto>
+  ): Promise<PageData<UserListItemDto>> {
     const isGlobalAdmin = await this.checkGlobalAdmin(currentUser, true);
     const [users, totalCount] = await this.userModel.findAndCount({
       where: [
@@ -191,7 +201,7 @@ export class UserService {
         enableEdit: isGlobalAdmin || user.id === currentUser.id,
         roleNames: (roles && roles.map(role => role.name)) || [],
         roleCodes: (roles && roles.map(role => role.code)) || []
-      }
+      };
     });
     return {
       totalCount,
@@ -217,7 +227,7 @@ export class UserService {
         status: role.status,
         type: role.type,
         checked: false,
-        disabled: false,
+        disabled: false
       };
       if (checkedRoleIds.includes(role.id)) {
         r.checked = true;
@@ -239,7 +249,7 @@ export class UserService {
       await entityManage.update(UserRoleModel, { userId }, { isDeleted: 1 });
       const saveDoc = roleIds.map(roleId => ({
         userId,
-        roleId,
+        roleId
       }));
       // 批量添加角色信息
       await entityManage.getRepository(UserRoleModel).save(saveDoc, { chunk: 1000 });

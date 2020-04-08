@@ -2,8 +2,8 @@ import { AuthService } from '@/modules/auth/auth.service';
 import { ApiOperation, ApiUseTags } from '@nestjs/swagger';
 import { Body, Controller, forwardRef, HttpStatus, Inject, Post } from '@nestjs/common';
 import { HttpProcessor } from '@/decotators/http.decotator';
-import { BaseUserDto, SignInDto, SignUpDto } from '@/modules/user/user.dto';
-import { TokenDto } from './auth.dto';
+import { BaseUserDto } from '@/modules/user/user.dto';
+import { TokenDto, SignInDto, SignUpDto } from './auth.dto';
 import { UserService } from '@/modules/user/user.service';
 
 @ApiUseTags('权限')
@@ -12,7 +12,7 @@ export class AuthController {
   constructor(
     private readonly authService: AuthService,
     @Inject(forwardRef(() => UserService))
-    private readonly userService: UserService,
+    private readonly userService: UserService
   ) {}
 
   @ApiOperation({ title: '检测 Token', description: '' })

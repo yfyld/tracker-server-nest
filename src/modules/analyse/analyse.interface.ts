@@ -2,7 +2,7 @@ export interface IFilterValue {
   key: string;
   type: string;
   value: any;
-  id: number;
+  id: string;
 }
 
 export interface IFilterInfo {
@@ -17,7 +17,7 @@ export interface IIndicatorInfo {
   customName?: string;
   type?: string;
   filter: IFilterInfo;
-  id: number;
+  id: string;
 }
 
 export interface IAnalyseEventData {
@@ -100,4 +100,25 @@ export interface IFunnelListItem {
     customName: string;
     conversionRate?: number;
   }[];
+}
+
+export interface IPathData {
+  data: IPathDataDataItem[];
+  links: IPathDataLinksItem[];
+  indicatorType: string;
+}
+
+export interface IPathDataDataItem {
+  id: string;
+  name: string;
+  value: number;
+}
+
+export interface IPathDataLinksItem {
+  source: string;
+  target: string;
+  value: number;
+  sourceName: string;
+  targetName: string;
+  conversionRate: number;
 }
