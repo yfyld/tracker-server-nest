@@ -307,7 +307,7 @@ export class MetadataService {
       }
     });
 
-    if (metadatas.length > metadataIndex + 1) {
+    if (!metadatas.length || metadatas.length > metadataIndex + 1) {
       client.set('metadataCheckedIndex', 0);
       return;
     }
@@ -360,7 +360,7 @@ export class MetadataService {
       }
     });
 
-    if (metadatas.length > metadataIndex + 1) {
+    if (!metadatas.length || metadatas.length > metadataIndex + 1) {
       client.set('metadataComputeAttrIndex', 0);
       return;
     }
