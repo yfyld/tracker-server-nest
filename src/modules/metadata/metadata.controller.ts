@@ -33,7 +33,8 @@ import {
   AddMetadataTagDto,
   UpdateMetadataTagDto,
   QueryFieldListDto,
-  AddMetadataByExcelDto
+  AddMetadataByExcelDto,
+  GetEventAttrDto
 } from './metadata.dto';
 import { XlsxService } from '@/providers/xlsx/xlsx.service';
 
@@ -108,8 +109,8 @@ export class MetadataController {
   @HttpProcessor.handle('获取事件属性')
   // @UseGuards(JwtAuthGuard)
   @Get('/fields')
-  getEventAttrs(): Promise<ListData<EventAttrsListDto>> {
-    return this.metadataService.getFieldList();
+  getEventAttrs(@Query() query: GetEventAttrDto): Promise<ListData<EventAttrsListDto>> {
+    return this.metadataService.getFieldList(query);
   }
 
   @HttpProcessor.handle('新增标签')

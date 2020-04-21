@@ -81,7 +81,7 @@ export class AnalyseService {
       key.push(`date_format(trackTime,'%H') as time`);
       hasTime = true;
     } else if (isTrend) {
-      key.push(`date_trunc('${timeUnit.toLowerCase()}', trackTime) as time`);
+      key.push(`date_trunc('${timeUnit.toLowerCase()}', trackTime/1000) as time`);
       hasTime = true;
     }
     const group = this.getGroup(demension, hasTime);
@@ -318,6 +318,7 @@ export class AnalyseService {
       dimensionValues: [],
       type: param.type,
       conversionRate: 0,
+      indicatorType: param.indicatorType,
       list: []
     };
 
@@ -385,7 +386,7 @@ export class AnalyseService {
       key.push(`date_format(trackTime,'%H') as time`);
       hasTime = true;
     } else if (isTrend) {
-      key.push(`date_trunc('${timeUnit.toLowerCase()}', trackTime) as time`);
+      key.push(`date_trunc('${timeUnit.toLowerCase()}', trackTime/1000) as time`);
       hasTime = true;
     }
     const group = this.getGroup(dimension, hasTime);
@@ -460,8 +461,8 @@ export class AnalyseService {
   }
 
   /**
-   * 漏斗分析service
-   * @param QueryFunnelAnalyseDataDto
+   * 路径分析service
+   * @param QueryPathAnalyseDataDto
    */
   public async pathAnalyse(param: QueryPathAnalyseDataDto): Promise<IPathData> {
     //全家过滤

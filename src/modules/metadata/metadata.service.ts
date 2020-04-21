@@ -9,7 +9,8 @@ import {
   AddMetadataTagDto,
   QueryMetadataTagListDto,
   EventAttrsListDto,
-  UpdateMetadataTagDto
+  UpdateMetadataTagDto,
+  GetEventAttrDto
 } from './metadata.dto';
 
 import { MetadataModel, FieldModel, MetadataTagModel } from './metadata.model';
@@ -297,33 +298,23 @@ export class MetadataService {
 
   public async scheduleIntervalCheckMetadata(): Promise<void> {
     const client = await this.redisService.getClient();
-    const metadataId = Number(await client.get('metadataCheckedId')) || 1;
+    const metadataIndex = Number(await client.get('metadataCheckedIndex')) || 0;
 
-    const metadata = await this.metadataModel.findOne({
+    const metadatas = await this.metadataModel.find({
       where: {
         status: 1,
-        id: metadataId
+        isDeleted: false
       }
     });
-    client.set('metadataCheckedId', metadataId + 1);
-    if (!metadata) {
-      const metadataMaxId = Number(await client.get('metadataMaxId')) || 10;
-      if (metadataId >= metadataMaxId) {
-        client.set('metadataCheckedId', 1);
-        const newmetadata = await this.metadataModel.findOne({
-          where: {
-            status: 1
-          },
-          order: {
-            id: 'DESC'
-          }
-        });
-        if (newmetadata) {
-          client.set('metadataMaxId', newmetadata.id);
-        }
-      }
+
+    if (metadatas.length > metadataIndex + 1) {
+      client.set('metadataCheckedIndex', 0);
       return;
     }
+
+    const metadata = metadatas[metadataIndex];
+
+    client.set('metadataCheckedIndex', metadataIndex + 1);
 
     const opt = {
       query: `trackId : "${metadata.code}"|SELECT COUNT(*) as count`,
@@ -359,12 +350,32 @@ export class MetadataService {
 
   public async scheduleCronComputedEventAttrRecommend(): Promise<void> {
     const client = await this.redisService.getClient();
+    const metadataIndex = Number(await client.get('metadataComputeAttrIndex')) || 0;
+
+    const metadatas = await this.metadataModel.find({
+      where: {
+        status: 1,
+        isDeleted: false,
+        recentLog: MoreThan(1000)
+      }
+    });
+
+    if (metadatas.length > metadataIndex + 1) {
+      client.set('metadataComputeAttrIndex', 0);
+      return;
+    }
+
+    const metadata = metadatas[metadataIndex];
+
     const eventAttrs = EVENT_ATTRS;
 
     for (let attr of eventAttrs) {
+      if (attr.eventType && metadata.type !== attr.eventType) {
+        continue;
+      }
       const opt = {
         // tslint:disable-next-line: max-line-length
-        query: `* | select "${attr.value}" , pv from( select count(1) as pv , "${attr.value}" from (select "${attr.value}" from log limit 100000) group by "${attr.value}" order by pv desc) order by pv desc limit 10`,
+        query: `trackId : ${metadata.code} and projectId :${metadata.projectId} | select "${attr.value}" , pv from( select count(1) as pv , "${attr.value}" from (select "${attr.value}" from log limit 100000) group by "${attr.value}" order by pv desc) order by pv desc limit 10`,
         from: Math.floor(Date.now() / 1000 - 86400 * 30),
         to: Math.floor(Date.now() / 1000)
       };
@@ -372,12 +383,12 @@ export class MetadataService {
 
       attr.recommend = result.map(item => item[attr.value]);
     }
-    client.set('eventAttrsRecommend', JSON.stringify(eventAttrs));
+    client.set(`eventAttrsRecommend${metadata.projectId}_${metadata.code}`, JSON.stringify(eventAttrs));
   }
 
-  public async getFieldList(): Promise<ListData<EventAttrsListDto>> {
+  public async getFieldList(query: GetEventAttrDto): Promise<ListData<EventAttrsListDto>> {
     const client = await this.redisService.getClient();
-    let eventAttrsStr = await client.get('eventAttrsRecommend');
+    let eventAttrsStr = await client.get(`eventAttrsRecommend_${query.projectId}_${query.metadataCode}`);
     const eventAttrs: EventAttrsListDto[] = eventAttrsStr ? JSON.parse(eventAttrsStr) : EVENT_ATTRS;
     return { list: eventAttrs };
   }

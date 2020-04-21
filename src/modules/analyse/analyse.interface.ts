@@ -69,6 +69,7 @@ export interface IFunnelData {
   dimension: string;
   dimensionValues: string[];
   type: string;
+  indicatorType: string;
   conversionRate: number;
   list: IFunnelDataByDimensionItem[];
 }

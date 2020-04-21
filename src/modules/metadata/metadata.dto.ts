@@ -15,15 +15,17 @@ export class AddMetadataDto {
   description?: string;
   @IsNumber()
   status: number;
-
+  @IsOptional()
   tags?: number[];
-
+  @IsOptional()
   newTags?: string[];
 
   @IsNumber()
+  @IsOptional()
   log?: number;
 
   @IsNumber()
+  @IsOptional()
   logRecent?: number;
 
   @IsNumber()
@@ -145,6 +147,11 @@ export class SourceCodeDto {
   column: number;
   sourceUrl: string;
   name: string;
+}
+
+export class GetEventAttrDto {
+  metadataCode: string;
+  projectId: number;
 }
 
 export class QueryFieldListDto {
