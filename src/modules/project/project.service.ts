@@ -74,6 +74,7 @@ export class ProjectService {
       take: query.take,
       where: {
         name: Like(`%${query.query.projectName || ''}%`),
+        isDeleted: 0,
         status: 1
       },
       relations: ['creator']
