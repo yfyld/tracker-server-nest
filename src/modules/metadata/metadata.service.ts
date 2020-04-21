@@ -307,7 +307,7 @@ export class MetadataService {
       }
     });
 
-    if (!metadatas.length || metadatas.length > metadataIndex + 1) {
+    if (!metadatas.length || metadatas.length < metadataIndex + 1) {
       client.set('metadataCheckedIndex', 0);
       return;
     }
@@ -338,9 +338,9 @@ export class MetadataService {
     if (!metadata.url) {
       const url = await this.slsService.query<any>({
         ...opt,
-        query: `trackId : "${metadata.code}"|SELECT url group by url`
+        query: `trackId : ${metadata.code} and projectId : ${metadata.projectId}|SELECT url group by url`
       });
-      metadata.url = url[0].url;
+      metadata.url = url[0] ? url[0].url : '';
     }
 
     metadata.log = result.all;
