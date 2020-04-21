@@ -13,6 +13,7 @@ db/data/
 !.autod.conf.js
 src/configs/ops.config.dev.ts
 ops.config.dev.ts
+ops.config.ts
 dist
 
 # See https://help.github.com/ignore-files/ for more about ignoring files.

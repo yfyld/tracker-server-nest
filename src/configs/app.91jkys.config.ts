@@ -49,15 +49,9 @@ export const ORMCONFIG: MysqlConnectionOptions = {
   synchronize: true
 };
 
-//const opsRedisConfig = require('/app/config/redis.js');
 export const REDIS = {
   ...opsConfig.redis,
   db: 10
-};
-
-export const ES_CONFIG = {
-  host: '127.0.0.1:7002',
-  log: 'trace'
 };
 
 export const LOGGER_CONFIG = {
