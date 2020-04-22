@@ -25,11 +25,27 @@ export class AnalyseService {
    * @param 时间
    * 环比同比
    */
-  public async diff(filers, timeParam): Promise<ICompare> {
+  public async diff(filers: string, timeParam, indicatorType: string): Promise<ICompare> {
     const window = Math.floor((timeParam.dateEnd - timeParam.dateStart) / 1000);
+
+    const day = Math.floor(window / 86400);
+
+    let countStr = 'select count(1) as count';
+    if (indicatorType === 'PV') {
+      countStr = `select count(1) as count`;
+    } else if (indicatorType === `UV`) {
+      countStr = `select approx_distinct(utoken) as count`;
+    } else if (indicatorType === 'APV') {
+      countStr = `select try(count(1) / approx_distinct(utoken)) as count`;
+    } else if (indicatorType === 'DPV') {
+      countStr = `select count(1) / ${day} as count`;
+    } else if (indicatorType === 'DUV') {
+      countStr = `select try(approx_distinct(utoken) / ${day} )as count`;
+    }
+
     // tslint:disable-next-line:max-line-length
-    const query = `${filers}|select qoq[1] as qoqCurrent, qoq[2] as qoqPrev, qoq[3] as qoqPercentage, yoy[1] as yoyCurrent, yoy[2] as yoyPrev, yoy[3] as yoyPercentage from(select  compare( pv , ${window}) as qoq ,compare( pv , ${window +
-      86400 * 365}) as yoy  from (select count(1) as pv  from log ))`;
+    const query = `${filers}|select qoq[1] as qoqCurrent, qoq[2] as qoqPrev, qoq[3] as qoqPercentage, yoy[1] as yoyCurrent, yoy[2] as yoyPrev, yoy[3] as yoyPercentage from(select  compare( count , ${window}) as qoq ,compare( count , ${window +
+      86400 * 365}) as yoy  from (${countStr}  from log ))`;
     const data = await this.slsService.query<ICompare>({
       query,
       from: Math.floor(timeParam.dateStart / 1000),
@@ -74,7 +90,7 @@ export class AnalyseService {
     } else if (indicatorType === `UV` || indicatorType === 'DUV') {
       key.push(`approx_distinct(utoken) as count`);
     } else if (indicatorType === 'APV') {
-      key.push(`count(1) / approx_distinct(utoken) as count`);
+      key.push(`try(count(1) / approx_distinct(utoken)) as count`);
     }
 
     if (indicatorType === 'DUV' || indicatorType === 'DPV') {
@@ -288,7 +304,7 @@ export class AnalyseService {
 
           return {
             time: key,
-            conversionRateMap: this.computedConversionRateMap(steps, stepLength, topStepData.key, rootStepData.key),
+            conversionRateMap: this.computedConversionRateMap(steps, steps.length, topStepData.key, rootStepData.key),
             steps
           };
         })
@@ -380,7 +396,7 @@ export class AnalyseService {
     } else if (indicatorType === `UV` || indicatorType === 'DUV') {
       key.push(`approx_distinct(utoken) as count`);
     } else if (indicatorType === 'APV') {
-      key.push(`count(1) / approx_distinct(utoken) as count`);
+      key.push(`try(count(1) / approx_distinct(utoken)) as count`);
     }
     if (indicatorType === 'DUV' || indicatorType === 'DPV') {
       key.push(`date_format(trackTime,'%H') as time`);
@@ -446,12 +462,13 @@ export class AnalyseService {
         metadataMap[metadata.code]++;
       }
 
-      const compare = await this.diff(filterStr, timeParam);
+      const compare = await this.diff(filterStr, timeParam, indicator.type);
 
       result.list.push({
         key: metadataMap[metadata.code] ? metadata.code + '__' + metadataMap[metadata.code] : metadata.code,
         metadataCode: metadata.code,
         metadataName: metadata.name,
+        indicatorType: indicator.type,
         data,
         compare
       });

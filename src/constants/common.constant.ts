@@ -8,3 +8,4 @@ export const REDIS_KEY_ROLE_GLOBAL_ADMIN_ID = REDIS_PREFIX_KEY + 'role_global_ad
 export const REDIS_KEY_ALL_PERMISSIONS = REDIS_PREFIX_KEY + 'all_permissions';
 export const REDIS_KEY_ALL_ROLES = REDIS_PREFIX_KEY + 'all_roles';
 export const GLOBAL_ADMIN_USERNAME = 'admin';
+export const CUSTOM_TOKEN_KEY = 'TRACKER_IDENTIFY';

@@ -1,3 +1,4 @@
+import { TeamModel } from './../team/team.model';
 import { IsString, IsDefined, IsNotEmpty } from 'class-validator';
 import { ApiModelProperty } from '@nestjs/swagger';
 import {
@@ -38,6 +39,9 @@ export class ProjectModel {
   @ManyToOne(type => UserModel, { cascade: true, onDelete: 'CASCADE' })
   creator: UserModel;
 
+  @ManyToOne(type => TeamModel, { cascade: true, onDelete: 'CASCADE' })
+  team: TeamModel;
+
   @CreateDateColumn()
   createdAt: Date;
 
@@ -55,26 +59,4 @@ export class MemberModel {
   user: UserModel;
   @ManyToOne(type => RoleModel, { cascade: true, onDelete: 'CASCADE' })
   role: RoleModel;
-}
-
-@Entity()
-export class SourcemapModel {
-  @PrimaryGeneratedColumn()
-  id: number;
-
-  @ApiModelProperty()
-  @IsDefined()
-  @IsString()
-  @Column()
-  url: string;
-  @Column()
-  version: string;
-
-  @Column()
-  hash: boolean;
-  @Column()
-  fileName: string;
-
-  @ManyToOne(type => ProjectModel, { cascade: true, onDelete: 'CASCADE' })
-  project: ProjectModel;
 }

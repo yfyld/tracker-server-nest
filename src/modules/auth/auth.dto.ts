@@ -56,15 +56,15 @@ export class SignInDto {
 }
 
 export class SignUpDto {
-  @IsNotEmpty({ message: '账号不能为空' })
+  @IsNotEmpty({ message: '昵称不能为空' })
+  @IsString({ message: '昵称必须为字符串' })
+  nickname: string;
+
   @IsString({ message: '账号必须为字符串' })
   username: string;
 
-  @IsString({ message: '账号必须为字符串' })
-  nickname: string;
-
-  @IsNotEmpty({ message: '账号不能为空' })
-  @IsString({ message: '账号必须为字符串' })
+  @IsNotEmpty({ message: '密码不能为空' })
+  @IsString({ message: '密码必须为字符串' })
   @Length(6, 50, { message: '至少6个字符组成' })
   password: string;
 }

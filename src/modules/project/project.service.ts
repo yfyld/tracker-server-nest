@@ -1,7 +1,17 @@
+import { TeamModel } from './../team/team.model';
 import { HttpBadRequestError } from './../../errors/bad-request.error';
-import { ProjectModel, MemberModel, SourcemapModel } from './project.model';
+import { ProjectModel, MemberModel } from './project.model';
 import { Injectable } from '@nestjs/common';
-import { Repository, In, Like } from 'typeorm';
+import {
+  Repository,
+  In,
+  Like,
+  DeepPartial,
+  Transaction,
+  TransactionManager,
+  EntityManager,
+  FindManyOptions
+} from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import {
   AddProjectDto,
@@ -19,6 +29,7 @@ import { UserModel } from '@/modules/user/user.model';
 import { QueryListQuery, PageData } from '@/interfaces/request.interface';
 import { UseInterceptors, ClassSerializerInterceptor } from '@nestjs/common';
 import { RoleModel } from '../role/role.model';
+
 @Injectable()
 export class ProjectService {
   constructor(
@@ -30,8 +41,8 @@ export class ProjectService {
     private readonly roleModel: Repository<RoleModel>,
     @InjectRepository(MemberModel)
     private readonly memberModel: Repository<MemberModel>,
-    @InjectRepository(SourcemapModel)
-    private readonly sourcemapModel: Repository<SourcemapModel>
+    @InjectRepository(TeamModel)
+    private readonly teamModel: Repository<TeamModel>
   ) {}
 
   public async getProjectById(projectId: number): Promise<ProjectModel> {
@@ -69,16 +80,24 @@ export class ProjectService {
   }
 
   public async getProjects(query: QueryListQuery<QueryProjectsDto>): Promise<PageData<ProjectModel>> {
-    const [projects, totalCount] = await this.projectModel.findAndCount({
+    const findParam: FindManyOptions<ProjectModel> = {
       skip: query.skip,
       take: query.take,
       where: {
-        name: Like(`%${query.query.projectName || ''}%`),
         isDeleted: 0,
         status: 1
       },
       relations: ['creator']
-    });
+    };
+
+    if (query.query.projectName) {
+      (findParam as any).where.name = Like(`%${query.query.projectName}%`);
+    }
+    if (query.query.teamId) {
+      (findParam as any).where.team = { id: Number(query.query.teamId) };
+    }
+
+    const [projects, totalCount] = await this.projectModel.findAndCount(findParam);
     return {
       totalCount,
       list: projects
@@ -100,16 +119,39 @@ export class ProjectService {
   }
 
   public async addProject(projectInfo: AddProjectDto, user: UserModel): Promise<AddProjectResDto> {
-    const project = this.projectModel.create({
+    const createParam: DeepPartial<ProjectModel> = {
       creator: user,
       ...projectInfo
-    });
+    };
+    const adminer = [user.id];
+    if (projectInfo.teamId) {
+      var team = await this.teamModel.findOne({
+        where: { id: projectInfo.teamId },
+        relations: ['creator', 'members']
+      });
+      if (!team) {
+        throw '团队不存在';
+      }
+      createParam.team = team;
+      adminer.push(team.creator.id);
+    }
+    const project = this.projectModel.create(createParam);
     const { id } = await this.projectModel.save(project);
+
     await this.addMembers({
       projectId: id,
-      memberIds: [user.id],
-      roleCode: 'ADMIN'
+      memberIds: adminer,
+      roleCode: 'PROJECT_ADMIN'
     });
+
+    if (team) {
+      await this.addMembers({
+        projectId: id,
+        memberIds: team.members.filter(item => item.id !== user.id).map(item => item.id),
+        roleCode: 'PROJECT_MEMBER'
+      });
+    }
+
     return { id };
   }
 
@@ -175,53 +217,6 @@ export class ProjectService {
       .where('projectId = :projectId AND userId IN (:...memberIds) ', {
         projectId,
         memberIds
-      })
-      .execute();
-    return;
-  }
-
-  public async addSourcemap(body: AddSourcemapsDto): Promise<void> {
-    const { projectId, files, hash, version } = body;
-
-    await this.sourcemapModel
-      .createQueryBuilder('source')
-      .insert()
-      .values(
-        files.map(file => ({
-          project: { id: projectId },
-          hash,
-          version,
-          ...file
-        }))
-      )
-      .execute();
-    return;
-  }
-
-  public async updateSourcemap(body: ActionSourcemapsDto): Promise<void> {
-    const { projectId, sourcemapIds, hash, version } = body;
-
-    await this.sourcemapModel
-      .createQueryBuilder('member')
-      .update()
-      .set({ hash, version })
-      .where('projectId = :projectId AND id IN (:...sourcemapIds) ', {
-        projectId,
-        sourcemapIds
-      })
-      .execute();
-    return;
-  }
-
-  public async deleteSourcemap(body: ActionSourcemapsDto): Promise<void> {
-    const { projectId, sourcemapIds } = body;
-
-    await this.sourcemapModel
-      .createQueryBuilder('member')
-      .delete()
-      .where('projectId = :projectId AND id IN (:...sourcemapIds) ', {
-        projectId,
-        sourcemapIds
       })
       .execute();
     return;

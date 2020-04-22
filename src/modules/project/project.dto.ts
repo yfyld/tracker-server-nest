@@ -11,8 +11,7 @@ export class AddProjectDto {
   description?: string;
 
   @IsOptional()
-  @IsString({ message: '封面必须为字符串' })
-  image?: string;
+  teamId?: number;
 }
 
 export class AddProjectResDto {
@@ -48,6 +47,8 @@ export class QueryProjectsDto {
   @IsOptional()
   @IsString({ message: 'projectName必须为字符串' })
   projectName?: string;
+  @IsOptional()
+  teamId?: number;
 }
 
 export class ProjectDto {

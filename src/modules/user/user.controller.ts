@@ -27,7 +27,7 @@ import { RolePermission, UpdateRolePermissions } from '@/modules/role/role.dto';
 @ApiUseTags('账号权限')
 @Controller('user')
 export class UserController {
-  constructor(private readonly userService: UserService, private readonly authService: AuthService) {}
+  constructor(private readonly userService: UserService) {}
 
   // 检测 Token 有效性
   @ApiOperation({ title: '检测 Token', description: '' })
@@ -35,14 +35,6 @@ export class UserController {
   @HttpProcessor.handle('检测 Token')
   checkToken(): string {
     return 'ok';
-  }
-
-  @ApiOperation({ title: '注册', description: '' })
-  @HttpProcessor.handle('注册')
-  @Post('/signUp')
-  async signUp(@Body() user: SignUpDto): Promise<TokenDto> {
-    const newUser = await this.userService.addUser(user);
-    return this.authService.createToken(newUser);
   }
 
   @ApiOperation({ title: '修改用户信息', description: '' })

@@ -1,3 +1,4 @@
+import { SignUpDto } from './auth.dto';
 import { forwardRef, HttpStatus, Injectable, Inject } from '@nestjs/common';
 import { UserService } from '@/modules/user/user.service';
 import { PermissionService } from '@/modules/permission/permission.service';
@@ -13,6 +14,8 @@ import { BaseUserDto } from '@/modules/user/user.dto';
 import { HttpUnauthorizedError } from '@/errors/unauthorized.error';
 import { CustomError } from '@/errors/custom.error';
 import Utils from '../../utils/utils';
+import { SingleLoginService } from '@/providers/singleLogin/single-login.service';
+import { TokenResult } from '../user/user.interface';
 
 @Injectable()
 export class AuthService {
@@ -21,11 +24,15 @@ export class AuthService {
     private readonly userRoleModel: Repository<UserRoleModel>,
     @InjectRepository(RolePermissionModel)
     private readonly rolePermissionModel: Repository<RolePermissionModel>,
+    @InjectRepository(UserModel)
+    private readonly userModel: Repository<UserModel>,
     @Inject(forwardRef(() => UserService))
     private readonly userService: UserService,
+
     private readonly permissionService: PermissionService,
     private readonly roleService: RoleService,
-    private readonly jwtService: JwtService
+    private readonly jwtService: JwtService,
+    private readonly singleLoginService: SingleLoginService
   ) {}
 
   /**
@@ -156,6 +163,18 @@ export class AuthService {
   }
 
   /**
+   *注册
+   *
+   * @param {SignUpDto} user
+   * @returns {Promise<TokenDto>}
+   * @memberof AuthService
+   */
+  public async signUp(user: SignUpDto): Promise<TokenDto> {
+    const newUser = await this.userService.addUser(user);
+    return this.createToken(newUser);
+  }
+
+  /**
    * 通过用户名+密码登录
    * @param signInUser: 用户名+密码传输对象
    * @return Promise<TokenDto>
@@ -171,5 +190,27 @@ export class AuthService {
     )
       throw new HttpUnauthorizedError('用户名或密码不正确');
     return this.createToken(user);
+  }
+
+  public async singleSignOn(cookie): Promise<TokenDto> {
+    // tslint:disable-next-line: no-console
+    console.debug(cookie);
+    const userInfo: any = await this.singleLoginService.getUserInfo(cookie);
+    const user = await this.userModel.findOne({
+      select: ['password', 'id', 'username', 'nickname'],
+      where: {
+        username: userInfo.username
+      }
+    });
+    if (user) {
+      return this.createToken(user);
+    } else {
+      const newUser = await this.userService.addUser({
+        username: userInfo.username,
+        nickname: userInfo.nickname,
+        password: '123456'
+      });
+      return this.createToken(newUser);
+    }
   }
 }

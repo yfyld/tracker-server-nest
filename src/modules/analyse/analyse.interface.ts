@@ -46,6 +46,7 @@ export interface IAnalyseEventDataListItem {
   key: string;
   metadataCode: string;
   metadataName: string;
+  indicatorType: string;
   data: IAnalyseEventDataListDataItem[];
   compare: ICompare;
 }

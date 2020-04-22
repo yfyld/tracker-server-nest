@@ -11,11 +11,7 @@ import { AuthModule } from '../auth/auth.module';
 import { RoleModule } from '../role/role.module';
 
 @Module({
-  imports: [
-    forwardRef(() => AuthModule),
-    forwardRef(() => RoleModule),
-    TypeOrmModule.forFeature([UserModel]),
-  ],
+  imports: [forwardRef(() => AuthModule), forwardRef(() => RoleModule), TypeOrmModule.forFeature([UserModel])],
   providers: [
     UserService,
     JwtStrategy,

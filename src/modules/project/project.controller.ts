@@ -1,3 +1,4 @@
+import { TransactionManager, EntityManager, Transaction } from 'typeorm';
 import { ParseIntPipe } from './../../pipes/parse-int.pipe';
 import { QueryListQuery } from '@/interfaces/request.interface';
 import { QueryList } from './../../decotators/query-list.decorators';
