@@ -74,6 +74,9 @@ export class UpdateProjectDto {
   @IsOptional()
   @IsString({ message: '封面必须为字符串' })
   image: string;
+
+  @IsOptional()
+  associationProjectIds: number[];
 }
 
 export class AddSourcemapsDto {

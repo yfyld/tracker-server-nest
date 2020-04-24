@@ -1,3 +1,4 @@
+import { ProjectModel } from './../project/project.model';
 import { ListData } from './../../interfaces/request.interface';
 import { IEventAttr } from './metadata.interface';
 import { EVENT_ATTRS } from './../../constants/event.constant';
@@ -35,6 +36,9 @@ export class MetadataService {
 
     @InjectRepository(MetadataTagModel)
     private readonly metadataTagModel: Repository<MetadataTagModel>,
+
+    @InjectRepository(ProjectModel)
+    private readonly projectModel: Repository<ProjectModel>,
 
     @InjectRepository(FieldModel)
     private readonly fieldModel: Repository<FieldModel>,
@@ -85,8 +89,34 @@ export class MetadataService {
     let params: {
       [propName: string]: any;
     } = {};
-    condition = 'metadata.projectId = :projectId and metadata.name like :name and metadata.code like :code';
+
+    if (query.query.isAssociation) {
+      const projectInfo = await this.projectModel.findOne({
+        where: {
+          id: projectId
+        },
+        relations: ['associationProjects']
+      });
+      const associationProjectIds = projectInfo.associationProjects.map(item => item.id);
+      let projectIds = query.query.projectIds
+        ? query.query.projectIds
+            .split(',')
+            .map(item => Number(item))
+            .filter(item => associationProjectIds.includes(item))
+        : null;
+      if (!projectIds || !projectIds.length) {
+        projectIds = associationProjectIds;
+        projectIds.push(projectId);
+      }
+
+      params.projectIds = projectIds;
+      condition = 'metadata.projectId in (:projectIds) and metadata.name like :name and metadata.code like :code';
+    } else {
+      condition = 'metadata.projectId = :projectId and metadata.name like :name and metadata.code like :code';
+    }
+
     params.projectId = projectId;
+
     params.name = `%${name || ''}%`;
     params.code = `%${code || ''}%`;
 

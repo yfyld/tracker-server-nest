@@ -36,6 +36,10 @@ export class ProjectModel {
   @Column({ default: false })
   isDeleted: boolean;
 
+  @ManyToMany(type => ProjectModel, { cascade: true, onDelete: 'CASCADE' })
+  @JoinTable()
+  associationProjects: ProjectModel[];
+
   @ManyToOne(type => UserModel, { cascade: true, onDelete: 'CASCADE' })
   creator: UserModel;
 

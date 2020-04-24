@@ -59,7 +59,7 @@ export class ProjectService {
   public async getProjectInfo(projectId: number): Promise<ProjectDto> {
     const project = await this.projectModel.findOne({
       where: { id: projectId },
-      relations: ['creator']
+      relations: ['creator', 'associationProjects']
     });
     if (!project) {
       throw new HttpBadRequestError('项目不存在');
@@ -77,6 +77,17 @@ export class ProjectService {
       }))
     };
     return result;
+  }
+
+  public async getAssociationProjectIds(projectId: number): Promise<number[]> {
+    const project = await this.projectModel.findOne({
+      where: { id: projectId },
+      relations: ['associationProjects']
+    });
+    if (!project) {
+      throw new HttpBadRequestError('项目不存在');
+    }
+    return project.associationProjects.map(item => item.id);
   }
 
   public async getProjects(query: QueryListQuery<QueryProjectsDto>): Promise<PageData<ProjectModel>> {
@@ -157,7 +168,21 @@ export class ProjectService {
 
   public async updateProject(projectInfo: UpdateProjectDto): Promise<void> {
     let project = await this.projectModel.findOne(projectInfo.id);
-    project = { ...project, ...projectInfo };
+    project = {
+      ...project,
+      ...projectInfo
+    };
+    if (projectInfo.associationProjectIds && projectInfo.associationProjectIds.length > 0) {
+      const associationProjects = await this.projectModel.find({
+        where: {
+          id: In(projectInfo.associationProjectIds)
+        }
+      });
+      project.associationProjects = associationProjects;
+    } else if (projectInfo.associationProjectIds.length === 0) {
+      project.associationProjects = [];
+    }
+
     await this.projectModel.save(project);
     return;
   }

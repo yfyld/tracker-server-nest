@@ -47,7 +47,9 @@ export class ReportService {
       skip: query.skip,
       take: query.take,
       relations: ['boards'],
-      where: {},
+      where: {
+        projectId: query.query.projectId
+      },
       order: {}
     };
 

@@ -15,10 +15,15 @@ import { QueryEventAnalyseDataDto, QueryFunnelAnalyseDataDto, QueryPathAnalyseDa
 import { filterToQuery } from './analyse.util';
 import { getDynamicTime } from '@/utils/date';
 import { MetadataService } from '../metadata/metadata.service';
+import { ProjectService } from '../project/project.service';
 
 @Injectable()
 export class AnalyseService {
-  constructor(private readonly slsService: SlsService, private readonly metadataService: MetadataService) {}
+  constructor(
+    private readonly slsService: SlsService,
+    private readonly metadataService: MetadataService,
+    private readonly projectService: ProjectService
+  ) {}
   /**
    *
    * @param 过滤条件
@@ -338,12 +343,18 @@ export class AnalyseService {
       list: []
     };
 
+    const associationProjectIds = await this.projectService.getAssociationProjectIds(param.projectId);
+
     const select = this.getFunnelSelect(param.indicatorType, param.type, 'day', param.dimension);
 
     for (let indicator of param.indicators) {
       const indicatorFilterStr = filterToQuery(indicator.filter);
       const metadataStr = indicator.metadataCode !== '_ALL_METADATA' ? `and trackId:${indicator.metadataCode}` : '';
-      const filterStr = `${globalFilterStr} ${indicatorFilterStr} projectId:${param.projectId} ${metadataStr} `;
+      const filterStr = `${globalFilterStr} ${indicatorFilterStr} ${this.getProjectFilter(
+        param.projectId,
+        indicator.projectId,
+        associationProjectIds
+      )} ${metadataStr} `;
       // tslint:disable-next-line: max-line-length
       const query = `${filterStr} |${select}`;
 
@@ -409,6 +420,21 @@ export class AnalyseService {
     return ' select ' + key.join(',') + group + ' limit 1000';
   }
 
+  private getProjectFilter(projectId: number, associationProjectId: number, associationProjectIds: number[]) {
+    if (!associationProjectIds.length || associationProjectId === projectId) {
+      return ` projectId:${projectId} `;
+    }
+
+    if (associationProjectIds.length && associationProjectId && associationProjectIds.includes(associationProjectId)) {
+      return ` projectId:${associationProjectId} `;
+    }
+
+    if (associationProjectIds.length && !associationProjectId) {
+      return associationProjectIds.map(item => ` projectId:${item} `).join(' and ');
+    }
+    throw '当前分析终数据不存在或无权限';
+  }
+
   /**
    * 事件分析service
    * @param param
@@ -421,6 +447,8 @@ export class AnalyseService {
 
     const dimensionMap = {};
     const metadataMap = {};
+
+    const associationProjectIds = await this.projectService.getAssociationProjectIds(param.projectId);
 
     const result: IAnalyseEventData = {
       list: [],
@@ -435,13 +463,17 @@ export class AnalyseService {
       const indicatorFilterStr = filterToQuery(indicator.filter);
 
       const metadataStr = indicator.metadataCode !== '_ALL_METADATA' ? `and trackId:${indicator.metadataCode}` : '';
-      const filterStr = `${globalFilterStr} ${indicatorFilterStr} projectId:${param.projectId} ${metadataStr} `;
+      const filterStr = `${globalFilterStr} ${indicatorFilterStr} ${this.getProjectFilter(
+        param.projectId,
+        indicator.projectId,
+        associationProjectIds
+      )} ${metadataStr} `;
       // tslint:disable-next-line: max-line-length
       const query = `${filterStr} | ${select}`;
 
       const metadata =
         indicator.metadataCode !== '_ALL_METADATA'
-          ? await this.metadataService.getMetadataByCode(indicator.metadataCode, param.projectId)
+          ? await this.metadataService.getMetadataByCode(indicator.metadataCode, indicator.projectId || param.projectId)
           : { code: '_ALL_METADATA', name: '所有事件' };
 
       const data = await this.slsService.query<IAnalyseEventDataListDataItem>({
@@ -494,6 +526,8 @@ export class AnalyseService {
       indicatorType: param.indicatorType
     };
 
+    const associationProjectIds = await this.projectService.getAssociationProjectIds(param.projectId);
+
     const select = 'select count(*) as count';
 
     //查询所有页面
@@ -502,7 +536,11 @@ export class AnalyseService {
     for (let indicator of param.indicators) {
       const indicatorFilterStr = filterToQuery(indicator.filter);
       const metadataStr = indicator.metadataCode !== '_ALL_METADATA' ? `and trackId:${indicator.metadataCode}` : '';
-      const filterStr = `${globalFilterStr} ${indicatorFilterStr} projectId:${param.projectId} ${metadataStr} `;
+      const filterStr = `${globalFilterStr} ${indicatorFilterStr} ${this.getProjectFilter(
+        param.projectId,
+        indicator.projectId,
+        associationProjectIds
+      )} ${metadataStr} `;
       const query = `${filterStr} |${select}`;
 
       indicatorSqlMap[indicator.id] = query;
