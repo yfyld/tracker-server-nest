@@ -14,6 +14,11 @@ export class MetadataSchedule extends NestSchedule {
     this.metadataService.scheduleIntervalCheckMetadata();
   }
 
+  @Interval(30000)
+  intervalFindMetadata() {
+    this.metadataService.scheduleIntervalFindMetadata();
+  }
+
   //@Cron('0 0 2 * *')
   @Interval(30000)
   async cronComputedEventAttrRecommend() {

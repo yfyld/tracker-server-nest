@@ -326,6 +326,22 @@ export class MetadataService {
     return;
   }
 
+  public async scheduleIntervalFindMetadata(): Promise<void> {
+    // const client = await this.redisService.getClient();
+    // const metadataIndex = Number(await client.get(`metadataCode_${}`)) || 0;
+    // const opt = {
+    //   query: `trackId : ""|SELECT COUNT(*) as count`,
+    //   from: Math.floor(new Date(metadata.createdAt).getTime() / 1000),
+    //   to: Math.floor(Date.now() / 1000)
+    // };
+    // const metadatas = await this.metadataModel.find({
+    //   where: {
+    //     status: 1,
+    //     isDeleted: false
+    //   }
+    // });
+  }
+
   public async scheduleIntervalCheckMetadata(): Promise<void> {
     const client = await this.redisService.getClient();
     const metadataIndex = Number(await client.get('metadataCheckedIndex')) || 0;
