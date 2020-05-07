@@ -421,7 +421,7 @@ export class AnalyseService {
   }
 
   private getProjectFilter(projectId: number, associationProjectId: number, associationProjectIds: number[]) {
-    if (!associationProjectIds.length || associationProjectId === projectId) {
+    if (projectId && (!associationProjectIds.length || associationProjectId === projectId || !associationProjectId)) {
       return ` projectId:${projectId} `;
     }
 

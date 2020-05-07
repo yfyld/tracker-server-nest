@@ -64,3 +64,12 @@ export const LOGGER_CONFIG = {
   pattern: 'yyyy-MM-dd.log',
   level: 'debug'
 };
+
+export const SLS_CONFIG = {
+  ...opsConfig.sls
+};
+
+export const SLS_STORE_CONFIG = {
+  projectName: 'k8s-log-custom-ks-qa',
+  logStoreName: 'frontlo-collection-telescope-process-qa'
+};

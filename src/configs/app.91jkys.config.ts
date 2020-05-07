@@ -1,5 +1,6 @@
 import { MysqlConnectionOptions } from 'typeorm/driver/mysql/MysqlConnectionOptions';
 import * as path from 'path';
+import { config } from 'rxjs';
 
 export const APP = {
   port: 5000,
@@ -59,4 +60,13 @@ export const LOGGER_CONFIG = {
   daysToKeep: 30,
   pattern: 'yyyy-MM-dd.log',
   level: 'debug'
+};
+
+export const SLS_CONFIG = {
+  ...opsConfig.sls
+};
+
+export const SLS_STORE_CONFIG = {
+  projectName: 'k8s-log-custom-ks-qa',
+  logStoreName: 'frontlo-collection-telescope-process-qa'
 };
