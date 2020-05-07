@@ -2,7 +2,7 @@ import { MysqlConnectionOptions } from 'typeorm/driver/mysql/MysqlConnectionOpti
 import * as path from 'path';
 
 export const APP = {
-  port: 9236,
+  port: 5000,
   version: '1.0.0'
 };
 
