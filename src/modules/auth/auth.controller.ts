@@ -1,4 +1,3 @@
-import { CUSTOM_TOKEN_KEY } from './../../../../sdk/src/constant/index';
 import { AuthService } from '@/modules/auth/auth.service';
 import { ApiOperation, ApiUseTags } from '@nestjs/swagger';
 import { Body, Controller, forwardRef, HttpStatus, Inject, Post, Get, Query, Res } from '@nestjs/common';
@@ -9,6 +8,7 @@ import { UserService } from '@/modules/user/user.service';
 import { Cookie } from '@/decotators/cookie.decorators';
 import { Response } from 'express';
 import { BASE_URL } from '@/app.config';
+import { CUSTOM_TOKEN_KEY } from '@/constants/common.constant';
 
 @ApiUseTags('权限')
 @Controller('auth')
