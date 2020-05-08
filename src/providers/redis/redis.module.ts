@@ -3,6 +3,8 @@ import { ORMCONFIG } from '@/app.config';
 import { RedisModule as _RedisModule } from 'nestjs-redis';
 import { DynamicModule } from '@nestjs/common';
 
+console.info(REDIS);
+
 export const RedisModule: DynamicModule = _RedisModule.register({
   host: REDIS.host,
   port: REDIS.port,
