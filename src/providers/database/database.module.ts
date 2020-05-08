@@ -11,4 +11,6 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 // })
 // export class DatabaseModule {}
 
+console.info(ORMCONFIG);
+
 export const DatabaseModule = TypeOrmModule.forRoot(ORMCONFIG);

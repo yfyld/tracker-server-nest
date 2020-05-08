@@ -2,8 +2,6 @@ import { DB_CONNECTION_TOKEN } from '@/constants/common.constant';
 import { createConnection } from 'typeorm';
 import { ORMCONFIG } from '@/app.config';
 
-console.info(ORMCONFIG);
-
 export const databaseProviders = [
   {
     provide: DB_CONNECTION_TOKEN,
