@@ -41,6 +41,7 @@ export const BASE_URL = {
 };
 
 const opsConfig = require('/app/config/config.ts');
+console.log(JSON.stringify(opsConfig, null, 2));
 
 export const ORMCONFIG: MysqlConnectionOptions = {
   type: 'mysql',
