@@ -1,6 +1,5 @@
 import { MysqlConnectionOptions } from 'typeorm/driver/mysql/MysqlConnectionOptions';
 import * as path from 'path';
-import { config } from 'rxjs';
 
 export const APP = {
   port: 5000,
@@ -41,7 +40,6 @@ export const BASE_URL = {
 };
 
 const opsConfig = require('/app/config/config.ts');
-console.log(JSON.stringify(opsConfig, null, 2));
 
 export const ORMCONFIG: MysqlConnectionOptions = {
   type: 'mysql',
@@ -68,6 +66,6 @@ export const SLS_CONFIG = {
 };
 
 export const SLS_STORE_CONFIG = {
-  projectName: 'k8s-log-custom-ks-qa',
-  logStoreName: 'frontlo-collection-telescope-process-qa'
+  projectName: 'k8s-log-custom-ks-pro',
+  logStoreName: 'frontlo-collection-telescope-pro'
 };

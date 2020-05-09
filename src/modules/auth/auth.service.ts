@@ -170,6 +170,9 @@ export class AuthService {
    * @memberof AuthService
    */
   public async signUp(user: SignUpDto): Promise<TokenDto> {
+    if (!user.username) {
+      user.username = user.mobile;
+    }
     const newUser = await this.userService.addUser(user);
     return this.createToken(newUser);
   }
@@ -195,7 +198,7 @@ export class AuthService {
   public async singleSignOn(cookie): Promise<TokenDto> {
     // tslint:disable-next-line: no-console
     console.debug(cookie);
-    const userInfo: any = await this.singleLoginService.getUserInfo(cookie);
+    const userInfo = await this.singleLoginService.getUserInfo(cookie);
     const user = await this.userModel.findOne({
       select: ['password', 'id', 'username', 'nickname'],
       where: {
@@ -206,9 +209,10 @@ export class AuthService {
       return this.createToken(user);
     } else {
       const newUser = await this.userService.addUser({
+        mobile: userInfo.mobile,
         username: userInfo.username,
         nickname: userInfo.nickname,
-        password: '123456'
+        password: userInfo.email
       });
       return this.createToken(newUser);
     }

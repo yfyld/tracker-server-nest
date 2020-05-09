@@ -1,9 +1,8 @@
 import { MysqlConnectionOptions } from 'typeorm/driver/mysql/MysqlConnectionOptions';
 import * as path from 'path';
-import { config } from 'rxjs';
 
 export const APP = {
-  port: 5000,
+  port: 7009,
   version: '1.0.0'
 };
 
@@ -36,11 +35,11 @@ export const ALARM_INTERVAL = 30000;
 export const GENERATE_IMG_CRON = '0 0 11 * *';
 
 export const BASE_URL = {
-  webUrl: 'http://telescope.91jkys.com',
-  serverUrl: 'http://telescope.91jkys.com/api'
+  webUrl: 'http://test.qa.91jkys.com:3000/',
+  serverUrl: 'http://127.0.0.1:7009'
 };
 
-const opsConfig = require('/app/config/config.ts');
+const opsConfig = require('./configs/ops.config.dev');
 
 export const ORMCONFIG: MysqlConnectionOptions = {
   type: 'mysql',
@@ -51,12 +50,16 @@ export const ORMCONFIG: MysqlConnectionOptions = {
 };
 
 export const REDIS = {
-  ...opsConfig.redis,
-  db: 10
+  ...opsConfig.redis
+};
+
+export const ES_CONFIG = {
+  host: '127.0.0.1:7002',
+  log: 'trace'
 };
 
 export const LOGGER_CONFIG = {
-  path: path.join(__dirname, '/app/logs/telescope-server'),
+  path: path.join(__dirname, '../logs/telescope-'),
   daysToKeep: 30,
   pattern: 'yyyy-MM-dd.log',
   level: 'debug'
