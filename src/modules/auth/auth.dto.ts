@@ -1,4 +1,5 @@
 import { IsNotEmpty, IsString, Length } from 'class-validator';
+import { Optional } from '@nestjs/common';
 
 export class TokenDto {
   accessToken: string;
@@ -60,7 +61,11 @@ export class SignUpDto {
   @IsString({ message: '昵称必须为字符串' })
   nickname: string;
 
-  @IsString({ message: '账号必须为字符串' })
+  @IsString({ message: '手机必须为字符串' })
+  @IsNotEmpty({ message: '手机不能为空' })
+  mobile: string;
+
+  @Optional()
   username: string;
 
   @IsNotEmpty({ message: '密码不能为空' })
