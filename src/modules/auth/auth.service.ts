@@ -170,6 +170,9 @@ export class AuthService {
    * @memberof AuthService
    */
   public async signUp(user: SignUpDto): Promise<TokenDto> {
+    if (!user.username) {
+      user.username = user.mobile;
+    }
     const newUser = await this.userService.addUser(user);
     return this.createToken(newUser);
   }
@@ -209,7 +212,7 @@ export class AuthService {
         mobile: userInfo.mobile,
         username: userInfo.username,
         nickname: userInfo.nickname,
-        password: '123456'
+        password: userInfo.email
       });
       return this.createToken(newUser);
     }

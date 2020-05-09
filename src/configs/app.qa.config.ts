@@ -2,7 +2,7 @@ import { MysqlConnectionOptions } from 'typeorm/driver/mysql/MysqlConnectionOpti
 import * as path from 'path';
 
 export const APP = {
-  port: 7001,
+  port: 5000,
   version: '1.0.0'
 };
 
@@ -23,7 +23,7 @@ export const CCONFIG = {};
 
 export const MULTER_OPTIONS = {
   fileSize: 10000000,
-  path: path.join(__dirname, '/uploads')
+  path: path.join(__dirname, 'public/uploads')
 };
 
 export const ALARMCONFIG = {
@@ -35,36 +35,37 @@ export const ALARM_INTERVAL = 30000;
 export const GENERATE_IMG_CRON = '0 0 11 * *';
 
 export const BASE_URL = {
-  webUrl: 'http://127.0.0.1:5000',
-  serverUrl: 'http://127.0.0.1:7001'
+  webUrl: 'http://telescope.qa.91jkys.com',
+  serverUrl: 'http://telescope.qa.91jkys.com/api'
 };
+
+const opsConfig = require('/app/config/config.ts');
 
 export const ORMCONFIG: MysqlConnectionOptions = {
   type: 'mysql',
-  host: '127.0.0.1',
-  port: 3337,
-  username: 'root',
-  password: '342531',
-  database: 'trycatch',
+  ...opsConfig.db,
+  database: 'telescope',
   entities: [__dirname + '/**/*.model{.ts,.js}'],
   synchronize: true
 };
 
-export const MONGODB = {
-  url: `mongodb://127.0.0.1:27017/minder`,
-  username: 'yfyld',
-  password: '342531',
-  limit: 20
-};
-
 export const REDIS = {
-  host: '127.0.0.1',
-  port: 6667,
-  ttl: null,
-  defaultCacheTTL: 60 * 60 * 24
+  ...opsConfig.redis,
+  db: 10
 };
 
-export const ES_CONFIG = {
-  host: 'yfyld.cn:9006',
-  log: 'trace'
+export const LOGGER_CONFIG = {
+  path: path.join(__dirname, '/app/logs/telescope-server'),
+  daysToKeep: 30,
+  pattern: 'yyyy-MM-dd.log',
+  level: 'debug'
+};
+
+export const SLS_CONFIG = {
+  ...opsConfig.sls
+};
+
+export const SLS_STORE_CONFIG = {
+  projectName: 'k8s-log-custom-ks-qa',
+  logStoreName: 'frontlo-collection-telescope-process-qa'
 };

@@ -60,6 +60,14 @@ export class UserService {
    * @return Promise<BaseUserDto>
    */
   public async addUser(user: SignUpDto): Promise<BaseUserDto> {
+    const hasuser = await this.userModel.findOne({
+      where: {
+        username: user.username
+      }
+    });
+    if (hasuser) {
+      throw '您已注册过';
+    }
     user.password = AuthService.encryptPassword(user.password);
     return await this.userModel.save(user);
   }
