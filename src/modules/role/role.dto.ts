@@ -9,7 +9,9 @@ import {
   IsNotEmpty,
   IsIn,
   IsOptional,
-  IsDate, IsBoolean, IsArray
+  IsDate,
+  IsBoolean,
+  IsArray
 } from 'class-validator';
 import { MALICIOUS_OPS_MESSAGE } from '@/constants/common.constant';
 
@@ -90,30 +92,9 @@ export class QueryRoleDto {
   code?: string;
 }
 
-export class RoleItemDto extends BaseRoleDto {
-  @IsInt()
-  id: number;
+export class RoleItemDto extends BaseRoleDto {}
 
-  @IsInt()
-  updaterId: number;
-
-  @IsDate()
-  updatedAt: Date;
-}
-
-export class RoleListItemDto extends BaseRoleDto {
-  @IsInt()
-  id: number;
-
-  @IsInt()
-  updaterId: number;
-
-  @IsDate()
-  updatedAt: Date;
-
-  @IsString()
-  updaterNickname: string;
-}
+export class RoleListItemDto extends BaseRoleDto {}
 
 export class RolePermission {
   @IsInt()

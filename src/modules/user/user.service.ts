@@ -2,14 +2,21 @@ import { UserModel } from './user.model';
 import { Injectable, forwardRef, Inject } from '@nestjs/common';
 import { Repository, Like, In, getManager, EntityManager } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
-import { UserListReqDto, UpdateUserDto, BaseUserDto, UserRoles, UserListItemDto } from './user.dto';
+import {
+  UserListReqDto,
+  UpdateUserDto,
+  BaseUserDto,
+  UserRoles,
+  UserListItemDto,
+  UpdateUserByAdminDto
+} from './user.dto';
 import { PageData, QueryListQuery } from '@/interfaces/request.interface';
 import { ROLE_CODE_GLOBAL_ADMIN, GLOBAL_ADMIN_USERNAME } from '@/constants/common.constant';
 import { HttpUnauthorizedError } from '@/errors/unauthorized.error';
 import { AuthService } from '../auth/auth.service';
 import { RoleService } from '../role/role.service';
 import { HttpBadRequestError } from '@/errors/bad-request.error';
-import { UserRoleModel } from '../auth/auth.model';
+
 import { SignUpDto } from '../auth/auth.dto';
 
 @Injectable()
@@ -44,13 +51,13 @@ export class UserService {
    * @param enableThrow: true权限不足，抛出异常
    */
   public async checkGlobalAdmin(user: UserModel, enableThrow = false): Promise<void | boolean> {
-    if (user.username === GLOBAL_ADMIN_USERNAME) return true;
-    const roles = await this.authService.getRolesByUserId(user.id);
-    const roleCodes = roles.map(item => item.code);
-    if (!roleCodes.includes(ROLE_CODE_GLOBAL_ADMIN)) {
-      if (enableThrow) throw new HttpUnauthorizedError('权限不足');
-      return false;
-    }
+    // if (user.username === GLOBAL_ADMIN_USERNAME) return true;
+    // const roles = await this.authService.getRolesByUserId(user.id);
+    // const roleCodes = roles.map(item => item.code);
+    // if (!roleCodes.includes(ROLE_CODE_GLOBAL_ADMIN)) {
+    //   if (enableThrow) throw new HttpUnauthorizedError('权限不足');
+    //   return false;
+    // }
     return true;
   }
 
@@ -84,8 +91,7 @@ export class UserService {
     await this.userModel.update(
       { id },
       {
-        isDeleted: 1,
-        updaterId: currentUser.id
+        isDeleted: 1
       }
     );
   }
@@ -95,17 +101,25 @@ export class UserService {
    * @param currentUser: 当前登录用户
    * @param body: 需要修改的信息
    */
-  public async updateUser(currentUser: UserModel, body: UpdateUserDto): Promise<void> {
-    if (currentUser.id !== body.id) await this.checkGlobalAdmin(currentUser, true);
-    await this.userModel.update(
-      { id: body.id },
-      {
-        nickname: body.nickname,
-        email: body.email,
-        mobile: body.mobile,
-        updaterId: currentUser.id
-      }
-    );
+  public async updateUser(body: UpdateUserDto): Promise<void> {
+    // todo
+    // if (currentUser.id !== body.id) await this.checkGlobalAdmin(currentUser, true);
+    await this.userModel.update({ id: body.id }, body);
+  }
+
+  /**
+   * 更新用户信息
+   * @param currentUser: 当前登录用户
+   * @param body: 需要修改的信息
+   */
+  public async updateUserByAdmin(body: UpdateUserByAdminDto): Promise<void> {
+    // todo
+    // if (currentUser.id !== body.id) await this.checkGlobalAdmin(currentUser, true);
+    const { mobile, roleIds, nickname, email } = body;
+    const roles = roleIds.map(id => ({ id }));
+    const user = await this.userModel.findOne(body.id);
+    user.roles = roles as any;
+    await this.userModel.save({ ...user, mobile, roles, nickname, email });
   }
 
   /**
@@ -175,8 +189,8 @@ export class UserService {
     currentUser: UserModel,
     query: QueryListQuery<UserListReqDto>
   ): Promise<PageData<UserListItemDto>> {
-    const isGlobalAdmin = await this.checkGlobalAdmin(currentUser, true);
     const [users, totalCount] = await this.userModel.findAndCount({
+      relations: ['roles'],
       where: [
         {
           username: Like(`%${query.query.username || ''}%`),
@@ -190,77 +204,30 @@ export class UserService {
       skip: query.skip,
       take: query.take
     });
-    if (totalCount === 0) return { totalCount, list: [] };
-    const userIds = users.map(user => user.id);
-    const updaterIds = users.map(user => user.updaterId || user.id); // 无最后更新人则为自己注册
-    const updaterUsersBaseInfoMap = await this.getUsersBaseInfoMapByIds(updaterIds);
-    const userRolesMap = await this.authService.getRolesMapByUserIds(userIds);
-    const userList = users.map(user => {
-      const updater = updaterUsersBaseInfoMap.get(user.updaterId || user.id);
-      const roles = userRolesMap.get(user.id);
-      console.log(roles);
-      return {
-        id: user.id,
-        username: user.username,
-        nickname: user.nickname,
-        email: user.email,
-        mobile: user.mobile,
-        updaterNickname: updater.nickname || user.nickname,
-        enableEdit: isGlobalAdmin || user.id === currentUser.id,
-        roleNames: (roles && roles.map(role => role.name)) || [],
-        roleCodes: (roles && roles.map(role => role.code)) || []
-      };
-    });
+
     return {
       totalCount,
-      list: userList
+      list: users
     };
   }
 
-  /**
-   * 根据用户ID获取所有角色列表，并标记不可修改及已使用角色
-   * @param id: 用户ID
-   * @return Promise<UserRoles[]>: 角色信息包含能否修改及是否已开启
-   */
-  public async getUserRoles(id: number): Promise<UserRoles[]> {
-    const allRoles = await this.roleService.getAllRoles();
-    const userRoles = await this.roleService.getRolesByUserId(id);
-    const checkedRoleIds = userRoles.map(userRole => userRole.id);
-    return allRoles.map(role => {
-      const r: UserRoles = {
-        id: role.id,
-        name: role.name,
-        description: role.description,
-        code: role.code,
-        status: role.status,
-        type: role.type,
-        checked: false,
-        disabled: false
-      };
-      if (checkedRoleIds.includes(role.id)) {
-        r.checked = true;
-      }
-      return r;
-    });
-  }
-
-  /**
-   * 更新角色下权限
-   * @param currentUser: 当前登录用户
-   * @param userId: 用户ID
-   * @param roleIds: 角色ID列表
-   * @return Promise<void>
-   */
-  public async updateUserRoles(currentUser: UserModel, userId: number, roleIds: number[]): Promise<void> {
-    await getManager().transaction(async (entityManage: EntityManager) => {
-      // 删除用户下所有原有角色
-      await entityManage.update(UserRoleModel, { userId }, { isDeleted: 1 });
-      const saveDoc = roleIds.map(roleId => ({
-        userId,
-        roleId
-      }));
-      // 批量添加角色信息
-      await entityManage.getRepository(UserRoleModel).save(saveDoc, { chunk: 1000 });
-    });
-  }
+  // /**
+  //  * 更新角色下权限
+  //  * @param currentUser: 当前登录用户
+  //  * @param userId: 用户ID
+  //  * @param roleIds: 角色ID列表
+  //  * @return Promise<void>
+  //  */
+  // public async updateUserRoles(currentUser: UserModel, userId: number, roleIds: number[]): Promise<void> {
+  //   await getManager().transaction(async (entityManage: EntityManager) => {
+  //     // 删除用户下所有原有角色
+  //     await entityManage.update(UserRoleModel, { userId }, { isDeleted: 1 });
+  //     const saveDoc = roleIds.map(roleId => ({
+  //       userId,
+  //       roleId
+  //     }));
+  //     // 批量添加角色信息
+  //     await entityManage.getRepository(UserRoleModel).save(saveDoc, { chunk: 1000 });
+  //   });
+  // }
 }

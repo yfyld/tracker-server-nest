@@ -20,12 +20,15 @@ export class TeamService {
   ) {}
 
   public async addTeam(body: AddTeamDto, user: UserModel): Promise<void> {
-    const members = await this.userModel.find({
-      id: In(body.members)
-    });
+    const members = body.members
+      ? await this.userModel.find({
+          id: In(body.members)
+        })
+      : [];
     const team = this.teamModel.create({
       ...body,
       members,
+      admin: user,
       creator: user
     });
     await this.teamModel.save(team);

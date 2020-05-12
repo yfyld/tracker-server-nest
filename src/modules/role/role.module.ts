@@ -4,7 +4,7 @@ import { RoleService } from '@/modules/role/role.service';
 import { RoleController } from '@/modules/role/role.controller';
 import { UserModule } from '@/modules/user/user.module';
 import { RoleModel } from './role.model';
-import { RolePermissionModel, UserRoleModel } from '@/modules/auth/auth.model';
+
 import { PermissionModel } from '@/modules/permission/permission.model';
 import { AuthModule } from '@/modules/auth/auth.module';
 import { PermissionModule } from '@/modules/permission/permission.module';
@@ -14,7 +14,7 @@ import { PermissionModule } from '@/modules/permission/permission.module';
     forwardRef(() => PermissionModule),
     forwardRef(() => UserModule),
     forwardRef(() => AuthModule),
-    TypeOrmModule.forFeature([RoleModel, RolePermissionModel, UserRoleModel])
+    TypeOrmModule.forFeature([RoleModel])
   ],
   controllers: [RoleController],
   providers: [RoleService],

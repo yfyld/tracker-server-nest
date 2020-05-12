@@ -20,6 +20,10 @@ export class UpdateUserDto {
   mobile: string;
 }
 
+export class UpdateUserByAdminDto extends UpdateUserDto {
+  roleIds: number[];
+}
+
 export class UserListReqDto {
   @IsOptional()
   nickname?: string;
@@ -44,19 +48,7 @@ export class BaseUserDto {
   mobile: string;
 }
 
-export class UserListItemDto extends BaseUserDto {
-  @IsString()
-  updaterNickname: string;
-
-  @IsBoolean()
-  enableEdit: boolean; // 展示编辑按钮？true/false: 展示/不展示
-
-  @IsString()
-  roleCodes: string[];
-
-  @IsString()
-  roleNames: string[];
-}
+export class UserListItemDto extends BaseUserDto {}
 
 export class UpdateUserRoles {
   @IsInt()

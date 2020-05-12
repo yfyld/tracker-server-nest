@@ -200,14 +200,15 @@ export class MetadataService {
   public async addMetadataByExcel(projectId: number, pathStr: string): Promise<void> {
     const datas = await this.xlsxervice.parseByPath(
       path.join(__dirname, '../../', pathStr),
-      ['名称', 'code', '类型', '启用', '标签', '备注'],
-      ['name', 'code', 'type', 'status', 'newTags', 'description']
+      ['名称', 'code', '类型', '启用', '标签', 'URL', '备注'],
+      ['name', 'code', 'type', 'status', 'newTags', 'url', 'description']
     );
     for (let item of datas) {
       await this.addMetadata({
         projectId,
         name: item.name,
         code: item.code,
+        url: item.url,
         type: item.type === '页面' ? 1 : 2,
         status: item.status === '是' ? 1 : 0,
         newTags: item.newTags ? item.newTags.split(',') : [],

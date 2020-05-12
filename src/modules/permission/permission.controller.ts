@@ -4,7 +4,8 @@ import { JwtAuthGuard } from '@/guards/auth.guard';
 import { PermissionService } from '@/modules/permission/permission.service';
 import {
   BasePermissionDto,
-  PermissionItemDto, PermissionListItemDto,
+  PermissionItemDto,
+  PermissionListItemDto,
   QueryPermissionDto,
   UpdatePermissionDto
 } from '@/modules/permission/permission.dto';
@@ -21,7 +22,7 @@ export class PermissionController {
   constructor(private readonly permissionService: PermissionService) {}
 
   @ApiOperation({ title: '新建权限', description: '' })
-  @ApiResponse({ status: 200, type: PermissionListItemDto})
+  @ApiResponse({ status: 200, type: PermissionListItemDto })
   @Post('/')
   @HttpProcessor.handle({ message: '新建权限' })
   @UseGuards(JwtAuthGuard)
@@ -34,8 +35,20 @@ export class PermissionController {
   @HttpProcessor.handle('获取权限列表')
   @UseGuards(JwtAuthGuard)
   @Get('/')
-  getPermissions(@Auth() user: UserModel, @QueryList() query: QueryListQuery<QueryPermissionDto>): Promise<PageData<PermissionListItemDto>> {
-    return this.permissionService.getPermissions(user, query);
+  getPermissions(@QueryList() query: QueryListQuery<QueryPermissionDto>): Promise<PageData<PermissionListItemDto>> {
+    return this.permissionService.getPermissions(query);
+  }
+
+  @ApiOperation({ title: '获取当前用户权限列表', description: '' })
+  @ApiBearerAuth()
+  @HttpProcessor.handle('获取当前用户权限列表')
+  @UseGuards(JwtAuthGuard)
+  @Get('/user')
+  getPermissionsByUser(
+    @Auth() user: UserModel,
+    @QueryList() query: QueryListQuery<QueryPermissionDto>
+  ): Promise<PageData<PermissionListItemDto>> {
+    return this.permissionService.getPermissionsByUser(user, query);
   }
 
   @ApiOperation({ title: '编辑权限', description: '' })
@@ -50,7 +63,10 @@ export class PermissionController {
   @HttpProcessor.handle('删除权限')
   @Delete('/:permissionId')
   @UseGuards(JwtAuthGuard)
-  deletePermission(@Auth() user: UserModel, @Param('permissionId', new ParseIntPipe()) permissionId: number): Promise<void> {
+  deletePermission(
+    @Auth() user: UserModel,
+    @Param('permissionId', new ParseIntPipe()) permissionId: number
+  ): Promise<void> {
     return this.permissionService.deletePermission(user, permissionId);
   }
 }

@@ -17,7 +17,14 @@ import { UserService } from './user.service';
 import { HttpProcessor } from '@/decotators/http.decotator';
 import { JwtAuthGuard } from '@/guards/auth.guard';
 import { ApiBearerAuth, ApiUseTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
-import { UserListReqDto, UpdateUserDto, UserListItemDto, BaseUserDto, UpdateUserRoles } from './user.dto';
+import {
+  UserListReqDto,
+  UpdateUserDto,
+  UserListItemDto,
+  BaseUserDto,
+  UpdateUserRoles,
+  UpdateUserByAdminDto
+} from './user.dto';
 import { QueryListQuery, PageData } from '@/interfaces/request.interface';
 import { UseInterceptors } from '@nestjs/common';
 import { AuthService } from '../auth/auth.service';
@@ -41,8 +48,20 @@ export class UserController {
   @HttpProcessor.handle('修改用户信息')
   @UseGuards(JwtAuthGuard)
   @Put('/')
-  updateUser(@Auth() user: UserModel, @Body() body: UpdateUserDto): Promise<void> {
-    return this.userService.updateUser(user, body);
+  updateUser(@Auth() user: UserModel, @Body() { mobile, nickname, email, id }: UpdateUserDto): Promise<void> {
+    if (id !== user.id) {
+      throw '非法修改';
+    }
+    return this.userService.updateUser({ mobile, nickname, email, id });
+  }
+
+  @ApiOperation({ title: '修改指定用户信息', description: '' })
+  @HttpProcessor.handle('修改指定用户信息')
+  @UseGuards(JwtAuthGuard)
+  @Put('/admin-update')
+  updateUserById(@Auth() user: UserModel, @Body() body: UpdateUserByAdminDto): Promise<void> {
+    //todo 判断下是否是超管
+    return this.userService.updateUserByAdmin(body);
   }
 
   @UseInterceptors(ClassSerializerInterceptor)
@@ -57,7 +76,6 @@ export class UserController {
   }
 
   @ApiOperation({ title: '获取用户列表', description: '' })
-  @ApiBearerAuth()
   @ApiResponse({ status: 200, type: UserModel })
   @HttpProcessor.handle('获取用户列表')
   @UseGuards(JwtAuthGuard)
@@ -67,25 +85,6 @@ export class UserController {
     @QueryList() query: QueryListQuery<UserListReqDto>
   ): Promise<PageData<UserListItemDto>> {
     return this.userService.getUsers(user, query);
-  }
-
-  @ApiOperation({ title: '获取用户对应角色列表', description: '' })
-  @HttpProcessor.handle('获取用户对应角色列表')
-  @Get('/userRoles/:userId')
-  @UseGuards(JwtAuthGuard)
-  getUserRoles(
-    @Auth() user: UserModel,
-    @Param('userId', new ParseIntPipe()) userId: number
-  ): Promise<RolePermission[]> {
-    return this.userService.getUserRoles(userId);
-  }
-
-  @ApiOperation({ title: '更新用户下所有角色', description: '' })
-  @HttpProcessor.handle('更新用户下所有角色')
-  @Put('/userRoles')
-  @UseGuards(JwtAuthGuard)
-  updateRolePermissions(@Auth() user: UserModel, @Body() body: UpdateUserRoles): Promise<void> {
-    return this.userService.updateUserRoles(user, body.userId, body.roleIds);
   }
 
   @ApiOperation({ title: '删除用户', description: '' })

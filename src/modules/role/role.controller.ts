@@ -1,3 +1,4 @@
+import { RoleModel } from '@/modules/role/role.model';
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiUseTags } from '@nestjs/swagger';
 import { Controller, UseGuards, Post, Get, Body, Query, Put, Param, Delete, ParseIntPipe } from '@nestjs/common';
 import { JwtAuthGuard } from '@/guards/auth.guard';
@@ -6,7 +7,9 @@ import {
   BaseRoleDto,
   RoleItemDto,
   QueryRoleDto,
-  UpdateRoleDto, RolePermission, UpdateRolePermissions
+  UpdateRoleDto,
+  RolePermission,
+  UpdateRolePermissions
 } from '@/modules/role/role.dto';
 import { HttpProcessor } from '@/decotators/http.decotator';
 import { UserModel } from '@/modules/user/user.model';
@@ -21,7 +24,7 @@ export class RoleController {
   constructor(private readonly roleService: RoleService) {}
 
   @ApiOperation({ title: '新建角色', description: '' })
-  @ApiResponse({ status: 200, type: RoleItemDto})
+  @ApiResponse({ status: 200, type: RoleItemDto })
   @Post('/')
   @HttpProcessor.handle({ message: '新建角色' })
   @UseGuards(JwtAuthGuard)
@@ -54,19 +57,19 @@ export class RoleController {
     return this.roleService.deleteRole(user, roleId);
   }
 
-  @ApiOperation({ title: '获取角色对应权限列表', description: '' })
-  @HttpProcessor.handle('获取角色对应权限列表')
-  @Get('/rolePermissions/:roleId')
+  @ApiOperation({ title: '获取角色详情', description: '' })
+  @HttpProcessor.handle('获取角色详情')
+  @Get('/:roleId')
   @UseGuards(JwtAuthGuard)
-  getRolePermissions(@Auth() user: UserModel, @Param('roleId', new ParseIntPipe()) roleId: number): Promise<RolePermission[]> {
-    return this.roleService.getRolePermissions(roleId);
+  getRoleInfo(@Param('roleId', new ParseIntPipe()) roleId: number): Promise<RoleModel> {
+    return this.roleService.getRoleInfo(roleId);
   }
 
   @ApiOperation({ title: '更新角色下所有权限', description: '' })
   @HttpProcessor.handle('更新角色下所有权限')
   @Put('/rolePermissions')
   @UseGuards(JwtAuthGuard)
-  updateRolePermissions(@Auth() user: UserModel, @Body() body: UpdateRolePermissions): Promise<void> {
-    return this.roleService.updateRolePermissions(user, body.roleId, body.permissionIds);
+  updateRolePermissions(@Body() body: UpdateRolePermissions): Promise<void> {
+    return this.roleService.updateRolePermissions(body.roleId, body.permissionIds);
   }
 }

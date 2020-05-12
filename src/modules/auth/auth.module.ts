@@ -3,7 +3,7 @@ import { forwardRef, Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthController } from '@/modules/auth/auth.controller';
 import { AuthService } from '@/modules/auth/auth.service';
-import { RolePermissionModel, UserRoleModel } from '@/modules/auth/auth.model';
+
 import { JwtModule, JwtService } from '@nestjs/jwt';
 import { PermissionModule } from '@/modules/permission/permission.module';
 import { RoleModule } from '@/modules/role/role.module';
@@ -23,7 +23,7 @@ import { SingleLoginModule } from '@/providers/singleLogin/single-login.module';
       signOptions: { expiresIn: AUTH.expiresIn }
     }),
     SingleLoginModule,
-    TypeOrmModule.forFeature([UserRoleModel, RolePermissionModel, UserModel])
+    TypeOrmModule.forFeature([UserModel])
   ],
   controllers: [AuthController],
   providers: [AuthService],

@@ -5,7 +5,9 @@ import {
   PrimaryGeneratedColumn,
   Index,
   CreateDateColumn,
-  UpdateDateColumn, ManyToMany, JoinTable
+  UpdateDateColumn,
+  ManyToMany,
+  JoinTable
 } from 'typeorm';
 import { PermissionModel } from '../permission/permission.model';
 
@@ -24,7 +26,12 @@ export class RoleModel {
 
   @Index()
   @IsString()
-  @Column({ type: 'varchar', length: 128, default: 'GLOBAL_USER', comment: '角色Code，示例：GLOBAL_ADMIN/USER/GLOBAL_USER/PROJECT_XX' })
+  @Column({
+    type: 'varchar',
+    length: 128,
+    default: 'GLOBAL_USER',
+    comment: '角色Code，示例：GLOBAL_ADMIN/USER/GLOBAL_USER/PROJECT_XX'
+  })
   code: string;
 
   @IsInt()
@@ -33,30 +40,27 @@ export class RoleModel {
 
   @IsInt()
   @Index()
-  @Column({ type: 'tinyint', unsigned: true, default: 3, comment: '角色类型：1/2/3: 超管/平台管理员/平台用户，与code相同功能，tinyint更易于高性能检索' })
+  @Column({
+    type: 'tinyint',
+    unsigned: true,
+    default: 3,
+    comment: '角色类型：1/2/3: 超管/平台管理员/平台用户，与code相同功能，tinyint更易于高性能检索'
+  })
   type: number;
 
-  // @ManyToMany(type => PermissionModel)
-  // @JoinTable()
-  // permissions: PermissionModel[];
+  @ManyToMany(type => PermissionModel)
+  @JoinTable()
+  permissions: PermissionModel[];
 
   @IsInt()
   @Column({ type: 'tinyint', default: 0, comment: '0/1:，软删：否/是' })
   isDeleted: number;
-
-  @IsInt()
-  @Column({ comment: '创建人ID' })
-  creatorId: number;
-
-  @IsInt()
-  @Column({ comment: '最后更新人ID' })
-  updaterId: number;
 
   @IsDate()
   @CreateDateColumn({ comment: '创建时间' })
   createdAt: Date;
 
   @IsDate()
-  @UpdateDateColumn({ comment: '更新时间'} )
+  @UpdateDateColumn({ comment: '更新时间' })
   updatedAt: Date;
 }

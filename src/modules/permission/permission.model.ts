@@ -1,10 +1,5 @@
 import { IsDate, IsInt, IsString } from 'class-validator';
-import {
-  Entity,
-  Column,
-  PrimaryGeneratedColumn,
-  Index, CreateDateColumn, UpdateDateColumn,
-} from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, Index, CreateDateColumn, UpdateDateColumn } from 'typeorm';
 
 @Entity()
 export class PermissionModel {
@@ -21,7 +16,11 @@ export class PermissionModel {
 
   @Index()
   @IsString()
-  @Column({ type: 'varchar', length: 128, comment: '权限Code，示例：API_PUT_USER/ROUTER_ADMIN__ROLE_MANAGE/FUNCTION_EDIT_USER，路由中的双下划线代表/' })
+  @Column({
+    type: 'varchar',
+    length: 128,
+    comment: '权限Code，示例：API_PUT_USER/ROUTER_ADMIN__ROLE_MANAGE/FUNCTION_EDIT_USER，路由中的双下划线代表/'
+  })
   code: string;
 
   @IsInt()
@@ -36,19 +35,11 @@ export class PermissionModel {
   @Column({ type: 'tinyint', default: 0, comment: '0/1:，软删：否/是' })
   isDeleted: number;
 
-  @IsInt()
-  @Column({ comment: '创建人ID' })
-  creatorId: number;
-
-  @IsInt()
-  @Column({ comment: '最后更新人ID' })
-  updaterId: number;
-
   @IsDate()
   @CreateDateColumn({ comment: '创建时间' })
   createdAt: Date;
 
   @IsDate()
-  @UpdateDateColumn({ comment: '更新时间'} )
+  @UpdateDateColumn({ comment: '更新时间' })
   updatedAt: Date;
 }

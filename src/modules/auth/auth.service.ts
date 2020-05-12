@@ -6,7 +6,7 @@ import { RoleService } from '@/modules/role/role.service';
 import { UserModel } from '@/modules/user/user.model';
 import { RoleItemDto, PermissionItemDto, TokenDto, UsersRolesFormatDto, SignInDto } from '@/modules/auth/auth.dto';
 import { InjectRepository } from '@nestjs/typeorm';
-import { RolePermissionModel, UserRoleModel } from '@/modules/auth/auth.model';
+
 import { In, Repository } from 'typeorm';
 import { JwtService } from '@nestjs/jwt';
 import { AUTH } from '@/app.config';
@@ -20,10 +20,6 @@ import { TokenResult } from '../user/user.interface';
 @Injectable()
 export class AuthService {
   constructor(
-    @InjectRepository(UserRoleModel)
-    private readonly userRoleModel: Repository<UserRoleModel>,
-    @InjectRepository(RolePermissionModel)
-    private readonly rolePermissionModel: Repository<RolePermissionModel>,
     @InjectRepository(UserModel)
     private readonly userModel: Repository<UserModel>,
     @Inject(forwardRef(() => UserService))
@@ -49,17 +45,17 @@ export class AuthService {
    * @param id: 用户ID
    * @return Promise<RoleItemDto[]>
    */
-  public async getRolesByUserId(id: number): Promise<RoleItemDto[]> {
-    const userRoles = await this.userRoleModel.find({
-      where: {
-        userId: id,
-        isDeleted: 0
-      }
-    });
-    if (!userRoles.length) return [];
-    const roleIds = userRoles.map((userRole: UserRoleModel): number => userRole.roleId);
-    return await this.roleService.getRolesByIds(roleIds);
-  }
+  // public async getRolesByUserId(id: number): Promise<RoleItemDto[]> {
+  //   const userRoles = await this.userRoleModel.find({
+  //     where: {
+  //       userId: id,
+  //       isDeleted: 0
+  //     }
+  //   });
+  //   if (!userRoles.length) return [];
+  //   const roleIds = userRoles.map((userRole: UserRoleModel): number => userRole.roleId);
+  //   return await this.roleService.getRolesByIds(roleIds);
+  // }
 
   /**
    * 根据用户ID获取其所有权限信息
@@ -67,17 +63,13 @@ export class AuthService {
    * @return Promise<PermissionItemDto[]>
    */
   public async getPermissionsByUserId(id: number): Promise<PermissionItemDto[]> {
-    const roles = await this.getRolesByUserId(id);
-    if (!roles.length) return [];
-    const roleIds = roles.map((role: RoleItemDto): number => role.id);
-    const rolePermissions = await this.rolePermissionModel.find({
+    const { roles } = await this.userModel.findOne({
       where: {
-        roleId: In(roleIds),
-        isDeleted: 0
-      }
+        id
+      },
+      relations: ['roles']
     });
-    const permissionIds = rolePermissions.map(rolePermission => rolePermission.permissionId);
-    return await this.permissionService.getPermissionsByIds(permissionIds);
+    return [];
   }
 
   /**
@@ -85,46 +77,46 @@ export class AuthService {
    * @param ids: 用户ID列表
    * @return Promise<UsersRolesFormatDto[]>: 格式化好的批量用户包含的角色信息
    */
-  public async getRolesByUserIds(ids: number[]): Promise<UsersRolesFormatDto[]> {
-    if (ids.length > 1000) throw new CustomError({ message: '批量查询的用户ID过多' }, HttpStatus.INTERNAL_SERVER_ERROR);
-    const usersRoles = await this.userRoleModel.find({
-      where: {
-        userId: In(ids),
-        isDeleted: 0
-      }
-    });
-    if (!usersRoles.length) return [];
-    const roleIds = usersRoles.map((userRole: UserRoleModel): number => userRole.roleId);
-    const roles = await this.roleService.getRolesByIds(roleIds);
-    const usersRolesFormat: UsersRolesFormatDto[] = ids.map(userId => ({
-      userId: userId,
-      roles: []
-    }));
-    const roleMap = new Map();
-    roles.forEach(role => roleMap.set(role.id, role));
-    usersRolesFormat.forEach(item => {
-      usersRoles.forEach((userRole, index) => {
-        if (item.userId === userRole.userId) {
-          item.roles.push(roleMap.get(userRole.roleId));
-          usersRoles.splice(index, 1);
-        }
-      });
-    });
-    return usersRolesFormat;
-  }
+  // public async getRolesByUserIds(ids: number[]): Promise<UsersRolesFormatDto[]> {
+  //   if (ids.length > 1000) throw new CustomError({ message: '批量查询的用户ID过多' }, HttpStatus.INTERNAL_SERVER_ERROR);
+  //   const usersRoles = await this.userRoleModel.find({
+  //     where: {
+  //       userId: In(ids),
+  //       isDeleted: 0
+  //     }
+  //   });
+  //   if (!usersRoles.length) return [];
+  //   const roleIds = usersRoles.map((userRole: UserRoleModel): number => userRole.roleId);
+  //   const roles = await this.roleService.getRolesByIds(roleIds);
+  //   const usersRolesFormat: UsersRolesFormatDto[] = ids.map(userId => ({
+  //     userId: userId,
+  //     roles: []
+  //   }));
+  //   const roleMap = new Map();
+  //   roles.forEach(role => roleMap.set(role.id, role));
+  //   usersRolesFormat.forEach(item => {
+  //     usersRoles.forEach((userRole, index) => {
+  //       if (item.userId === userRole.userId) {
+  //         item.roles.push(roleMap.get(userRole.roleId));
+  //         usersRoles.splice(index, 1);
+  //       }
+  //     });
+  //   });
+  //   return usersRolesFormat;
+  // }
 
   /**
    * 根据用户ID列表批量获取所有角色信息（Map存储）
    * @param ids: 用户ID列表
    * @return Promise<Map<number, RoleItemDto>>: 用户ID => 角色信息列表
    */
-  public async getRolesMapByUserIds(ids: number[]): Promise<Map<number, RoleItemDto[]>> {
-    const usersRolesFormat = await this.getRolesByUserIds(ids);
-    const userRoleMap = new Map();
-    if (!usersRolesFormat.length) return userRoleMap;
-    usersRolesFormat.forEach(userRoles => userRoleMap.set(userRoles.userId, userRoles.roles));
-    return userRoleMap;
-  }
+  // public async getRolesMapByUserIds(ids: number[]): Promise<Map<number, RoleItemDto[]>> {
+  //   const usersRolesFormat = await this.getRolesByUserIds(ids);
+  //   const userRoleMap = new Map();
+  //   if (!usersRolesFormat.length) return userRoleMap;
+  //   usersRolesFormat.forEach(userRoles => userRoleMap.set(userRoles.userId, userRoles.roles));
+  //   return userRoleMap;
+  // }
 
   /**
    * 创建JWT Token

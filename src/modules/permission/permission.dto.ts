@@ -9,8 +9,7 @@ import {
   IsNotEmpty,
   IsIn,
   IsOptional,
-  IsDate,
-
+  IsDate
 } from 'class-validator';
 import { MALICIOUS_OPS_MESSAGE } from '@/constants/common.constant';
 
@@ -85,23 +84,8 @@ export class PermissionItemDto extends BasePermissionDto {
   @IsInt()
   id: number;
 
-  @IsInt()
-  updaterId: number;
-
   @IsDate()
   updatedAt: Date;
 }
 
-export class PermissionListItemDto extends BasePermissionDto {
-  @IsInt()
-  id: number;
-
-  @IsInt()
-  updaterId: number;
-
-  @IsDate()
-  updatedAt: Date;
-
-  @IsString()
-  updaterNickname: string;
-}
+export class PermissionListItemDto extends BasePermissionDto {}

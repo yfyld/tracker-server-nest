@@ -38,9 +38,9 @@ export class UserModel {
   @Column()
   password: string;
 
-  // @ManyToMany(type => RoleModel)
-  // @JoinTable()
-  // roles: RoleModel[];
+  @ManyToMany(type => RoleModel)
+  @JoinTable()
+  roles: RoleModel[];
 
   @OneToMany(type => TeamModel, team => team.creator)
   teams: TeamModel[];
@@ -53,9 +53,6 @@ export class UserModel {
 
   @Column({ type: 'tinyint', default: 0, comment: '0/1:，软删：否/是' })
   isDeleted: number;
-
-  @Column()
-  updaterId: number; // 最后更新人ID
 }
 
 @Entity()

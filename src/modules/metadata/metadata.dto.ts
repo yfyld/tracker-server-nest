@@ -20,6 +20,9 @@ export class AddMetadataDto {
   @IsOptional()
   newTags?: string[];
 
+  @IsOptional()
+  url?: string;
+
   @IsNumber()
   @IsOptional()
   log?: number;

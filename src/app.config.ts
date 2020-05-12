@@ -35,7 +35,7 @@ export const ALARM_INTERVAL = 30000;
 export const GENERATE_IMG_CRON = '0 0 11 * *';
 
 export const BASE_URL = {
-  webUrl: 'http://test.qa.91jkys.com:3000/',
+  webUrl: 'http://test.qa.91jkys.com/:3000',
   serverUrl: 'http://127.0.0.1:7009'
 };
 

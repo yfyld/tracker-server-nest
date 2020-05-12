@@ -73,7 +73,7 @@ export class ProjectService {
       ...project,
       members: members.map(item => ({
         ...item.user,
-        roleCode: item.role && item.role.code
+        roleName: item.role && item.role.name
       }))
     };
     return result;

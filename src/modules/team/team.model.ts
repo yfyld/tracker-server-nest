@@ -37,4 +37,7 @@ export class TeamModel {
 
   @ManyToOne(type => UserModel, user => user.teams)
   creator: UserModel;
+
+  @ManyToOne(type => UserModel, user => user.teams)
+  admin: UserModel;
 }
