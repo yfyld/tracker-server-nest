@@ -1,4 +1,3 @@
-import { IUserInfo } from './../../../../sdk/src/core/user';
 import { PermissionModel } from '@/modules/permission/permission.model';
 import { Injectable, Inject, forwardRef } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
