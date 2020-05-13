@@ -22,7 +22,7 @@ export class AddMembersDto {
   @IsNotEmpty({ message: '项目id不能为空' })
   projectId: number;
   @IsNotEmpty({ message: 'memberIds不能为空' })
-  memberIds: number[];
+  userIds: number[];
   @IsNotEmpty({ message: 'roleCode不能为空' })
   roleCode: string;
 }
@@ -31,14 +31,14 @@ export class DeleteMembersDto {
   @IsNotEmpty({ message: '项目id不能为空' })
   projectId: number;
   @IsNotEmpty({ message: 'memberIds不能为空' })
-  memberIds: number[];
+  userIds: number[];
 }
 
 export class UpdateMembersDto {
   @IsNotEmpty({ message: '项目id不能为空' })
   projectId: number;
   @IsNotEmpty({ message: 'memberIds不能为空' })
-  memberIds: number[];
+  userIds: number[];
   @IsNotEmpty({ message: 'roleCode不能为空' })
   roleCode: string;
 }

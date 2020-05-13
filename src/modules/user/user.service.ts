@@ -1,3 +1,5 @@
+import { RoleModel } from './../role/role.model';
+import { DEFAULT_ROLE_CODE } from './../../constants/permission.contant';
 import { UserModel } from './user.model';
 import { Injectable, forwardRef, Inject } from '@nestjs/common';
 import { Repository, Like, In, getManager, EntityManager } from 'typeorm';
@@ -24,6 +26,9 @@ export class UserService {
   constructor(
     @InjectRepository(UserModel)
     private readonly userModel: Repository<UserModel>,
+    @InjectRepository(RoleModel)
+    private readonly roleModel: Repository<RoleModel>,
+
     @Inject(forwardRef(() => AuthService))
     private readonly authService: AuthService,
     @Inject(forwardRef(() => RoleService))
@@ -76,7 +81,12 @@ export class UserService {
       throw '您已注册过';
     }
     user.password = AuthService.encryptPassword(user.password);
-    return await this.userModel.save(user);
+    // 普通注册用户
+    const role = await this.roleModel.findOne({
+      code: DEFAULT_ROLE_CODE.USER
+    });
+
+    return await this.userModel.save({ ...user, roles: [role] });
   }
 
   /**

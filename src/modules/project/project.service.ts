@@ -1,3 +1,4 @@
+import { DEFAULT_ROLE_CODE } from './../../constants/permission.contant';
 import { TeamModel } from './../team/team.model';
 import { HttpBadRequestError } from './../../errors/bad-request.error';
 import { ProjectModel, MemberModel } from './project.model';
@@ -134,7 +135,7 @@ export class ProjectService {
       creator: user,
       ...projectInfo
     };
-    const adminer = [user.id];
+    let adminIds = [user.id];
     if (projectInfo.teamId) {
       var team = await this.teamModel.findOne({
         where: { id: projectInfo.teamId },
@@ -144,22 +145,23 @@ export class ProjectService {
         throw '团队不存在';
       }
       createParam.team = team;
-      adminer.push(team.creator.id);
+      adminIds.push(team.creator.id);
     }
     const project = this.projectModel.create(createParam);
     const { id } = await this.projectModel.save(project);
 
+    adminIds = [...new Set(adminIds)];
     await this.addMembers({
       projectId: id,
-      memberIds: adminer,
-      roleCode: 'PROJECT_ADMIN'
+      userIds: adminIds,
+      roleCode: DEFAULT_ROLE_CODE.PROJECT_ADMIN
     });
 
-    if (team) {
+    if (team && team.members) {
       await this.addMembers({
         projectId: id,
-        memberIds: team.members.filter(item => item.id !== user.id).map(item => item.id),
-        roleCode: 'PROJECT_MEMBER'
+        userIds: team.members.filter(item => !adminIds.includes(item.id)).map(item => item.id),
+        roleCode: DEFAULT_ROLE_CODE.PROJECT_MEMBER
       });
     }
 
@@ -195,7 +197,10 @@ export class ProjectService {
   }
 
   public async addMembers(body: AddMembersDto): Promise<void> {
-    const { memberIds, projectId, roleCode } = body;
+    const { userIds, projectId, roleCode } = body;
+    if (!userIds.length) {
+      return;
+    }
     const role = await this.roleModel.findOne({ code: roleCode });
     if (!role) {
       throw new HttpBadRequestError('角色不存在');
@@ -205,7 +210,7 @@ export class ProjectService {
       throw new HttpBadRequestError('项目不存在');
     }
     const members = await this.userModel.find({
-      id: In(memberIds)
+      id: In(userIds)
     });
     await this.memberModel
       .createQueryBuilder()
@@ -216,21 +221,21 @@ export class ProjectService {
   }
 
   public async deleteMember(body: DeleteMembersDto): Promise<void> {
-    const { projectId, memberIds } = body;
+    const { projectId, userIds } = body;
 
     await this.memberModel
       .createQueryBuilder('member')
       .delete()
-      .where('project = :projectId AND userId IN (:...memberIds) ', {
+      .where('project = :projectId AND userId IN (:...userIds) ', {
         projectId,
-        memberIds
+        userIds
       })
       .execute();
     return;
   }
 
   public async updateMember(body: UpdateMembersDto): Promise<void> {
-    const { projectId, memberIds, roleCode } = body;
+    const { projectId, userIds, roleCode } = body;
     const role = await this.roleModel.findOne({ code: roleCode });
     if (!role) {
       throw new HttpBadRequestError('角色不存在');
@@ -239,9 +244,9 @@ export class ProjectService {
       .createQueryBuilder('member')
       .update()
       .set({ role })
-      .where('projectId = :projectId AND userId IN (:...memberIds) ', {
+      .where('projectId = :projectId AND userId IN (:...userIds) ', {
         projectId,
-        memberIds
+        userIds
       })
       .execute();
     return;

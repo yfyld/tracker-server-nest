@@ -178,6 +178,7 @@ export class AuthService {
    */
   public async signIn(signInUser: SignInDto): Promise<TokenDto> {
     const user = await this.userService.getUserByUsername(signInUser.username);
+    const aaa = AuthService.encryptPassword(signInUser.password);
     if (
       !(
         user &&
