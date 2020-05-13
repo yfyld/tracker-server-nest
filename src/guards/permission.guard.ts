@@ -2,8 +2,6 @@ import { Injectable, CanActivate, ExecutionContext } from '@nestjs/common';
 import { Observable } from 'rxjs';
 import { Reflector } from '@nestjs/core';
 import { HttpForbiddenError } from '@/errors/forbidden.error';
-import { UserService } from '@/modules/user/user.service';
-import { UserModel } from '@/modules/user/user.model';
 
 @Injectable()
 export class PermissionsGuard implements CanActivate {
@@ -29,14 +27,16 @@ export class PermissionsGuard implements CanActivate {
     if (hasPermission()) {
       return true;
     }
-    if (request.params.projectId) {
-      return true;
-      // return this.userService.validateProjectPermission(
-      //   request.params.projectId,
-      //   request.user._id,
-      //   permissions,
-      // );
-    }
+    // if (request.params.projectId) {
+    //   return this.authService.validateProjectPermission(request.params.projectId, request.user._id, permissions);
+    // }
+
+    // const projectRole = await this.projectRoleModel
+    //   .createQueryBuilder('role')
+    //   .leftJoinAndSelect('role.permissions', 'permission')
+    //   .where('user.id = :userId', { userId })
+    //   .where('project.id = :projectId', { projectId })
+    //   .getMany();
     this.handleError();
     return false;
   }

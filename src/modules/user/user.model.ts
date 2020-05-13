@@ -54,18 +54,3 @@ export class UserModel {
   @Column({ type: 'tinyint', default: 0, comment: '0/1:，软删：否/是' })
   isDeleted: number;
 }
-
-@Entity()
-export class ProjectRoleModel {
-  @PrimaryGeneratedColumn()
-  id: number;
-  @OneToOne(type => UserModel)
-  @JoinColumn()
-  user: UserModel;
-  @OneToOne(type => RoleModel)
-  @JoinColumn()
-  role: RoleModel;
-  @OneToOne(type => ProjectModel)
-  @JoinColumn()
-  project: ProjectModel;
-}
