@@ -22,6 +22,7 @@ import { renderFile } from 'ejs';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { dirExists } from './utils/dirExists';
 import { Logger } from './utils/logger';
+import { getConnection } from 'typeorm';
 
 const { log, warn, debug, info } = console;
 const color = c => (isDevMode ? c : '');

@@ -1,3 +1,4 @@
+import { PERMISSION_CODE } from './../../constants/permission.contant';
 import { ParsePageQueryIntPipe } from '../../pipes/parse-page-query-int.pipe';
 
 import { QueryListQuery } from '@/interfaces/request.interface';
@@ -31,19 +32,19 @@ import { ParseIntPipe } from '@/pipes/parse-int.pipe';
 
 @ApiUseTags('团队')
 @Controller('team')
-// @UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, PermissionsGuard)
 export class TeamController {
   constructor(private readonly teamService: TeamService) {}
 
   @HttpProcessor.handle('新增团队')
   @Post('/')
-  @UseGuards(JwtAuthGuard)
+  @Permissions(PERMISSION_CODE.TEAM_ADD)
   addTeam(@Body() body: AddTeamDto, @Auth() user): Promise<void> {
     return this.teamService.addTeam(body, user);
   }
 
   @HttpProcessor.handle('获取团队列表')
-  @UseGuards(JwtAuthGuard)
+  @Permissions(PERMISSION_CODE.TEAM_SEARCH)
   @Get('/')
   getTeams(
     @QueryList(new ParsePageQueryIntPipe(['relevance']))
@@ -55,27 +56,27 @@ export class TeamController {
 
   @HttpProcessor.handle('删除团队')
   @Delete('/:teamId')
-  @UseGuards(JwtAuthGuard)
+  @Permissions(PERMISSION_CODE.TEAM_DEL)
   deleteTeam(@Param('teamId') teamId: number): Promise<void> {
     return this.teamService.deleteTeam(teamId);
   }
 
   @HttpProcessor.handle('修改团队')
   @Put('/')
-  @UseGuards(JwtAuthGuard)
+  @Permissions(PERMISSION_CODE.TEAM_UPDATE)
   updateTeam(@Body() body: UpdateTeamDto): Promise<void> {
     return this.teamService.updateTeam(body);
   }
 
   @HttpProcessor.handle('获取团队信息')
   @Get('/info')
-  @UseGuards(JwtAuthGuard)
+  @Permissions(PERMISSION_CODE.TEAM_INFO)
   getTeamInfo(@Query('id', new ParseIntPipe()) id: number): Promise<TeamModel> {
     return this.teamService.getTeamById(id);
   }
 
   // @HttpProcessor.handle('获取团队列表')
-  // // @UseGuards(JwtAuthGuard)
+  // // @Permissions(PERMISSION_CODE)
   // @Get('/')
   // getTeams(
   //   @QueryList(

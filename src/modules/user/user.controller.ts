@@ -1,3 +1,5 @@
+import { PERMISSION_CODE } from './../../constants/permission.contant';
+import { PermissionsGuard } from '@/guards/permission.guard';
 import { QueryList } from '@/decotators/query-list.decorators';
 import { Auth } from '@/decotators/user.decorators';
 import {
@@ -30,9 +32,11 @@ import { UseInterceptors } from '@nestjs/common';
 import { AuthService } from '../auth/auth.service';
 import { TokenDto, SignUpDto } from '../auth/auth.dto';
 import { RolePermission, UpdateRolePermissions } from '@/modules/role/role.dto';
+import { Permissions } from '@/decotators/permissions.decotators';
 
 @ApiUseTags('账号权限')
 @Controller('user')
+@UseGuards(JwtAuthGuard, PermissionsGuard)
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
@@ -44,9 +48,8 @@ export class UserController {
     return 'ok';
   }
 
-  @ApiOperation({ title: '修改用户信息', description: '' })
-  @HttpProcessor.handle('修改用户信息')
-  @UseGuards(JwtAuthGuard)
+  @ApiOperation({ title: '修改登录用户信息', description: '' })
+  @HttpProcessor.handle('修改登录用户信息')
   @Put('/')
   updateUser(@Auth() user: UserModel, @Body() { mobile, nickname, email, id }: UpdateUserDto): Promise<void> {
     if (id !== user.id) {
@@ -57,7 +60,7 @@ export class UserController {
 
   @ApiOperation({ title: '修改指定用户信息', description: '' })
   @HttpProcessor.handle('修改指定用户信息')
-  @UseGuards(JwtAuthGuard)
+  @Permissions(PERMISSION_CODE.USER_UPDATE)
   @Put('/admin-update')
   updateUserById(@Auth() user: UserModel, @Body() body: UpdateUserByAdminDto): Promise<void> {
     //todo 判断下是否是超管
@@ -70,7 +73,6 @@ export class UserController {
   @ApiResponse({ status: 200, type: UserModel })
   @HttpProcessor.handle('获取当前登录用户信息')
   @Get('/info')
-  @UseGuards(JwtAuthGuard)
   getUserInfo(@Auth() user: UserModel): Promise<BaseUserDto> {
     return this.userService.getUserBaseInfoById(user.id);
   }
@@ -78,7 +80,7 @@ export class UserController {
   @ApiOperation({ title: '获取用户列表', description: '' })
   @ApiResponse({ status: 200, type: UserModel })
   @HttpProcessor.handle('获取用户列表')
-  @UseGuards(JwtAuthGuard)
+  @Permissions(PERMISSION_CODE.USER_SEARCH)
   @Get('/')
   getUsers(
     @Auth() user: UserModel,
@@ -90,7 +92,7 @@ export class UserController {
   @ApiOperation({ title: '删除用户', description: '' })
   @HttpProcessor.handle('删除用户')
   @Delete('/:userId')
-  @UseGuards(JwtAuthGuard)
+  @Permissions(PERMISSION_CODE.USER_DEL)
   deletePermission(@Auth() user: UserModel, @Param('userId', new ParseIntPipe()) userId: number): Promise<void> {
     return this.userService.deleteUserById(user, userId);
   }

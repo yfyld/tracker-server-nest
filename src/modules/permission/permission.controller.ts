@@ -1,3 +1,5 @@
+import { PERMISSION_CODE } from './../../constants/permission.contant';
+import { PermissionsGuard } from '@/guards/permission.guard';
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiUseTags } from '@nestjs/swagger';
 import { Controller, UseGuards, Post, Get, Body, Query, Put, Param, Delete, ParseIntPipe } from '@nestjs/common';
 import { JwtAuthGuard } from '@/guards/auth.guard';
@@ -14,10 +16,11 @@ import { UserModel } from '@/modules/user/user.model';
 import { Auth } from '@/decotators/user.decorators';
 import { PageData, QueryListQuery } from '@/interfaces/request.interface';
 import { QueryList } from '@/decotators/query-list.decorators';
+import { Permissions } from '@/decotators/permissions.decotators';
 
 @ApiUseTags('权限管理')
 @Controller('permission')
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, PermissionsGuard)
 export class PermissionController {
   constructor(private readonly permissionService: PermissionService) {}
 
@@ -25,7 +28,7 @@ export class PermissionController {
   @ApiResponse({ status: 200, type: PermissionListItemDto })
   @Post('/')
   @HttpProcessor.handle({ message: '新建权限' })
-  @UseGuards(JwtAuthGuard)
+  @Permissions(PERMISSION_CODE.PERMISSION_ADD)
   addPermission(@Auth() user: UserModel, @Body() body: BasePermissionDto): Promise<PermissionListItemDto> {
     return this.permissionService.addPermission(user, body);
   }
@@ -33,7 +36,7 @@ export class PermissionController {
   @ApiOperation({ title: '获取权限列表', description: '' })
   @ApiBearerAuth()
   @HttpProcessor.handle('获取权限列表')
-  @UseGuards(JwtAuthGuard)
+  @Permissions(PERMISSION_CODE.PERMISSION_SEARCH)
   @Get('/')
   getPermissions(@QueryList() query: QueryListQuery<QueryPermissionDto>): Promise<PageData<PermissionListItemDto>> {
     return this.permissionService.getPermissions(query);
@@ -42,7 +45,6 @@ export class PermissionController {
   @ApiOperation({ title: '获取当前用户权限列表', description: '' })
   @ApiBearerAuth()
   @HttpProcessor.handle('获取当前用户权限列表')
-  @UseGuards(JwtAuthGuard)
   @Get('/user')
   getPermissionsByUser(
     @Auth() user: UserModel,
@@ -54,7 +56,7 @@ export class PermissionController {
   @ApiOperation({ title: '编辑权限', description: '' })
   @HttpProcessor.handle('编辑权限')
   @Put('/')
-  @UseGuards(JwtAuthGuard)
+  @Permissions(PERMISSION_CODE.PERMISSION_UPDATE)
   updatePermission(@Auth() user: UserModel, @Body() body: UpdatePermissionDto): Promise<void> {
     return this.permissionService.updatePermission(user, body);
   }
@@ -62,7 +64,7 @@ export class PermissionController {
   @ApiOperation({ title: '删除权限', description: '' })
   @HttpProcessor.handle('删除权限')
   @Delete('/:permissionId')
-  @UseGuards(JwtAuthGuard)
+  @Permissions(PERMISSION_CODE.PERMISSION_DEL)
   deletePermission(
     @Auth() user: UserModel,
     @Param('permissionId', new ParseIntPipe()) permissionId: number

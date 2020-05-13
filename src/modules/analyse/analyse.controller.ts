@@ -1,3 +1,5 @@
+import { PERMISSION_CODE } from './../../constants/permission.contant';
+import { PermissionsGuard } from '@/guards/permission.guard';
 import { IFunnelData, IPathData } from './analyse.interface';
 import { ApiOperation, ApiUseTags } from '@nestjs/swagger';
 import { MULTER_OPTIONS, BASE_URL } from '../../app.config';
@@ -10,26 +12,30 @@ import { extname } from 'path';
 import { JwtAuthGuard } from '@/guards/auth.guard';
 import { AnalyseService } from './analyse.service';
 import { QueryEventAnalyseDataDto, QueryFunnelAnalyseDataDto, QueryPathAnalyseDataDto } from './analyse.dto';
-
+import { Permissions } from '@/decotators/permissions.decotators';
 @ApiUseTags('分析')
 @Controller('analyse')
+@UseGuards(JwtAuthGuard, PermissionsGuard)
 export class AnalyseController {
   constructor(private readonly analyseService: AnalyseService) {}
 
-  @HttpProcessor.handle('event')
+  @HttpProcessor.handle('事件分析')
   @Post('/event')
+  @Permissions(PERMISSION_CODE.ANALYSE_EVENT)
   eventAnalyse(@Body() body: QueryEventAnalyseDataDto): Promise<any> {
     return this.analyseService.eventAnalyse(body);
   }
 
-  @HttpProcessor.handle('funnel')
+  @HttpProcessor.handle('漏斗分析')
   @Post('/funnel')
+  @Permissions(PERMISSION_CODE.ANALYSE_FUNNEL)
   funnelAnalyse(@Body() body: QueryFunnelAnalyseDataDto): Promise<IFunnelData> {
     return this.analyseService.funnelAnalyse(body);
   }
 
-  @HttpProcessor.handle('path')
+  @HttpProcessor.handle('路径分析')
   @Post('/path')
+  @Permissions(PERMISSION_CODE.ANALYSE_PATH)
   pathAnalyse(@Body() body: QueryPathAnalyseDataDto): Promise<IPathData> {
     return this.analyseService.pathAnalyse(body);
   }

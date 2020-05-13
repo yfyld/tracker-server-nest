@@ -1,3 +1,4 @@
+import { PERMISSION_CODE } from './../../constants/permission.contant';
 import { TransactionManager, EntityManager, Transaction } from 'typeorm';
 import { ParseIntPipe } from './../../pipes/parse-int.pipe';
 import { QueryListQuery } from '@/interfaces/request.interface';
@@ -42,7 +43,7 @@ import { UserModel } from '@/modules/user/user.model';
 
 @ApiUseTags('项目相关')
 @Controller('project')
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, PermissionsGuard)
 export class ProjectController {
   constructor(private readonly projectService: ProjectService) {}
 
@@ -50,7 +51,7 @@ export class ProjectController {
   @ApiResponse({ status: 200, type: ProjectDto })
   @Post('/')
   @HttpProcessor.handle({ message: '新建项目' })
-  @UseGuards(JwtAuthGuard)
+  @Permissions(PERMISSION_CODE.PROJECT_ADD)
   addProject(@Body() body: AddProjectDto, @Auth() user: UserModel): Promise<AddProjectResDto> {
     return this.projectService.addProject(body, user);
   }
@@ -58,7 +59,7 @@ export class ProjectController {
   @ApiOperation({ title: '编辑项目', description: '' })
   @HttpProcessor.handle('编辑项目')
   @Put('/')
-  @UseGuards(JwtAuthGuard)
+  @Permissions(PERMISSION_CODE.PROJECT_UPDATE)
   updateProject(@Body() body: UpdateProjectDto): Promise<void> {
     return this.projectService.updateProject(body);
   }
@@ -66,7 +67,7 @@ export class ProjectController {
   @ApiOperation({ title: '删除项目', description: '' })
   @HttpProcessor.handle('删除项目')
   @Delete('/:projectId')
-  @UseGuards(JwtAuthGuard)
+  @Permissions(PERMISSION_CODE.PROJECT_DEL)
   deleteProject(@Param('projectId', new ParseIntPipe()) projectId: number): Promise<void> {
     return this.projectService.deleteProject(projectId);
   }
@@ -77,7 +78,7 @@ export class ProjectController {
   @ApiResponse({ status: 200, type: ProjectModel })
   @HttpProcessor.handle('获取项目信息')
   @Get('/info')
-  @UseGuards(JwtAuthGuard)
+  @Permissions(PERMISSION_CODE.PROJECT_INFO)
   getProjectInfo(@Query('projectId', new ParseIntPipe()) projectId: number): Promise<ProjectDto> {
     return this.projectService.getProjectInfo(projectId);
   }
@@ -85,8 +86,7 @@ export class ProjectController {
   @ApiOperation({ title: '获取项目列表', description: '' })
   @ApiBearerAuth()
   @HttpProcessor.handle('获取项目列表')
-  @UseGuards(JwtAuthGuard, PermissionsGuard)
-  @Permissions('PROJECT_SEARCH')
+  @Permissions(PERMISSION_CODE.PROJECT_SEARCH)
   @Get('/')
   getProjects(@QueryList() query: QueryListQuery<QueryProjectsDto>): Promise<PageData<ProjectModel>> {
     return this.projectService.getProjects(query);
@@ -95,7 +95,7 @@ export class ProjectController {
   @ApiOperation({ title: '获取所有相关项目', description: '' })
   @ApiBearerAuth()
   @HttpProcessor.handle('获取所有相关项目')
-  @UseGuards(JwtAuthGuard)
+  @Permissions(PERMISSION_CODE.BOARD_SEARCH)
   @Get('/all')
   getMyProjects(@Auth() user: UserModel): Promise<PageData<ProjectModel>> {
     return this.projectService.getMyProjects(user);
@@ -104,7 +104,7 @@ export class ProjectController {
   @ApiOperation({ title: '添加成员', description: '' })
   @Post('/add-members')
   @HttpProcessor.handle({ message: '添加成员' })
-  @UseGuards(JwtAuthGuard)
+  @Permissions(PERMISSION_CODE.PROJECT_MEMBER_ADD)
   addMembers(@Body() body: AddMembersDto): Promise<void> {
     return this.projectService.addMembers(body);
   }
@@ -112,13 +112,14 @@ export class ProjectController {
   @ApiOperation({ title: '删除成员', description: '' })
   @Post('/delete-members')
   @HttpProcessor.handle({ message: '删除成员' })
-  @UseGuards(JwtAuthGuard)
+  @Permissions(PERMISSION_CODE.PROJECT_MEMBER_DEL)
   deleteMember(@Body() body: DeleteMembersDto): Promise<void> {
     return this.projectService.deleteMember(body);
   }
 
   @ApiOperation({ title: '编辑成员', description: '' })
   @Post('/update-members')
+  @Permissions(PERMISSION_CODE.PROJECT_MEMBER_UPDATE)
   @HttpProcessor.handle({ message: '编辑成员' })
   updateMember(@Body() body: UpdateMembersDto): Promise<void> {
     return this.projectService.updateMember(body);

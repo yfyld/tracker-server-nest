@@ -1,3 +1,5 @@
+import { PERMISSION_CODE } from './../../constants/permission.contant';
+import { PermissionsGuard } from '@/guards/permission.guard';
 import { ParsePageQueryIntPipe } from '../../pipes/parse-page-query-int.pipe';
 import { ParseIntPipe } from './../../pipes/parse-int.pipe';
 
@@ -37,57 +39,58 @@ import {
   GetEventAttrDto
 } from './metadata.dto';
 import { XlsxService } from '@/providers/xlsx/xlsx.service';
+import { Permissions } from '@/decotators/permissions.decotators';
 
 @ApiUseTags('元数据')
 @Controller('metadata')
-// @UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, PermissionsGuard)
 export class MetadataController {
   constructor(private readonly metadataService: MetadataService) {}
 
   @HttpProcessor.handle('新增元数据')
   @Post('/')
-  @UseGuards(JwtAuthGuard)
+  @Permissions(PERMISSION_CODE.METADATA_ADD)
   addMetadata(@Body() body: AddMetadataDto): Promise<void> {
     return this.metadataService.addMetadata(body);
   }
 
   @HttpProcessor.handle('上传元数据')
   @Post('/upload')
-  @UseGuards(JwtAuthGuard)
+  @Permissions(PERMISSION_CODE.METADATA_ADD)
   addMetadataByExcel(@Body() body: AddMetadataByExcelDto): Promise<void> {
     return this.metadataService.addMetadataByExcel(body.projectId, body.path);
   }
 
   @HttpProcessor.handle('更新元数据')
   @Put('/')
-  @UseGuards(JwtAuthGuard)
+  @Permissions(PERMISSION_CODE.METADATA_UPDATE)
   updateMetadata(@Body() body: UpdateMetadataDto): Promise<void> {
     return this.metadataService.updateMetadata(body);
   }
 
   @HttpProcessor.handle('删除元数据')
   @Delete('/:projectId/:metadataId')
-  @UseGuards(JwtAuthGuard)
+  @Permissions(PERMISSION_CODE.METADATA_DEL)
   deleteMetadata(@Param('metadataId', new ParseIntPipe()) metadataId: number): Promise<void> {
     return this.metadataService.deleteMetadata(metadataId);
   }
 
   @HttpProcessor.handle('启用元数据')
   @Put('/enable/:projectId/:metadataId')
-  @UseGuards(JwtAuthGuard)
+  @Permissions(PERMISSION_CODE.METADATA_ENABLE)
   enableMetadata(@Param('metadataId', new ParseIntPipe()) metadataId: number): Promise<void> {
     return this.metadataService.enableMetadata(metadataId);
   }
 
   @HttpProcessor.handle('停用元数据')
   @Put('/disable/:projectId/:metadataId')
-  @UseGuards(JwtAuthGuard)
+  @Permissions(PERMISSION_CODE.METADATA_DISABLE)
   disableMetadata(@Param('metadataId', new ParseIntPipe()) metadataId: number): Promise<void> {
     return this.metadataService.disableMetadata(metadataId);
   }
 
   @HttpProcessor.handle('获取元数据列表')
-  // @UseGuards(JwtAuthGuard)
+  @Permissions(PERMISSION_CODE.METADATA_SEARCH)
   @Get('/')
   getMetadataList(
     @QueryList(new ParsePageQueryIntPipe(['projectId', 'status']))
@@ -97,7 +100,7 @@ export class MetadataController {
   }
 
   @HttpProcessor.handle('获取tag列表')
-  @UseGuards(JwtAuthGuard)
+  @Permissions(PERMISSION_CODE.METADATA_SEARCH)
   @Get('/tag')
   getMetadataTags(
     @QueryList(new ParsePageQueryIntPipe(['projectId']))
@@ -107,7 +110,7 @@ export class MetadataController {
   }
 
   @HttpProcessor.handle('获取事件属性')
-  // @UseGuards(JwtAuthGuard)
+  @Permissions(PERMISSION_CODE.METADATA_SEARCH)
   @Get('/fields')
   getEventAttrs(@Query() query: GetEventAttrDto): Promise<ListData<EventAttrsListDto>> {
     return this.metadataService.getFieldList(query);
@@ -115,21 +118,21 @@ export class MetadataController {
 
   @HttpProcessor.handle('新增标签')
   @Post('/tag')
-  @UseGuards(JwtAuthGuard)
+  @Permissions(PERMISSION_CODE.METADATA_ADD)
   addMetadataTag(@Body() body: AddMetadataTagDto): Promise<void> {
     return this.metadataService.addMetadataTag(body);
   }
 
   @HttpProcessor.handle('更新标签')
   @Put('/tag')
-  @UseGuards(JwtAuthGuard)
+  @Permissions(PERMISSION_CODE.METADATA_UPDATE)
   updateMetadataTag(@Body() body: UpdateMetadataTagDto): Promise<void> {
     return this.metadataService.updateMetadataTag(body);
   }
 
   @HttpProcessor.handle('删除标签')
   @Delete('/tag/:projectId/:tagId')
-  @UseGuards(JwtAuthGuard)
+  @Permissions(PERMISSION_CODE.METADATA_UPDATE)
   deleteMetadataTag(@Param('tagId', new ParseIntPipe()) tagId: number): Promise<void> {
     return this.metadataService.deleteMetadataTag(tagId);
   }

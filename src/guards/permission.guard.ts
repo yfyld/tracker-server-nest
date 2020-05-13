@@ -21,6 +21,7 @@ export class PermissionsGuard implements CanActivate {
     if (permissions.length === 0) {
       return true;
     }
+
     const request = context.switchToHttp().getRequest();
 
     const user = request.user;
@@ -28,14 +29,21 @@ export class PermissionsGuard implements CanActivate {
       this.handleError();
       return false;
     }
-    const hasPermission = () => user.permissions.some(permission => permissions.includes(permission));
+    const hasPermission = () => {
+      if (permissions.length === 1) {
+        return user.permissions.includes(permissions[0]);
+      } else {
+        return user.permissions.some(permission => permissions.includes(permission));
+      }
+    };
 
     if (hasPermission()) {
       return true;
     }
+
     const projectId = request.params.projectId || request.body.projectId || request.query.projectId;
     if (projectId) {
-      return this.authService.validateProjectPermission(projectId, request.user._id, permissions);
+      return this.authService.validateProjectPermission(request.user.id, projectId, permissions);
     }
     this.handleError();
     return false;

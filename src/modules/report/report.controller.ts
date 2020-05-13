@@ -1,3 +1,4 @@
+import { PERMISSION_CODE } from './../../constants/permission.contant';
 import { IResponseId } from './../../interfaces/request.interface';
 import { ParsePageQueryIntPipe } from '../../pipes/parse-page-query-int.pipe';
 
@@ -32,19 +33,19 @@ import { ParseIntPipe } from '@/pipes/parse-int.pipe';
 
 @ApiUseTags('报告单')
 @Controller('report')
-// @UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, PermissionsGuard)
 export class ReportController {
   constructor(private readonly reportService: ReportService) {}
 
   @HttpProcessor.handle('新增报告单')
   @Post('/')
-  @UseGuards(JwtAuthGuard)
+  @Permissions(PERMISSION_CODE.REPORT_ADD)
   addReport(@Body() body: AddReportDto, @Auth() user): Promise<IResponseId> {
     return this.reportService.addReport(body, user);
   }
 
   @HttpProcessor.handle('获取报告单列表')
-  @UseGuards(JwtAuthGuard)
+  @Permissions(PERMISSION_CODE.REPORT_SEARCH)
   @Get('/')
   getReports(
     @QueryList(new ParsePageQueryIntPipe(['projectId', 'status', 'boardId', 'inBoard']))
@@ -54,7 +55,7 @@ export class ReportController {
   }
 
   @HttpProcessor.handle('获取报告详情')
-  @UseGuards(JwtAuthGuard)
+  @Permissions(PERMISSION_CODE.REPORT_INFO)
   @Get('/info')
   getReportInfo(@Query(new ParseIntPipe(['projectId', 'id'])) query: QueryReportInfoDto): Promise<ReportModel> {
     return this.reportService.getReportInfo(query);
@@ -62,21 +63,21 @@ export class ReportController {
 
   @HttpProcessor.handle('更新报告单')
   @Put('/')
-  @UseGuards(JwtAuthGuard)
+  @Permissions(PERMISSION_CODE.REPORT_UPDATE)
   updateReport(@Body() body: UpdateReportDto): Promise<void> {
     return this.reportService.updateReport(body);
   }
 
   @HttpProcessor.handle('删除报告单')
   @Delete('/:reportId')
-  @UseGuards(JwtAuthGuard)
+  @Permissions(PERMISSION_CODE.REPORT_DEL)
   deleteReport(@Param('reportId') reportId: number): Promise<void> {
     return this.reportService.deleteReport(reportId);
   }
 
   // @HttpProcessor.handle('获取报告单信息')
   // @Get('/info')
-  // @UseGuards(JwtAuthGuard)
+  // @Permissions(PERMISSION_CODE)
   // getReportInfo(
   //   @Query('reportId') reportId: string,
   // ): Promise<ReportModel> {
@@ -84,7 +85,7 @@ export class ReportController {
   // }
 
   // @HttpProcessor.handle('获取报告单列表')
-  // // @UseGuards(JwtAuthGuard)
+  // // @Permissions(PERMISSION_CODE)
   // @Get('/')
   // getReports(
   //   @QueryList(
@@ -104,7 +105,7 @@ export class ReportController {
 
   // @HttpProcessor.handle('修改报告单')
   // @Put('/')
-  // @UseGuards(JwtAuthGuard)
+  // @Permissions(PERMISSION_CODE)
   // updateReport(@Body() body: UpdateReportDto): Promise<void> {
   //   return this.reportService.updateReport(body);
   // }

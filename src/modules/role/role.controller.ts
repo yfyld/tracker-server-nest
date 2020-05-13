@@ -1,3 +1,5 @@
+import { PERMISSION_CODE } from './../../constants/permission.contant';
+import { PermissionsGuard } from '@/guards/permission.guard';
 import { RoleModel } from '@/modules/role/role.model';
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiUseTags } from '@nestjs/swagger';
 import { Controller, UseGuards, Post, Get, Body, Query, Put, Param, Delete, ParseIntPipe } from '@nestjs/common';
@@ -16,10 +18,11 @@ import { UserModel } from '@/modules/user/user.model';
 import { Auth } from '@/decotators/user.decorators';
 import { PageData, QueryListQuery } from '@/interfaces/request.interface';
 import { QueryList } from '@/decotators/query-list.decorators';
+import { Permissions } from '@/decotators/permissions.decotators';
 
 @ApiUseTags('角色管理')
 @Controller('role')
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, PermissionsGuard)
 export class RoleController {
   constructor(private readonly roleService: RoleService) {}
 
@@ -27,7 +30,7 @@ export class RoleController {
   @ApiResponse({ status: 200, type: RoleItemDto })
   @Post('/')
   @HttpProcessor.handle({ message: '新建角色' })
-  @UseGuards(JwtAuthGuard)
+  @Permissions(PERMISSION_CODE.ROLE_ADD)
   addRole(@Auth() user: UserModel, @Body() body: BaseRoleDto): Promise<RoleItemDto> {
     return this.roleService.addRole(user, body);
   }
@@ -35,7 +38,7 @@ export class RoleController {
   @ApiOperation({ title: '获取角色列表', description: '' })
   @ApiBearerAuth()
   @HttpProcessor.handle('获取角色列表')
-  @UseGuards(JwtAuthGuard)
+  @Permissions(PERMISSION_CODE.ROLE_SEARCH)
   @Get('/')
   getRoles(@QueryList() query: QueryListQuery<QueryRoleDto>): Promise<PageData<RoleItemDto>> {
     return this.roleService.getRoles(query);
@@ -44,7 +47,7 @@ export class RoleController {
   @ApiOperation({ title: '编辑角色', description: '' })
   @HttpProcessor.handle('编辑角色')
   @Put('/')
-  @UseGuards(JwtAuthGuard)
+  @Permissions(PERMISSION_CODE.ROLE_UPDATE)
   updateRole(@Auth() user: UserModel, @Body() body: UpdateRoleDto): Promise<void> {
     return this.roleService.updateRole(user, body);
   }
@@ -52,7 +55,7 @@ export class RoleController {
   @ApiOperation({ title: '删除角色', description: '' })
   @HttpProcessor.handle('删除角色')
   @Delete('/:roleId')
-  @UseGuards(JwtAuthGuard)
+  @Permissions(PERMISSION_CODE.ROLE_DEL)
   deleteRole(@Auth() user: UserModel, @Param('roleId', new ParseIntPipe()) roleId: number): Promise<void> {
     return this.roleService.deleteRole(user, roleId);
   }
@@ -60,7 +63,7 @@ export class RoleController {
   @ApiOperation({ title: '获取角色详情', description: '' })
   @HttpProcessor.handle('获取角色详情')
   @Get('/:roleId')
-  @UseGuards(JwtAuthGuard)
+  @Permissions(PERMISSION_CODE.ROLE_SEARCH)
   getRoleInfo(@Param('roleId', new ParseIntPipe()) roleId: number): Promise<RoleModel> {
     return this.roleService.getRoleInfo(roleId);
   }
@@ -68,7 +71,7 @@ export class RoleController {
   @ApiOperation({ title: '更新角色下所有权限', description: '' })
   @HttpProcessor.handle('更新角色下所有权限')
   @Put('/rolePermissions')
-  @UseGuards(JwtAuthGuard)
+  @Permissions(PERMISSION_CODE.ROLE_UPDATE)
   updateRolePermissions(@Body() body: UpdateRolePermissions): Promise<void> {
     return this.roleService.updateRolePermissions(body.roleId, body.permissionIds);
   }

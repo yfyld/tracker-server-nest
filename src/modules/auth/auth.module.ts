@@ -1,4 +1,5 @@
-import { ProjectRoleModel } from './auth.model';
+import { MemberModel } from './../project/project.model';
+
 import { UserModel } from '@/modules/user/user.model';
 import { forwardRef, Module, Global } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -21,7 +22,7 @@ import { SingleLoginModule } from '@/providers/singleLogin/single-login.module';
       signOptions: { expiresIn: AUTH.expiresIn }
     }),
     SingleLoginModule,
-    TypeOrmModule.forFeature([UserModel, ProjectRoleModel])
+    TypeOrmModule.forFeature([UserModel, MemberModel])
   ],
   controllers: [AuthController],
   providers: [AuthService],

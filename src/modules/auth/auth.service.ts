@@ -1,4 +1,5 @@
-import { ProjectRoleModel } from './auth.model';
+import { MemberModel } from './../project/project.model';
+
 import { SignUpDto } from './auth.dto';
 import { forwardRef, HttpStatus, Injectable, Inject } from '@nestjs/common';
 import { UserService } from '@/modules/user/user.service';
@@ -23,8 +24,8 @@ export class AuthService {
     private readonly userModel: Repository<UserModel>,
     @Inject(forwardRef(() => UserService))
     private readonly userService: UserService,
-    @InjectRepository(ProjectRoleModel)
-    private readonly projectRoleModel: Repository<ProjectRoleModel>,
+    @InjectRepository(MemberModel)
+    private readonly memberModel: Repository<MemberModel>,
     private readonly jwtService: JwtService,
     private readonly singleLoginService: SingleLoginService
   ) {}
@@ -212,13 +213,21 @@ export class AuthService {
   }
 
   public async validateProjectPermission(userId: number, projectId: number, permissions: string[]): Promise<boolean> {
-    const projectRole = await this.projectRoleModel
-      .createQueryBuilder('role')
+    const member = await this.memberModel
+      .createQueryBuilder('member')
+      .leftJoinAndSelect('member.role', 'role')
       .leftJoinAndSelect('role.permissions', 'permission')
-      .where('user.id = :userId', { userId })
-      .where('project.id = :projectId', { projectId })
+      .where('userId = :userId', { userId })
+      .where('projectId = :projectId', { projectId })
       .getMany();
-
-    return true;
+    const allPermissions = member.reduce((total, item) => {
+      total = total.concat(item.role.permissions.map(val => val.code));
+      return total;
+    }, []);
+    if (permissions.length === 1) {
+      return allPermissions.includes(permissions[0]);
+    } else {
+      return allPermissions.some(permission => permissions.includes(permission));
+    }
   }
 }

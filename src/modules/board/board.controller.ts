@@ -1,3 +1,5 @@
+import { PERMISSION_CODE } from './../../constants/permission.contant';
+import { PermissionsGuard } from '@/guards/permission.guard';
 import { ParseIntPipe } from './../../pipes/parse-int.pipe';
 import { BoardModel } from './board.model';
 import { ParsePageQueryIntPipe } from './../../pipes/parse-page-query-int.pipe';
@@ -33,37 +35,38 @@ import {
 import { JwtAuthGuard } from '@/guards/auth.guard';
 import { Auth } from '@/decotators/user.decorators';
 import { QueryListQuery, PageData } from '@/interfaces/request.interface';
+import { Permissions } from '@/decotators/permissions.decotators';
 
 @ApiUseTags('看板')
 @Controller('board')
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, PermissionsGuard)
 export class BoardController {
   constructor(private readonly boardService: BoardService) {}
 
   @HttpProcessor.handle('新增看板')
   @Post('/')
-  @UseGuards(JwtAuthGuard)
+  @Permissions(PERMISSION_CODE.BOARD_ADD)
   async addBoard(@Body() body: AddBoardDto, @Auth() user) {
     return this.boardService.addBoard(body, user);
   }
 
   @HttpProcessor.handle('编辑看板')
   @Put('/')
-  @UseGuards(JwtAuthGuard)
+  @Permissions(PERMISSION_CODE.BOARD_UPDATE)
   async updateBoard(@Body() body: UpdateBoardDto) {
     return this.boardService.updateBoard(body);
   }
 
   @HttpProcessor.handle('删除看板')
   @Delete('/')
-  @UseGuards(JwtAuthGuard)
+  @Permissions(PERMISSION_CODE.BOARD_DEL)
   async deleteBoard(@Query() query: DeleteBoardDto) {
     return this.boardService.deleteBoard(query);
   }
 
   @HttpProcessor.handle('看板列表')
   @Get('/')
-  @UseGuards(JwtAuthGuard)
+  @Permissions(PERMISSION_CODE.BOARD_SEARCH)
   async getBoards(
     @QueryList(new ParsePageQueryIntPipe(['projectId', 'status']))
     query: QueryListQuery<QueryBoardListDto>,
@@ -74,21 +77,20 @@ export class BoardController {
 
   @HttpProcessor.handle('看板详情')
   @Get('/info')
-  @UseGuards(JwtAuthGuard)
+  @Permissions(PERMISSION_CODE.BOARD_INFO)
   async getBoardInfo(@Query(new ParseIntPipe(['projectId', 'id'])) query: QueryBoardInfoDto): Promise<BoardModel> {
     return this.boardService.getBoardInfo(query);
   }
 
   @HttpProcessor.handle('添加报表到看板')
   @Post('/append')
-  @UseGuards(JwtAuthGuard)
+  @Permissions(PERMISSION_CODE.BOARD_UPDATE)
   async appendReport(@Body() body: AddReportToBoardDto) {
     return this.boardService.appendReportBoard(body);
   }
 
   @HttpProcessor.handle('我的看板')
   @Get('/my-board')
-  @UseGuards(JwtAuthGuard)
   async getMyBoards(
     @QueryList(new ParsePageQueryIntPipe(['type'])) query: QueryListQuery<QueryMyBoardListDto>,
     @Auth() user
