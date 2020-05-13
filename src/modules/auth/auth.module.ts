@@ -1,6 +1,6 @@
 import { ProjectRoleModel } from './auth.model';
 import { UserModel } from '@/modules/user/user.model';
-import { forwardRef, Module } from '@nestjs/common';
+import { forwardRef, Module, Global } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthController } from '@/modules/auth/auth.controller';
 import { AuthService } from '@/modules/auth/auth.service';
@@ -11,7 +11,7 @@ import { UserModule } from '../user/user.module';
 import { PassportModule } from '@nestjs/passport';
 import { AUTH } from '@/app.config';
 import { SingleLoginModule } from '@/providers/singleLogin/single-login.module';
-
+@Global()
 @Module({
   imports: [
     forwardRef(() => UserModule),

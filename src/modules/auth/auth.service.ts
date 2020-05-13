@@ -23,6 +23,7 @@ export class AuthService {
     private readonly userModel: Repository<UserModel>,
     @Inject(forwardRef(() => UserService))
     private readonly userService: UserService,
+    @InjectRepository(ProjectRoleModel)
     private readonly projectRoleModel: Repository<ProjectRoleModel>,
     private readonly jwtService: JwtService,
     private readonly singleLoginService: SingleLoginService
@@ -64,9 +65,12 @@ export class AuthService {
       where: {
         id
       },
-      relations: ['roles']
+      relations: ['roles', 'roles.permissions']
     });
-    return [];
+    return roles.reduce((total, item) => {
+      total = total.concat(item.permissions);
+      return total;
+    }, []);
   }
 
   /**

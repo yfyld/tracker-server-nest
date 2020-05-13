@@ -44,6 +44,6 @@ export class AuthController {
       httpOnly: false,
       path: '/'
     });
-    return response.redirect(303, fromURL || `${BASE_URL.webUrl}project-list`);
+    return response.redirect(302, fromURL || `${BASE_URL.webUrl}/project-list`);
   }
 }

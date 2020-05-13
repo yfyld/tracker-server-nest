@@ -85,7 +85,8 @@ export class ProjectController {
   @ApiOperation({ title: '获取项目列表', description: '' })
   @ApiBearerAuth()
   @HttpProcessor.handle('获取项目列表')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, PermissionsGuard)
+  @Permissions('PROJECT_SEARCH')
   @Get('/')
   getProjects(@QueryList() query: QueryListQuery<QueryProjectsDto>): Promise<PageData<ProjectModel>> {
     return this.projectService.getProjects(query);

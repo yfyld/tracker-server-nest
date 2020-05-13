@@ -1,11 +1,17 @@
-import { Injectable, CanActivate, ExecutionContext } from '@nestjs/common';
+import { Injectable, CanActivate, ExecutionContext, Inject } from '@nestjs/common';
 import { Observable } from 'rxjs';
 import { Reflector } from '@nestjs/core';
 import { HttpForbiddenError } from '@/errors/forbidden.error';
+import { UserService } from '@/modules/user/user.service';
+import { UserModel } from '@/modules/user/user.model';
+import { AuthService } from '@/modules/auth/auth.service';
 
 @Injectable()
 export class PermissionsGuard implements CanActivate {
-  constructor(private readonly reflector: Reflector) {}
+  constructor(
+    private readonly reflector: Reflector,
+    @Inject('AuthService') private readonly authService: AuthService
+  ) {}
 
   canActivate(context: ExecutionContext): boolean | Promise<boolean> | Observable<boolean> {
     const permissions = [
@@ -27,16 +33,10 @@ export class PermissionsGuard implements CanActivate {
     if (hasPermission()) {
       return true;
     }
-    // if (request.params.projectId) {
-    //   return this.authService.validateProjectPermission(request.params.projectId, request.user._id, permissions);
-    // }
-
-    // const projectRole = await this.projectRoleModel
-    //   .createQueryBuilder('role')
-    //   .leftJoinAndSelect('role.permissions', 'permission')
-    //   .where('user.id = :userId', { userId })
-    //   .where('project.id = :projectId', { projectId })
-    //   .getMany();
+    const projectId = request.params.projectId || request.body.projectId || request.query.projectId;
+    if (projectId) {
+      return this.authService.validateProjectPermission(projectId, request.user._id, permissions);
+    }
     this.handleError();
     return false;
   }
