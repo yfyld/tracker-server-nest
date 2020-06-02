@@ -204,6 +204,9 @@ export class MetadataService {
       ['name', 'code', 'type', 'status', 'newTags', 'url', 'description']
     );
     for (let item of datas) {
+      if (!item.name || !item.code || !item.type) {
+        throw '格式错误';
+      }
       await this.addMetadata({
         projectId,
         name: item.name,

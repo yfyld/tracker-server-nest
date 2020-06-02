@@ -11,7 +11,12 @@ import { existsSync, mkdirSync } from 'fs';
 import { extname } from 'path';
 import { JwtAuthGuard } from '@/guards/auth.guard';
 import { AnalyseService } from './analyse.service';
-import { QueryEventAnalyseDataDto, QueryFunnelAnalyseDataDto, QueryPathAnalyseDataDto } from './analyse.dto';
+import {
+  QueryEventAnalyseDataDto,
+  QueryFunnelAnalyseDataDto,
+  QueryPathAnalyseDataDto,
+  QueryCustomAnalyseDataDto
+} from './analyse.dto';
 import { Permissions } from '@/decotators/permissions.decotators';
 @ApiUseTags('分析')
 @Controller('analyse')
@@ -38,5 +43,12 @@ export class AnalyseController {
   @Permissions(PERMISSION_CODE.ANALYSE_PATH)
   pathAnalyse(@Body() body: QueryPathAnalyseDataDto): Promise<IPathData> {
     return this.analyseService.pathAnalyse(body);
+  }
+
+  @HttpProcessor.handle('自定义查询')
+  @Post('/custom')
+  @Permissions(PERMISSION_CODE.ANALYSE_PATH)
+  customAnalyse(@Body() body: QueryCustomAnalyseDataDto): Promise<unknown> {
+    return this.analyseService.customAnalyse(body);
   }
 }

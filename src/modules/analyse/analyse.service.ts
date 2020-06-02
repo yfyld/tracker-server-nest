@@ -11,7 +11,12 @@ import {
 } from './analyse.interface';
 import { SlsService } from '@/providers/sls/sls.service';
 import { Injectable } from '@nestjs/common';
-import { QueryEventAnalyseDataDto, QueryFunnelAnalyseDataDto, QueryPathAnalyseDataDto } from './analyse.dto';
+import {
+  QueryEventAnalyseDataDto,
+  QueryFunnelAnalyseDataDto,
+  QueryPathAnalyseDataDto,
+  QueryCustomAnalyseDataDto
+} from './analyse.dto';
 import { filterToQuery } from './analyse.util';
 import { getDynamicTime } from '@/utils/date';
 import { MetadataService } from '../metadata/metadata.service';
@@ -587,5 +592,20 @@ export class AnalyseService {
     }
 
     return result;
+  }
+
+  async customAnalyse(param: QueryCustomAnalyseDataDto) {
+    const timeParam = getDynamicTime(param.dateStart, param.dateEnd, param.dateType);
+    let query = `projectId:${param.projectId}`;
+    if (param.query) {
+      const queryArr = param.query.split('|');
+      query = queryArr.length > 1 ? `${query} and (${queryArr[0]}) | ${queryArr[1]}` : `${query} and (${param.query})`;
+    }
+
+    return await this.slsService.query({
+      query,
+      from: Math.floor(timeParam.dateStart / 1000),
+      to: Math.floor(timeParam.dateEnd / 1000)
+    });
   }
 }

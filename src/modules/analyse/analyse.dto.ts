@@ -34,6 +34,14 @@ export class QueryFunnelAnalyseDataDto {
   trend: boolean;
 }
 
+export class QueryCustomAnalyseDataDto {
+  projectId: number;
+  dateStart: number;
+  dateEnd: number;
+  dateType: string;
+  query: string;
+}
+
 export class QueryPathAnalyseDataDto {
   projectId: number;
   indicators: IIndicatorInfo[];

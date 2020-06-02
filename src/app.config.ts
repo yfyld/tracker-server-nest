@@ -13,6 +13,8 @@ export const AUTH = {
   data: { username: 'root', roles: [] }
 };
 
+export const CRYPTO_KEY = 'ks@123';
+
 export const CROSS_DOMAIN = {
   allowedOrigins: []
 };
@@ -35,7 +37,7 @@ export const ALARM_INTERVAL = 30000;
 export const GENERATE_IMG_CRON = '0 0 11 * *';
 
 export const BASE_URL = {
-  webUrl: 'http://test.qa.91jkys.com:3000',
+  webUrl: 'http://127.0.0.1:5000',
   serverUrl: 'http://127.0.0.1:7009'
 };
 
@@ -69,7 +71,4 @@ export const SLS_CONFIG = {
   ...opsConfig.sls
 };
 
-export const SLS_STORE_CONFIG = {
-  projectName: 'k8s-log-custom-ks-qa',
-  logStoreName: 'frontlo-collection-telescope-process-qa'
-};
+export const SLS_STORE_CONFIG = { ...opsConfig.slsLogStroe };

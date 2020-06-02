@@ -1,3 +1,4 @@
+import { CRYPTO_KEY } from './../../app.config';
 import { DEFAULT_ROLE_CODE } from './../../constants/permission.contant';
 import { TeamModel } from './../team/team.model';
 import { HttpBadRequestError } from './../../errors/bad-request.error';
@@ -30,6 +31,7 @@ import { UserModel } from '@/modules/user/user.model';
 import { QueryListQuery, PageData } from '@/interfaces/request.interface';
 import { UseInterceptors, ClassSerializerInterceptor } from '@nestjs/common';
 import { RoleModel } from '../role/role.model';
+import { aesEncrypt } from '@/utils/crypto';
 
 @Injectable()
 export class ProjectService {
@@ -75,7 +77,8 @@ export class ProjectService {
       members: members.map(item => ({
         ...item.user,
         roleName: item.role && item.role.name
-      }))
+      })),
+      trackKey: aesEncrypt(`{"projectId":${projectId}}`, CRYPTO_KEY)
     };
     return result;
   }

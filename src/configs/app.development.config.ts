@@ -13,6 +13,8 @@ export const AUTH = {
   data: { username: 'root', roles: [] }
 };
 
+export const CRYPTO_KEY = 'ks@123';
+
 export const CROSS_DOMAIN = {
   allowedOrigins: []
 };
@@ -69,7 +71,4 @@ export const SLS_CONFIG = {
   ...opsConfig.sls
 };
 
-export const SLS_STORE_CONFIG = {
-  projectName: 'k8s-log-custom-ks-qa',
-  logStoreName: 'frontlo-collection-telescope-process-qa'
-};
+export const SLS_STORE_CONFIG = { ...opsConfig.slsLogStroe };

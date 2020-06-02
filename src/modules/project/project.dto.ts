@@ -58,6 +58,7 @@ export class ProjectDto {
   description: string;
   creator: UserModel;
   members: any[];
+  trackKey: string;
 }
 
 export class UpdateProjectDto {
