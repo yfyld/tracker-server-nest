@@ -16,7 +16,7 @@ import {
 
 import { MetadataModel, FieldModel, MetadataTagModel } from './metadata.model';
 import { Injectable, HttpService } from '@nestjs/common';
-import { Repository, In, LessThan, MoreThan, Between, Like, FindManyOptions } from 'typeorm';
+import { Repository, In, LessThan, MoreThan, Between, Like, FindManyOptions, EntityManager } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 
 import { QueryListQuery, PageData } from '@/interfaces/request.interface';
@@ -169,7 +169,7 @@ export class MetadataService {
       projectId
     });
     if (oldMetadata) {
-      throw new HttpBadRequestError('元数据code重复');
+      throw new HttpBadRequestError(`元数据${code}重复`);
     }
     // 获取已有的标签
     let metadataTags = [];
@@ -197,17 +197,19 @@ export class MetadataService {
     return;
   }
 
-  public async addMetadataByExcel(projectId: number, pathStr: string): Promise<void> {
+  public async addMetadataByExcel(projectId: number, pathStr: string, manager: EntityManager): Promise<void> {
     const datas = await this.xlsxervice.parseByPath(
       path.join(__dirname, '../../', pathStr),
       ['名称', 'code', '类型', '启用', '标签', 'URL', '备注'],
       ['name', 'code', 'type', 'status', 'newTags', 'url', 'description']
     );
-    for (let item of datas) {
+    for (let key in datas) {
+      const item = datas[key];
       if (!item.name || !item.code || !item.type) {
-        throw '格式错误';
+        throw `第${key}行格式错误`;
       }
-      await this.addMetadata({
+
+      const newMetadata = {
         projectId,
         name: item.name,
         code: item.code,
@@ -216,7 +218,39 @@ export class MetadataService {
         status: item.status === '是' ? 1 : 0,
         newTags: item.newTags ? item.newTags.split(',') : [],
         description: item.description
+      };
+
+      const { code, newTags } = newMetadata;
+      const oldMetadata = await this.metadataModel.findOne({
+        code: code,
+        projectId
       });
+      if (oldMetadata) {
+        throw new HttpBadRequestError(`元数据${code}重复`);
+      }
+
+      let metadataTags = [];
+
+      // 处理新增的标签
+      if (newTags && newTags.length) {
+        const newMetadataTagModels = [];
+        for (let item of newTags) {
+          if (await this.metadataTagModel.findOne({ name: item })) {
+            continue;
+          }
+          newMetadataTagModels.push(
+            this.metadataTagModel.create({ name: item, project: { id: projectId }, projectId })
+          );
+        }
+        const newMetadataTags = await manager.save(MetadataTagModel, newMetadataTagModels);
+        metadataTags.push(...newMetadataTags);
+      }
+      const metadata = this.metadataModel.create({
+        ...newMetadata,
+        tags: []
+      });
+      metadata.tags.push(...metadataTags);
+      await manager.save(MetadataModel, metadata);
     }
 
     return;

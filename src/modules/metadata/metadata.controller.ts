@@ -1,3 +1,4 @@
+import { TransactionManager, EntityManager, Transaction } from 'typeorm';
 import { PERMISSION_CODE } from './../../constants/permission.contant';
 import { PermissionsGuard } from '@/guards/permission.guard';
 import { ParsePageQueryIntPipe } from '../../pipes/parse-page-query-int.pipe';
@@ -56,9 +57,10 @@ export class MetadataController {
 
   @HttpProcessor.handle('上传元数据')
   @Post('/upload')
+  @Transaction()
   @Permissions(PERMISSION_CODE.METADATA_ADD)
-  addMetadataByExcel(@Body() body: AddMetadataByExcelDto): Promise<void> {
-    return this.metadataService.addMetadataByExcel(body.projectId, body.path);
+  addMetadataByExcel(@Body() body: AddMetadataByExcelDto, @TransactionManager() manager: EntityManager): Promise<void> {
+    return this.metadataService.addMetadataByExcel(body.projectId, body.path, manager);
   }
 
   @HttpProcessor.handle('更新元数据')
