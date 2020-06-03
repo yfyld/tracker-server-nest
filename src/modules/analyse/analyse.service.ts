@@ -54,17 +54,31 @@ export class AnalyseService {
     }
 
     // tslint:disable-next-line:max-line-length
-    const query = `${filers}|select qoq[1] as qoqCurrent, qoq[2] as qoqPrev, qoq[3] as qoqPercentage, yoy[1] as yoyCurrent, yoy[2] as yoyPrev, yoy[3] as yoyPercentage from(select  compare( count , ${window}) as qoq ,compare( count , ${window +
-      86400 * 365}) as yoy  from (${countStr}  from log ))`;
-    const data = await this.slsService.query<ICompare>({
-      query,
-      from: Math.floor(timeParam.dateStart / 1000),
-      to: Math.floor(timeParam.dateEnd / 1000)
-    });
-    for (let i in data[0]) {
-      data[0][i] = Number(data[0][i]);
-    }
-    return data[0];
+    const qoqQuery = `${filers}|select qoq[1] as qoqCurrent, qoq[2] as qoqPrev, qoq[3] as qoqPercentage from(select  compare( count , ${window}) as qoq   from (${countStr}  from log ))`;
+    const yoyQuery = `${filers}|select  yoy[1] as yoyCurrent, yoy[2] as yoyPrev, yoy[3] as yoyPercentage from( select compare( count , ${86400 *
+      365}) as yoy  from (${countStr}  from log ))`;
+
+    const [qoqData, yoyData] = await Promise.all([
+      this.slsService.query<ICompare>({
+        query: qoqQuery,
+        from: Math.floor(timeParam.dateStart / 1000),
+        to: Math.floor(timeParam.dateEnd / 1000)
+      }),
+      this.slsService.query<ICompare>({
+        query: yoyQuery,
+        from: Math.floor(timeParam.dateStart / 1000),
+        to: Math.floor(timeParam.dateEnd / 1000)
+      })
+    ]);
+
+    return {
+      qoqCurrent: Number(qoqData[0].qoqCurrent),
+      qoqPrev: Number(qoqData[0].qoqPrev),
+      qoqPercentage: Number(qoqData[0].qoqPercentage),
+      yoyCurrent: Number(yoyData[0].yoyCurrent),
+      yoyPrev: Number(yoyData[0].yoyPrev),
+      yoyPercentage: Number(yoyData[0].yoyPercentage)
+    };
   }
 
   /**

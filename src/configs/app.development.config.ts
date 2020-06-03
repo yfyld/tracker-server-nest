@@ -37,8 +37,8 @@ export const ALARM_INTERVAL = 30000;
 export const GENERATE_IMG_CRON = '0 0 11 * *';
 
 export const BASE_URL = {
-  webUrl: 'http://127.0.0.1:5000',
-  serverUrl: 'http://127.0.0.1:7009'
+  webUrl: 'http://test.qa.91jkys.com:3000',
+  serverUrl: 'http://test.qa.91jkys.com:7009'
 };
 
 const opsConfig = require('./configs/ops.config.dev');
