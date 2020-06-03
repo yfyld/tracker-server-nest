@@ -203,10 +203,12 @@ export class MetadataService {
       ['名称', 'code', '类型', '启用', '标签', 'URL', '备注'],
       ['name', 'code', 'type', 'status', 'newTags', 'url', 'description']
     );
-    for (let key in datas) {
+    for (let key in datas.filter(
+      item => item.name || item.code || item.type || item.status || item.newTags || item.url || item.description
+    )) {
       const item = datas[key];
       if (!item.name || !item.code || !item.type) {
-        throw `第${key}行格式错误`;
+        throw `第${key}行格式错误,${JSON.stringify(item)}`;
       }
 
       const newMetadata = {
