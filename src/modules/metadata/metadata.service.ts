@@ -70,7 +70,7 @@ export class MetadataService {
       skip,
       take,
       sort: { key: sortKey, value: sortValue },
-      query: { projectId, status, type, name, code, tags, log }
+      query: { projectId, status, type, name, code, tags, log, operatorType }
     } = query;
 
     // 排序
@@ -81,7 +81,7 @@ export class MetadataService {
       orderBy[`metadata.${sortKey}`] = sortValue;
     }
     orderBy = Object.assign(orderBy, {
-      'metadata.updatedAt': 'DESC'
+      'metadata.createdAt': 'DESC'
     });
 
     // 查询条件
@@ -128,6 +128,11 @@ export class MetadataService {
     if (type) {
       condition += ' and metadata.type = :type';
       params.type = type;
+    }
+
+    if (operatorType) {
+      condition += ' and metadata.operatorType = :operatorType';
+      params.operatorType = operatorType;
     }
 
     if (tags) {
@@ -203,12 +208,31 @@ export class MetadataService {
       ['名称', 'code', '类型', '启用', '标签', 'URL', '备注'],
       ['name', 'code', 'type', 'status', 'newTags', 'url', 'description']
     );
-    for (let key in datas.filter(
+
+    const metadatas = datas.filter(
       item => item.name || item.code || item.type || item.status || item.newTags || item.url || item.description
-    )) {
+    );
+
+    const tagNames = metadatas.reduce((total, item) => {
+      const newTags = item.newTags ? item.newTags.split(',') : [];
+      return total.concat(newTags);
+    }, []) as string[];
+
+    // 先处理新增的标签
+    const newMetadataTags = [];
+    for (let tagName of [...new Set(tagNames)]) {
+      if (await this.metadataTagModel.findOne({ name: tagName, projectId })) {
+        continue;
+      }
+      const newMetadataTag = this.metadataTagModel.create({ name: tagName, project: { id: projectId }, projectId });
+      newMetadataTags.push(newMetadataTag);
+      await manager.save(MetadataTagModel, newMetadataTag);
+    }
+
+    for (let key in metadatas) {
       const item = datas[key];
       if (!item.name || !item.code || !item.type) {
-        throw `第${key}行格式错误,${JSON.stringify(item)}`;
+        throw `第${key}行格式错误`;
       }
 
       const newMetadata = {
@@ -218,34 +242,26 @@ export class MetadataService {
         url: item.url,
         type: item.type === '页面' ? 1 : 2,
         status: item.status === '是' ? 1 : 0,
-        newTags: item.newTags ? item.newTags.split(',') : [],
         description: item.description
       };
 
-      const { code, newTags } = newMetadata;
+      const { code } = newMetadata;
       const oldMetadata = await this.metadataModel.findOne({
         code: code,
         projectId
       });
+
       if (oldMetadata) {
-        throw new HttpBadRequestError(`元数据${code}重复`);
+        throw new HttpBadRequestError(`第${key}行,元数据${code}重复`);
       }
 
       let metadataTags = [];
 
-      // 处理新增的标签
+      const newTags = item.newTags ? item.newTags.split(',') : [];
       if (newTags && newTags.length) {
-        const newMetadataTagModels = [];
-        for (let item of newTags) {
-          if (await this.metadataTagModel.findOne({ name: item })) {
-            continue;
-          }
-          newMetadataTagModels.push(
-            this.metadataTagModel.create({ name: item, project: { id: projectId }, projectId })
-          );
+        for (const tagName of newTags) {
+          metadataTags.push(newMetadataTags.find(val => val.name === tagName));
         }
-        const newMetadataTags = await manager.save(MetadataTagModel, newMetadataTagModels);
-        metadataTags.push(...newMetadataTags);
       }
       const metadata = this.metadataModel.create({
         ...newMetadata,

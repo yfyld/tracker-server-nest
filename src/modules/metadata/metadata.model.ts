@@ -57,6 +57,9 @@ export class MetadataModel {
   @Column()
   type: number;
 
+  @Column({ default: 0 })
+  operatorType: number;
+
   @Column({ default: 1 })
   status: number;
 

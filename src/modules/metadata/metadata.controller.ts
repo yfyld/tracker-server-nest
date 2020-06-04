@@ -95,7 +95,7 @@ export class MetadataController {
   @Permissions(PERMISSION_CODE.METADATA_SEARCH)
   @Get('/')
   getMetadataList(
-    @QueryList(new ParsePageQueryIntPipe(['projectId', 'status']))
+    @QueryList(new ParsePageQueryIntPipe(['projectId', 'status', 'operatorType']))
     query: QueryListQuery<QueryMetadataListDto>
   ): Promise<PageData<MetadataModel>> {
     return this.metadataService.getMetadataList(query);

@@ -23,6 +23,9 @@ export class AddMetadataDto {
   @IsOptional()
   url?: string;
 
+  @IsOptional()
+  operatorType?: number;
+
   @IsNumber()
   @IsOptional()
   log?: number;
@@ -57,6 +60,8 @@ export class UpdateMetadataDto {
   @IsNumber()
   type: number;
   @IsOptional()
+  operatorType?: number;
+  @IsOptional()
   @IsString()
   description?: string;
   @IsNumber()
@@ -81,6 +86,8 @@ export class MetadataDto {
   id: string;
   @ApiModelProperty()
   type: string;
+  @IsOptional()
+  operatorType: number;
   @ApiModelProperty()
   level: number;
   @ApiModelProperty()
@@ -106,6 +113,9 @@ export class QueryMetadataListDto {
 
   @IsOptional()
   projectIds: string;
+
+  @IsOptional()
+  operatorType?: number;
 
   @IsOptional()
   @IsNumber()
