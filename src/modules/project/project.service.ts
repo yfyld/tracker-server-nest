@@ -184,7 +184,7 @@ export class ProjectService {
         }
       });
       project.associationProjects = associationProjects;
-    } else if (projectInfo.associationProjectIds.length === 0) {
+    } else if (projectInfo.associationProjectIds && projectInfo.associationProjectIds.length === 0) {
       project.associationProjects = [];
     }
 
