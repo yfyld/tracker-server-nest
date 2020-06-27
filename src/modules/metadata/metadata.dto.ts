@@ -53,26 +53,50 @@ export class AddMetadataByExcelDto {
 export class UpdateMetadataDto {
   @IsNumber()
   id: number;
+  @IsOptional()
   @IsString()
-  code: string;
+  code?: string;
   @IsString()
-  name: string;
+  @IsOptional()
+  name?: string;
   @IsNumber()
-  type: number;
+  @IsOptional()
+  type?: number;
   @IsOptional()
   operatorType?: number;
   @IsOptional()
   @IsString()
   description?: string;
   @IsNumber()
-  status: number;
-
-  tags: number[];
-
+  @IsOptional()
+  status?: number;
+  @IsOptional()
+  tags?: number[];
+  @IsOptional()
   newTags?: string[];
 
   @IsNumber()
-  log: number;
+  @IsOptional()
+  log?: number;
+  @IsNumber()
+  projectId: number;
+}
+
+export class UpdateMetadataBatchDto {
+  ids: number[];
+  @IsString()
+  @IsOptional()
+  type: string;
+  @IsOptional()
+  operatorType?: number;
+
+  @IsOptional()
+  @IsNumber()
+  status?: number;
+
+  @IsOptional()
+  newTags?: string[];
+
   @IsNumber()
   projectId: number;
 }

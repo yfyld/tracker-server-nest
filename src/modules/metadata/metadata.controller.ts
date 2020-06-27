@@ -37,7 +37,8 @@ import {
   UpdateMetadataTagDto,
   QueryFieldListDto,
   AddMetadataByExcelDto,
-  GetEventAttrDto
+  GetEventAttrDto,
+  UpdateMetadataBatchDto
 } from './metadata.dto';
 import { XlsxService } from '@/providers/xlsx/xlsx.service';
 import { Permissions } from '@/decotators/permissions.decotators';
@@ -68,6 +69,13 @@ export class MetadataController {
   @Permissions(PERMISSION_CODE.METADATA_UPDATE)
   updateMetadata(@Body() body: UpdateMetadataDto): Promise<void> {
     return this.metadataService.updateMetadata(body);
+  }
+
+  @HttpProcessor.handle('批量更新元数据')
+  @Put('/')
+  @Permissions(PERMISSION_CODE.METADATA_UPDATE)
+  updateMetadataBatch(@Body() body: UpdateMetadataBatchDto): Promise<void> {
+    return this.metadataService.updateMetadataBatch(body);
   }
 
   @HttpProcessor.handle('删除元数据')

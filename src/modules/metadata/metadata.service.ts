@@ -11,7 +11,8 @@ import {
   QueryMetadataTagListDto,
   EventAttrsListDto,
   UpdateMetadataTagDto,
-  GetEventAttrDto
+  GetEventAttrDto,
+  UpdateMetadataBatchDto
 } from './metadata.dto';
 
 import { MetadataModel, FieldModel, MetadataTagModel } from './metadata.model';
@@ -110,15 +111,22 @@ export class MetadataService {
       }
 
       params.projectIds = projectIds;
-      condition = 'metadata.projectId in (:projectIds) and metadata.name like :name and metadata.code like :code';
+      condition = 'metadata.projectId in (:projectIds)';
     } else {
-      condition = 'metadata.projectId = :projectId and metadata.name like :name and metadata.code like :code';
+      condition = 'metadata.projectId = :projectId';
     }
 
     params.projectId = projectId;
 
-    params.name = `%${name || ''}%`;
-    params.code = `%${code || ''}%`;
+    if (name) {
+      condition += ` and metadata.name = :name `;
+      params.name = name;
+    }
+
+    if (code) {
+      condition += ` and metadata.code = :code `;
+      params.code = code;
+    }
 
     if (typeof status !== 'undefined') {
       condition += ' and metadata.status = :status';
@@ -302,6 +310,33 @@ export class MetadataService {
   }
 
   /**
+   *修改metadata
+   *
+   * @param {UpdateMetadataDto} body
+   * @returns {Promise<void>}
+   * @memberof MetadataService
+   */
+  public async updateMetadataBatch(body: UpdateMetadataBatchDto): Promise<void> {
+    let { ids, newTags, projectId, status, type, operatorType } = body;
+
+    if (type === 'DEL') {
+      for (const id of ids) {
+        await this.deleteMetadata(id);
+      }
+    } else {
+      for (const id of ids) {
+        await this.updateMetadata({
+          id,
+          projectId,
+          status,
+          newTags,
+          operatorType
+        });
+      }
+    }
+  }
+
+  /**
    *删除metadata  如果有日志则不能真删除
    *
    * @param {number} id
@@ -475,15 +510,19 @@ export class MetadataService {
       if (attr.eventType && metadata.type !== attr.eventType) {
         continue;
       }
-      const opt = {
-        // tslint:disable-next-line: max-line-length
-        query: `trackId : ${metadata.code} and projectId :${metadata.projectId} | select "${attr.value}" , pv from( select count(1) as pv , "${attr.value}" from (select "${attr.value}" from log limit 100000) group by "${attr.value}" order by pv desc) order by pv desc limit 10`,
-        from: Math.floor(Date.now() / 1000 - 86400 * 30),
-        to: Math.floor(Date.now() / 1000)
-      };
-      const result = await this.slsService.query(opt);
+      try {
+        const opt = {
+          // tslint:disable-next-line: max-line-length
+          query: `trackId : ${metadata.code} and projectId :${metadata.projectId} | select "${attr.value}" , pv from( select count(1) as pv , "${attr.value}" from (select "${attr.value}" from log limit 100000) group by "${attr.value}" order by pv desc) order by pv desc limit 10`,
+          from: Math.floor(Date.now() / 1000 - 86400 * 30),
+          to: Math.floor(Date.now() / 1000)
+        };
+        const result = await this.slsService.query(opt);
 
-      attr.recommend = result.map(item => item[attr.value]);
+        attr.recommend = result.map(item => item[attr.value]);
+      } catch (e) {
+        console.error('推荐离线查询错误');
+      }
     }
     client.set(`eventAttrsRecommend${metadata.projectId}_${metadata.code}`, JSON.stringify(eventAttrs));
   }
