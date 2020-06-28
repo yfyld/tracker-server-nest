@@ -30,6 +30,7 @@ import { ApiBearerAuth, ApiOperation, ApiUseTags, ApiResponse } from '@nestjs/sw
 import {
   QueryMetadataListDto,
   UpdateMetadataDto,
+  UpdateMetadataLogDto,
   AddMetadataDto,
   EventAttrsListDto,
   QueryMetadataTagListDto,
@@ -69,6 +70,13 @@ export class MetadataController {
   @Permissions(PERMISSION_CODE.METADATA_UPDATE)
   updateMetadata(@Body() body: UpdateMetadataDto): Promise<void> {
     return this.metadataService.updateMetadata(body);
+  }
+
+  @HttpProcessor.handle('更新元数据日志数据')
+  @Put('/log')
+  @Permissions(PERMISSION_CODE.METADATA_UPDATE)
+  updateMetadataLog(@Body() body: UpdateMetadataLogDto): Promise<void> {
+    return this.metadataService.updateMetadataLog(body);
   }
 
   @HttpProcessor.handle('批量更新元数据')

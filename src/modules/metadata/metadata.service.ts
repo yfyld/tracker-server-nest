@@ -12,7 +12,8 @@ import {
   EventAttrsListDto,
   UpdateMetadataTagDto,
   GetEventAttrDto,
-  UpdateMetadataBatchDto
+  UpdateMetadataBatchDto,
+  UpdateMetadataLogDto
 } from './metadata.dto';
 
 import { MetadataModel, FieldModel, MetadataTagModel } from './metadata.model';
@@ -309,6 +310,47 @@ export class MetadataService {
     return;
   }
 
+  public async updateMetadataLog(body: UpdateMetadataLogDto): Promise<void> {
+    let { id } = body;
+    let metadata = await this.metadataModel.findOne(id);
+
+    if (!metadata) {
+      return;
+    }
+    const opt = {
+      query: `trackId : "${metadata.code}"|SELECT COUNT(*) as count`,
+      from: Math.floor((new Date(metadata.createdAt).getTime() - 86400000 * 30) / 1000),
+      to: Math.floor(Date.now() / 1000)
+    };
+
+    const all = await this.slsService.query<any>(opt);
+    opt.from = Math.floor((Date.now() - 86400000 * 3) / 1000);
+    const recent = await this.slsService.query<any>(opt);
+
+    const result = {
+      all: Number(all[0].count),
+      recent: Number(recent[0].count)
+    };
+
+    if (result.all === metadata.log) {
+      return;
+    }
+
+    if (!metadata.url) {
+      const url = await this.slsService.query<any>({
+        ...opt,
+        query: `trackId : ${metadata.code} and projectId : ${metadata.projectId}|SELECT url group by url`
+      });
+      metadata.url = url[0] ? url[0].url : '';
+    }
+
+    metadata.log = result.all;
+    metadata.recentLog = result.recent;
+
+    await this.metadataModel.save(metadata);
+    return;
+  }
+
   /**
    *修改metadata
    *
@@ -434,75 +476,60 @@ export class MetadataService {
   }
 
   public async scheduleIntervalCheckMetadata(): Promise<void> {
-    const client = await this.redisService.getClient();
-    const metadataIndex = Number(await client.get('metadataCheckedIndex')) || 0;
+    try {
+      const client = await this.redisService.getClient();
+      const metadataIndex = Number(await client.get('metadataCheckedIndex')) || 0;
+      let metadataIds = JSON.parse((await client.get('metadataIds')) || '[]');
 
-    const metadatas = await this.metadataModel.find({
-      where: {
-        status: 1,
-        isDeleted: false
+      if (!metadataIds.length || metadataIds.length.length < metadataIndex + 1) {
+        metadataIds = (await this.metadataModel.find({
+          where: {
+            status: 1,
+            isDeleted: false
+          }
+        })).map(item => item.id);
+        client.set('metadataCheckedIndex', 0);
+        client.set('metadataIds', JSON.stringify(metadataIds));
+        return;
       }
-    });
 
-    if (!metadatas.length || metadatas.length < metadataIndex + 1) {
-      client.set('metadataCheckedIndex', 0);
-      return;
-    }
+      const metadataId = metadataIds[metadataIndex];
+      client.set('metadataCheckedIndex', metadataIndex + 1);
 
-    const metadata = metadatas[metadataIndex];
-
-    client.set('metadataCheckedIndex', metadataIndex + 1);
-
-    const opt = {
-      query: `trackId : "${metadata.code}"|SELECT COUNT(*) as count`,
-      from: Math.floor(new Date(metadata.createdAt).getTime() / 1000),
-      to: Math.floor(Date.now() / 1000)
-    };
-
-    const all = await this.slsService.query<any>(opt);
-    opt.from = Math.floor((Date.now() - 86400000 * 3) / 1000);
-    const recent = await this.slsService.query<any>(opt);
-
-    const result = {
-      all: Number(all[0].count),
-      recent: Number(recent[0].count)
-    };
-
-    if (result.all === metadata.log) {
-      return;
-    }
-
-    if (!metadata.url) {
-      const url = await this.slsService.query<any>({
-        ...opt,
-        query: `trackId : ${metadata.code} and projectId : ${metadata.projectId}|SELECT url group by url`
+      await this.updateMetadataLog({
+        id: metadataId
       });
-      metadata.url = url[0] ? url[0].url : '';
+    } catch (error) {
+      console.log('离线计算错误', error);
     }
-
-    metadata.log = result.all;
-    metadata.recentLog = result.recent;
-    await this.metadataModel.save(metadata);
   }
 
   public async scheduleCronComputedEventAttrRecommend(): Promise<void> {
     const client = await this.redisService.getClient();
     const metadataIndex = Number(await client.get('metadataComputeAttrIndex')) || 0;
 
-    const metadatas = await this.metadataModel.find({
-      where: {
-        status: 1,
-        isDeleted: false,
-        recentLog: MoreThan(1000)
-      }
-    });
+    let metadataIds = JSON.parse((await client.get('metadataComputeAttrIds')) || '[]');
 
-    if (!metadatas.length || metadatas.length > metadataIndex + 1) {
+    if (!metadataIds.length || metadataIds.length.length < metadataIndex + 1) {
+      metadataIds = (await this.metadataModel.find({
+        where: {
+          status: 1,
+          isDeleted: false,
+          recentLog: MoreThan(1000)
+        }
+      })).map(item => item.id);
       client.set('metadataComputeAttrIndex', 0);
+      client.set('metadataComputeAttrIds', JSON.stringify(metadataIds));
       return;
     }
 
-    const metadata = metadatas[metadataIndex];
+    const metadataId = metadataIds[metadataIndex];
+    client.set('metadataComputeAttrIndex', metadataIndex + 1);
+
+    const metadata = await this.metadataModel.findOne(metadataId);
+    if (!metadata) {
+      return;
+    }
 
     const eventAttrs = EVENT_ATTRS;
 

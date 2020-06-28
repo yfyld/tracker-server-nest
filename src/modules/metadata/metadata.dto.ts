@@ -82,6 +82,14 @@ export class UpdateMetadataDto {
   projectId: number;
 }
 
+export class UpdateMetadataLogDto {
+  @IsNumber()
+  id: number;
+  @IsNumber()
+  @IsOptional()
+  projectId?: number;
+}
+
 export class UpdateMetadataBatchDto {
   ids: number[];
   @IsString()
