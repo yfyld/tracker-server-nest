@@ -20,7 +20,8 @@ import {
   Param,
   Put,
   All,
-  Render
+  Render,
+  Res
 } from '@nestjs/common';
 import { MetadataModel, FieldModel, MetadataTagModel } from './metadata.model';
 import { MetadataService } from './metadata.service';
@@ -43,6 +44,7 @@ import {
 } from './metadata.dto';
 import { XlsxService } from '@/providers/xlsx/xlsx.service';
 import { Permissions } from '@/decotators/permissions.decotators';
+import { Response } from 'express';
 
 @ApiUseTags('元数据')
 @Controller('metadata')
@@ -115,6 +117,19 @@ export class MetadataController {
     query: QueryListQuery<QueryMetadataListDto>
   ): Promise<PageData<MetadataModel>> {
     return this.metadataService.getMetadataList(query);
+  }
+
+  @HttpProcessor.handle('导出元数据列表')
+  @Permissions(PERMISSION_CODE.METADATA_SEARCH)
+  @Get('/export')
+  public async exportExcel(@Res() res: Response): Promise<void> {
+    const [stream, length] = await this.metadataService.exportExcel();
+    res.set({
+      'Content-Type': 'application/xlsx',
+      'Content-Length': length
+    });
+    res.attachment('metadata.xlsx');
+    stream.pipe(res);
   }
 
   @HttpProcessor.handle('获取tag列表')

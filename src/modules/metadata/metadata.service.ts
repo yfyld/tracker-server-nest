@@ -29,6 +29,8 @@ import { RedisService } from 'nestjs-redis';
 import { XlsxService } from '@/providers/xlsx/xlsx.service';
 
 import * as path from 'path';
+import { Response } from 'express';
+import { Readable } from 'typeorm/platform/PlatformTools';
 
 @Injectable()
 export class MetadataService {
@@ -167,6 +169,11 @@ export class MetadataService {
       totalCount,
       list: metadata
     };
+  }
+
+  public async exportExcel(): Promise<[Readable, number]> {
+    const result = await this.xlsxervice.exportExcel();
+    return result;
   }
 
   /**
@@ -318,7 +325,7 @@ export class MetadataService {
       return;
     }
     const opt = {
-      query: `trackId : "${metadata.code}"|SELECT COUNT(*) as count`,
+      query: `trackId : "${metadata.code}"  and projectId : ${metadata.projectId}|SELECT COUNT(*) as count`,
       from: Math.floor((new Date(metadata.createdAt).getTime() - 86400000 * 30) / 1000),
       to: Math.floor(Date.now() / 1000)
     };
