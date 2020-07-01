@@ -541,7 +541,7 @@ export class MetadataService {
     const eventAttrs = EVENT_ATTRS;
 
     for (let attr of eventAttrs) {
-      if (attr.eventType && metadata.type !== attr.eventType) {
+      if ((attr.eventType && metadata.type !== attr.eventType) || attr.recommend.length) {
         continue;
       }
       try {
@@ -553,7 +553,9 @@ export class MetadataService {
         };
         const result = await this.slsService.query(opt);
 
-        attr.recommend = result.map(item => item[attr.value]);
+        attr.recommend = attr.recommend.concat(
+          result.map(item => ({ value: item[attr.value], text: item[attr.value] }))
+        );
       } catch (e) {
         console.error('推荐离线查询错误');
       }

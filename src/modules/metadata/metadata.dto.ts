@@ -217,5 +217,8 @@ export class EventAttrsListDto {
   name: string;
   value: string;
   type: string;
-  recommend: any[];
+  recommend: {
+    text: string;
+    value: any;
+  }[];
 }

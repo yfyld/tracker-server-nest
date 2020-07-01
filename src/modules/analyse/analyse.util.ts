@@ -61,7 +61,7 @@ export function filterToQuery({ filterValues, filterType }: IFilterInfo): string
             total.push(
               `(${item.value
                 .map(val => {
-                  return `${item.key}:${val[0]}`;
+                  return `${item.key}:${val}`;
                 })
                 .join(' or ')})`
             );
@@ -77,7 +77,7 @@ export function filterToQuery({ filterValues, filterType }: IFilterInfo): string
             total.push(
               `(${item.value
                 .map(val => {
-                  return `not ${item.key}:${val[0]}`;
+                  return `not ${item.key}:${val}`;
                 })
                 .join(' and ')})`
             );
