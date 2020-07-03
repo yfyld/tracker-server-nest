@@ -518,7 +518,7 @@ export class AnalyseService {
       result.list.push({
         key: metadataMap[metadata.code] ? metadata.code + '__' + metadataMap[metadata.code] : metadata.code,
         metadataCode: metadata.code,
-        metadataName: metadata.name,
+        metadataName: indicator.customName || indicator.metadataName || metadata.name,
         indicatorType: indicator.type,
         data,
         compare

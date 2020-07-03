@@ -334,9 +334,21 @@ export class MetadataService {
     opt.from = Math.floor((Date.now() - 86400000 * 3) / 1000);
     const recent = await this.slsService.query<any>(opt);
 
+    const optApp = {
+      query: `trackId : "${metadata.code}"  and projectId : ${metadata.projectId} and appId:*|SELECT COUNT(*) as count`,
+      from: Math.floor((new Date(metadata.createdAt).getTime() - 86400000 * 30) / 1000),
+      to: Math.floor(Date.now() / 1000)
+    };
+
+    const allApp = await this.slsService.query<any>(optApp);
+    optApp.from = Math.floor((Date.now() - 86400000 * 3) / 1000);
+    const recentApp = await this.slsService.query<any>(optApp);
+
     const result = {
       all: Number(all[0].count),
-      recent: Number(recent[0].count)
+      recent: Number(recent[0].count),
+      allApp: Number(allApp[0].count),
+      recentApp: Number(recentApp[0].count)
     };
 
     if (result.all === metadata.log) {
@@ -353,6 +365,9 @@ export class MetadataService {
 
     metadata.log = result.all;
     metadata.recentLog = result.recent;
+
+    metadata.logByApp = result.allApp;
+    metadata.recentLogByApp = result.recentApp;
 
     await this.metadataModel.save(metadata);
     return;
