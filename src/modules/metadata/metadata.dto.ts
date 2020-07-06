@@ -161,8 +161,8 @@ export class QueryMetadataListDto {
   type: number;
   @IsString()
   tags: string;
-  @IsNumber()
-  log: number;
+  @IsString()
+  log: string;
 }
 
 export class AddMetadataTagDto {

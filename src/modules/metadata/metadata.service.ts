@@ -152,8 +152,28 @@ export class MetadataService {
     }
 
     if (log) {
-      condition += log == 1 ? ' and metadata.log >= :log' : ' and metadata.log = :log';
-      params.log = log;
+      switch (log) {
+        case 'NONE':
+          condition += ` and metadata.log = 0 `;
+          break;
+        case 'NONE_H5':
+          condition += ` and metadata.log = metadata.logByApp `;
+          break;
+        case 'NONE_NATIVE':
+          condition += ` and metadata.logByApp = 0 `;
+          break;
+        case 'H5':
+          condition += ` and metadata.log > 0 and metadata.log > metadata.logByApp `;
+          break;
+        case 'NATIVE':
+          condition += ` and metadata.log > 0 and metadata.logByApp > 0 `;
+          break;
+        case 'ALL':
+          condition += ` and metadata.log > 0 `;
+          break;
+        default:
+          break;
+      }
     }
 
     const [metadata, totalCount] = await this.metadataModel
