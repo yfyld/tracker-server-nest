@@ -190,9 +190,11 @@ export class AuthService {
     return this.createToken(user);
   }
 
+  public async getCookieName(): Promise<string> {
+    return await this.singleLoginService.getCookieName();
+  }
+
   public async singleSignOn(cookie): Promise<TokenDto> {
-    // tslint:disable-next-line: no-console
-    console.debug(cookie);
     const userInfo = await this.singleLoginService.getUserInfo(cookie);
     const user = await this.userModel.findOne({
       select: ['password', 'id', 'username', 'nickname'],

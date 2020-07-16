@@ -54,7 +54,7 @@ export class ProjectService {
       relations: ['creator']
     });
     if (!project) {
-      throw new HttpBadRequestError('项目不存在');
+      throw new HttpBadRequestError('应用不存在');
     }
     return project;
   }
@@ -65,7 +65,7 @@ export class ProjectService {
       relations: ['creator', 'associationProjects']
     });
     if (!project) {
-      throw new HttpBadRequestError('项目不存在');
+      throw new HttpBadRequestError('应用不存在');
     }
     const members = await this.memberModel.find({
       where: { project: { id: projectId } },
@@ -89,7 +89,7 @@ export class ProjectService {
       relations: ['associationProjects']
     });
     if (!project) {
-      throw new HttpBadRequestError('项目不存在');
+      throw new HttpBadRequestError('应用不存在');
     }
     return project.associationProjects.map(item => item.id);
   }
@@ -210,7 +210,7 @@ export class ProjectService {
     }
     const project = await this.projectModel.findOne(projectId);
     if (!project) {
-      throw new HttpBadRequestError('项目不存在');
+      throw new HttpBadRequestError('应用不存在');
     }
     const members = await this.userModel.find({
       id: In(userIds)

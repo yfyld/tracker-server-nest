@@ -1,6 +1,8 @@
 import { MysqlConnectionOptions } from 'typeorm/driver/mysql/MysqlConnectionOptions';
 import * as path from 'path';
 
+const opsConfig = require('/app/config/config.ts');
+
 export const APP = {
   port: 5000,
   version: '1.0.0'
@@ -36,12 +38,11 @@ export const STAT_USER_NUM_INTERVAL = 30000;
 export const ALARM_INTERVAL = 30000;
 export const GENERATE_IMG_CRON = '0 0 11 * *';
 
-const opsConfig = require('/app/config/config.ts');
-
 export const BASE_URL = {
   webUrl: opsConfig.env === 'qa' ? 'http://telescope.qa.91jkys.com' : 'http://telescope.91jkys.com',
   serverUrl: opsConfig.env === 'qa' ? 'http://telescope.qa.91jkys.com/api' : 'http://telescope.91jkys.com/api'
 };
+export const COOKIE_HOST = opsConfig.env === 'qa' ? 'qa.91jkys.com' : '91jkys.com';
 
 export const ORMCONFIG: MysqlConnectionOptions = {
   type: 'mysql',

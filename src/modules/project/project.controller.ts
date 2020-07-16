@@ -41,31 +41,31 @@ import {
 import { Auth } from '@/decotators/user.decorators';
 import { UserModel } from '@/modules/user/user.model';
 
-@ApiUseTags('项目相关')
+@ApiUseTags('应用相关')
 @Controller('project')
 @UseGuards(JwtAuthGuard, PermissionsGuard)
 export class ProjectController {
   constructor(private readonly projectService: ProjectService) {}
 
-  @ApiOperation({ title: '新建项目', description: '' })
+  @ApiOperation({ title: '新建应用', description: '' })
   @ApiResponse({ status: 200, type: ProjectDto })
   @Post('/')
-  @HttpProcessor.handle({ message: '新建项目' })
+  @HttpProcessor.handle({ message: '新建应用' })
   @Permissions(PERMISSION_CODE.PROJECT_ADD)
   addProject(@Body() body: AddProjectDto, @Auth() user: UserModel): Promise<AddProjectResDto> {
     return this.projectService.addProject(body, user);
   }
 
-  @ApiOperation({ title: '编辑项目', description: '' })
-  @HttpProcessor.handle('编辑项目')
+  @ApiOperation({ title: '编辑应用', description: '' })
+  @HttpProcessor.handle('编辑应用')
   @Put('/')
   @Permissions(PERMISSION_CODE.PROJECT_UPDATE)
   updateProject(@Body() body: UpdateProjectDto): Promise<void> {
     return this.projectService.updateProject(body);
   }
 
-  @ApiOperation({ title: '删除项目', description: '' })
-  @HttpProcessor.handle('删除项目')
+  @ApiOperation({ title: '删除应用', description: '' })
+  @HttpProcessor.handle('删除应用')
   @Delete('/:projectId')
   @Permissions(PERMISSION_CODE.PROJECT_DEL)
   deleteProject(@Param('projectId', new ParseIntPipe()) projectId: number): Promise<void> {
@@ -73,28 +73,28 @@ export class ProjectController {
   }
 
   @UseInterceptors(ClassSerializerInterceptor)
-  @ApiOperation({ title: '获取项目信息', description: '' })
+  @ApiOperation({ title: '获取应用信息', description: '' })
   @ApiBearerAuth()
   @ApiResponse({ status: 200, type: ProjectModel })
-  @HttpProcessor.handle('获取项目信息')
+  @HttpProcessor.handle('获取应用信息')
   @Get('/info')
   @Permissions(PERMISSION_CODE.PROJECT_INFO)
   getProjectInfo(@Query('projectId', new ParseIntPipe()) projectId: number): Promise<ProjectDto> {
     return this.projectService.getProjectInfo(projectId);
   }
 
-  @ApiOperation({ title: '获取项目列表', description: '' })
+  @ApiOperation({ title: '获取应用列表', description: '' })
   @ApiBearerAuth()
-  @HttpProcessor.handle('获取项目列表')
+  @HttpProcessor.handle('获取应用列表')
   @Permissions(PERMISSION_CODE.PROJECT_SEARCH)
   @Get('/')
   getProjects(@QueryList() query: QueryListQuery<QueryProjectsDto>): Promise<PageData<ProjectModel>> {
     return this.projectService.getProjects(query);
   }
 
-  @ApiOperation({ title: '获取所有相关项目', description: '' })
+  @ApiOperation({ title: '获取所有相关应用', description: '' })
   @ApiBearerAuth()
-  @HttpProcessor.handle('获取所有相关项目')
+  @HttpProcessor.handle('获取所有相关应用')
   @Permissions(PERMISSION_CODE.BOARD_SEARCH)
   @Get('/all')
   getMyProjects(@Auth() user: UserModel): Promise<PageData<ProjectModel>> {

@@ -1,6 +1,8 @@
 import { MysqlConnectionOptions } from 'typeorm/driver/mysql/MysqlConnectionOptions';
 import * as path from 'path';
 
+const opsConfig = require('./configs/ops.config.dev');
+
 export const APP = {
   port: 7009,
   version: '1.0.0'
@@ -41,7 +43,7 @@ export const BASE_URL = {
   serverUrl: 'http://test.qa.91jkys.com:7009'
 };
 
-const opsConfig = require('./configs/ops.config.dev');
+export const COOKIE_HOST = 'qa.91jkys.com';
 
 export const ORMCONFIG: MysqlConnectionOptions = {
   type: 'mysql',

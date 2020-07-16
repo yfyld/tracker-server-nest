@@ -241,12 +241,12 @@ export class MetadataService {
   public async addMetadataByExcel(projectId: number, pathStr: string, manager: EntityManager): Promise<void> {
     const datas = await this.xlsxervice.parseByPath(
       path.join(__dirname, '../../', pathStr),
-      ['名称', 'code', '类型', '启用', '标签', 'URL', '备注'],
-      ['name', 'code', 'type', 'status', 'newTags', 'url', 'description']
+      ['名称', 'code', '类型', '启用', '标签', '备注'],
+      ['name', 'code', 'type', 'status', 'newTags', 'description']
     );
 
     const metadatas = datas.filter(
-      item => item.name || item.code || item.type || item.status || item.newTags || item.url || item.description
+      item => item.name || item.code || item.type || item.status || item.newTags || item.description
     );
 
     const tagNames = metadatas.reduce((total, item) => {

@@ -3,7 +3,7 @@ import { UserModel } from '../user/user.model';
 
 export class AddProjectDto {
   @IsDefined()
-  @IsNotEmpty({ message: '项目名称不能为空' })
+  @IsNotEmpty({ message: '应用名称不能为空' })
   name: string;
 
   @IsOptional()
@@ -19,7 +19,7 @@ export class AddProjectResDto {
 }
 
 export class AddMembersDto {
-  @IsNotEmpty({ message: '项目id不能为空' })
+  @IsNotEmpty({ message: '应用id不能为空' })
   projectId: number;
   @IsNotEmpty({ message: 'memberIds不能为空' })
   userIds: number[];
@@ -28,14 +28,14 @@ export class AddMembersDto {
 }
 
 export class DeleteMembersDto {
-  @IsNotEmpty({ message: '项目id不能为空' })
+  @IsNotEmpty({ message: '应用id不能为空' })
   projectId: number;
   @IsNotEmpty({ message: 'memberIds不能为空' })
   userIds: number[];
 }
 
 export class UpdateMembersDto {
-  @IsNotEmpty({ message: '项目id不能为空' })
+  @IsNotEmpty({ message: '应用id不能为空' })
   projectId: number;
   @IsNotEmpty({ message: 'memberIds不能为空' })
   userIds: number[];
@@ -65,7 +65,7 @@ export class UpdateProjectDto {
   @IsNumber()
   id: number;
 
-  @IsString({ message: '项目名必须为字符串' })
+  @IsString({ message: '应用名必须为字符串' })
   name: string;
 
   @IsOptional()
@@ -82,7 +82,7 @@ export class UpdateProjectDto {
 
 export class AddSourcemapsDto {
   @IsDefined()
-  @IsNotEmpty({ message: '项目id不能为空' })
+  @IsNotEmpty({ message: '应用id不能为空' })
   projectId: number;
 
   @IsDefined()
@@ -99,7 +99,7 @@ export class AddSourcemapsDto {
 
 export class ActionSourcemapsDto {
   @IsDefined()
-  @IsNotEmpty({ message: '项目id不能为空' })
+  @IsNotEmpty({ message: '应用id不能为空' })
   projectId: number;
 
   @IsDefined()

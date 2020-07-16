@@ -21,7 +21,7 @@ export class AddReportDto {
 export class ReportDto {
   @ApiModelProperty()
   @IsDefined()
-  @IsNotEmpty({ message: '项目名称不能为空' })
+  @IsNotEmpty({ message: '应用名称不能为空' })
   name: string;
   @ApiModelProperty()
   id: string;
@@ -44,7 +44,7 @@ export class ReportDto {
 export class QueryReportListDto {
   @ApiModelProperty()
   @IsDefined()
-  @IsNotEmpty({ message: '项目名称不能为空' })
+  @IsNotEmpty({ message: '应用名称不能为空' })
   projectId: string;
 
   @IsOptional()

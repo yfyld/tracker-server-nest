@@ -21,7 +21,7 @@ export class RoleModel {
   name: string;
 
   @IsString()
-  @Column({ type: 'varchar', length: 1024, comment: '角色描述，示例：该角色拥有查看所有项目权限' })
+  @Column({ type: 'varchar', length: 1024, comment: '角色描述，示例：该角色拥有查看所有应用权限' })
   description: string;
 
   @Index()

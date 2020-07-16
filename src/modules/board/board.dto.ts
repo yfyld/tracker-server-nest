@@ -6,7 +6,7 @@ import { ProjectModel } from '../project/project.model';
 
 export class BoardDto {
   @IsDefined()
-  @IsNotEmpty({ message: '项目名称不能为空' })
+  @IsNotEmpty({ message: '应用名称不能为空' })
   name: string;
   id: number;
 

@@ -137,7 +137,7 @@ export class MetadataDto {
 export class QueryMetadataListDto {
   @ApiModelProperty()
   @IsDefined()
-  @IsNotEmpty({ message: '项目不能为空' })
+  @IsNotEmpty({ message: '应用不能为空' })
   projectId: number;
 
   @IsOptional()
