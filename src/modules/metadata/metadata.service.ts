@@ -29,7 +29,7 @@ import { RedisService } from 'nestjs-redis';
 import { XlsxService } from '@/providers/xlsx/xlsx.service';
 
 import * as path from 'path';
-import { Response } from 'express';
+
 import { Readable } from 'typeorm/platform/PlatformTools';
 
 @Injectable()
@@ -346,22 +346,22 @@ export class MetadataService {
     }
     const opt = {
       query: `trackId : "${metadata.code}"  and projectId : ${metadata.projectId}|SELECT COUNT(*) as count`,
-      from: Math.floor((new Date(metadata.createdAt).getTime() - 86400000 * 30) / 1000),
-      to: Math.floor(Date.now() / 1000)
+      from: new Date(metadata.createdAt).getTime() - 86400000 * 30,
+      to: Date.now()
     };
 
     const all = await this.slsService.query<any>(opt);
-    opt.from = Math.floor((Date.now() - 86400000 * 3) / 1000);
+    opt.from = Date.now() - 86400000 * 3;
     const recent = await this.slsService.query<any>(opt);
 
     const optApp = {
       query: `trackId : "${metadata.code}"  and projectId : ${metadata.projectId} and appId:*|SELECT COUNT(*) as count`,
-      from: Math.floor((new Date(metadata.createdAt).getTime() - 86400000 * 30) / 1000),
-      to: Math.floor(Date.now() / 1000)
+      from: new Date(metadata.createdAt).getTime() - 86400000 * 30,
+      to: Date.now()
     };
 
     const allApp = await this.slsService.query<any>(optApp);
-    optApp.from = Math.floor((Date.now() - 86400000 * 3) / 1000);
+    optApp.from = Date.now() - 86400000 * 3;
     const recentApp = await this.slsService.query<any>(optApp);
 
     const result = {
@@ -506,8 +506,8 @@ export class MetadataService {
     // const metadataIndex = Number(await client.get(`metadataCode_${}`)) || 0;
     // const opt = {
     //   query: `trackId : ""|SELECT COUNT(*) as count`,
-    //   from: Math.floor(new Date(metadata.createdAt).getTime() / 1000),
-    //   to: Math.floor(Date.now() / 1000)
+    //   from: new Date(metadata.createdAt).getTime(),
+    //   to: Date.now()
     // };
     // const metadatas = await this.metadataModel.find({
     //   where: {
@@ -583,8 +583,8 @@ export class MetadataService {
         const opt = {
           // tslint:disable-next-line: max-line-length
           query: `trackId : ${metadata.code} and projectId :${metadata.projectId} | select "${attr.value}" , pv from( select count(1) as pv , "${attr.value}" from (select "${attr.value}" from log limit 100000) group by "${attr.value}" order by pv desc) order by pv desc limit 10`,
-          from: Math.floor(Date.now() / 1000 - 86400 * 30),
-          to: Math.floor(Date.now() / 1000)
+          from: Date.now() - 86400 * 30,
+          to: Date.now()
         };
         const result = await this.slsService.query(opt);
 

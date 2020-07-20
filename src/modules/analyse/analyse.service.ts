@@ -47,10 +47,16 @@ export class AnalyseService {
       countStr = `select approx_distinct(utoken) as count`;
     } else if (indicatorType === 'APV') {
       countStr = `select try(count(1) / approx_distinct(utoken)) as count`;
+    } else if (indicatorType === `RUV`) {
+      countStr = `select approx_distinct(uid) as count`;
+    } else if (indicatorType === 'RAPV') {
+      countStr = `select try(count(1) / approx_distinct(uid)) as count`;
     } else if (indicatorType === 'DPV') {
       countStr = `select count(1) / ${day} as count`;
     } else if (indicatorType === 'DUV') {
       countStr = `select try(approx_distinct(utoken) / ${day} )as count`;
+    } else if (indicatorType === 'DRUV') {
+      countStr = `select try(approx_distinct(uid) / ${day} )as count`;
     }
 
     // tslint:disable-next-line:max-line-length
@@ -61,13 +67,13 @@ export class AnalyseService {
     const [qoqData, yoyData] = await Promise.all([
       this.slsService.query<ICompare>({
         query: qoqQuery,
-        from: Math.floor(timeParam.dateStart / 1000),
-        to: Math.floor(timeParam.dateEnd / 1000)
+        from: timeParam.dateStart,
+        to: timeParam.dateEnd
       }),
       this.slsService.query<ICompare>({
         query: yoyQuery,
-        from: Math.floor(timeParam.dateStart / 1000),
-        to: Math.floor(timeParam.dateEnd / 1000)
+        from: timeParam.dateStart,
+        to: timeParam.dateEnd
       })
     ]);
 
@@ -115,9 +121,13 @@ export class AnalyseService {
       key.push(`approx_distinct(utoken) as count`);
     } else if (indicatorType === 'APV') {
       key.push(`try(count(1) / approx_distinct(utoken)) as count`);
+    } else if (indicatorType === `RUV` || indicatorType === 'DRUV') {
+      key.push(`approx_distinct(uid) as count`);
+    } else if (indicatorType === 'RAPV') {
+      key.push(`try(count(1) / approx_distinct(uid)) as count`);
     }
 
-    if (indicatorType === 'DUV' || indicatorType === 'DPV') {
+    if (indicatorType === 'DRUV' || indicatorType === 'DUV' || indicatorType === 'DPV') {
       key.push(`date_format(trackTime,'%H') as time`);
       hasTime = true;
     } else if (isTrend) {
@@ -384,8 +394,8 @@ export class AnalyseService {
 
       const data = await this.slsService.query<IAnalyseQueryDataItem>({
         query,
-        from: Math.floor(timeParam.dateStart / 1000),
-        to: Math.floor(timeParam.dateEnd / 1000)
+        from: timeParam.dateStart,
+        to: timeParam.dateEnd
       });
       if (param.dimension) {
         data.forEach(item => {
@@ -425,10 +435,14 @@ export class AnalyseService {
       key.push(`count(1) as count`);
     } else if (indicatorType === `UV` || indicatorType === 'DUV') {
       key.push(`approx_distinct(utoken) as count`);
+    } else if (indicatorType === `RUV` || indicatorType === 'DRUV') {
+      key.push(`approx_distinct(uid) as count`);
     } else if (indicatorType === 'APV') {
       key.push(`try(count(1) / approx_distinct(utoken)) as count`);
+    } else if (indicatorType === 'RAPV') {
+      key.push(`try(count(1) / approx_distinct(uid)) as count`);
     }
-    if (indicatorType === 'DUV' || indicatorType === 'DPV') {
+    if (indicatorType === 'DRUV' || indicatorType === 'DUV' || indicatorType === 'DPV') {
       key.push(`date_format(trackTime,'%H') as time`);
       hasTime = true;
     } else if (isTrend) {
@@ -497,8 +511,8 @@ export class AnalyseService {
 
       const data = await this.slsService.query<IAnalyseEventDataListDataItem>({
         query,
-        from: Math.floor(timeParam.dateStart / 1000),
-        to: Math.floor(timeParam.dateEnd / 1000)
+        from: timeParam.dateStart,
+        to: timeParam.dateEnd
       });
       if (param.dimension) {
         data.forEach(item => {
@@ -566,8 +580,8 @@ export class AnalyseService {
 
       const data = await this.slsService.query<any>({
         query,
-        from: Math.floor(timeParam.dateStart / 1000),
-        to: Math.floor(timeParam.dateEnd / 1000)
+        from: timeParam.dateStart,
+        to: timeParam.dateEnd
       });
 
       const item = {
@@ -588,8 +602,8 @@ export class AnalyseService {
         const query = `${childrenFilterStr}${indicatorSql}`;
         const data = await this.slsService.query<any>({
           query,
-          from: Math.floor(timeParam.dateStart / 1000),
-          to: Math.floor(timeParam.dateEnd / 1000)
+          from: timeParam.dateStart,
+          to: timeParam.dateEnd
         });
 
         result.links.push({
@@ -618,8 +632,8 @@ export class AnalyseService {
 
     return await this.slsService.query({
       query,
-      from: Math.floor(timeParam.dateStart / 1000),
-      to: Math.floor(timeParam.dateEnd / 1000)
+      from: timeParam.dateStart,
+      to: timeParam.dateEnd
     });
   }
 }
