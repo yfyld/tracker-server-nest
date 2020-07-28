@@ -1,7 +1,7 @@
 import { MysqlConnectionOptions } from 'typeorm/driver/mysql/MysqlConnectionOptions';
 import * as path from 'path';
 
-export const opsConfig = require('./configs/ops.config.dev');
+const opsConfig = require('./configs/ops.config.dev');
 
 export const APP = {
   port: 7009,

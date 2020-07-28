@@ -1,3 +1,4 @@
+import { PermissionModel } from './../permission/permission.model';
 import { MemberModel } from './../project/project.model';
 
 import { UserModel } from '@/modules/user/user.model';
@@ -22,7 +23,7 @@ import { SingleLoginModule } from '@/providers/singleLogin/single-login.module';
       signOptions: { expiresIn: AUTH.expiresIn }
     }),
     SingleLoginModule,
-    TypeOrmModule.forFeature([UserModel, MemberModel])
+    TypeOrmModule.forFeature([UserModel, MemberModel, PermissionModel])
   ],
   controllers: [AuthController],
   providers: [AuthService],

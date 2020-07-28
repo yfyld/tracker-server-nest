@@ -88,8 +88,11 @@ export class ProjectController {
   @HttpProcessor.handle('获取应用列表')
   @Permissions(PERMISSION_CODE.PROJECT_SEARCH)
   @Get('/')
-  getProjects(@QueryList() query: QueryListQuery<QueryProjectsDto>): Promise<PageData<ProjectModel>> {
-    return this.projectService.getProjects(query);
+  getProjects(
+    @Auth() user: UserModel,
+    @QueryList() query: QueryListQuery<QueryProjectsDto>
+  ): Promise<PageData<ProjectModel>> {
+    return this.projectService.getProjects(user, query);
   }
 
   @ApiOperation({ title: '获取所有相关应用', description: '' })

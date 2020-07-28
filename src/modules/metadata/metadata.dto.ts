@@ -201,7 +201,7 @@ export class SourceCodeDto {
 }
 
 export class GetEventAttrDto {
-  metadataCode: string;
+  metadataCode?: string;
   projectId: number;
 }
 

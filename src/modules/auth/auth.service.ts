@@ -1,3 +1,4 @@
+import { PermissionModel } from './../permission/permission.model';
 import { MemberModel } from './../project/project.model';
 
 import { SignUpDto } from './auth.dto';
@@ -26,6 +27,9 @@ export class AuthService {
     private readonly userService: UserService,
     @InjectRepository(MemberModel)
     private readonly memberModel: Repository<MemberModel>,
+    @InjectRepository(PermissionModel)
+    private readonly permissionModel: Repository<PermissionModel>,
+
     private readonly jwtService: JwtService,
     private readonly singleLoginService: SingleLoginService
   ) {}
@@ -215,7 +219,7 @@ export class AuthService {
     }
   }
 
-  public async validateProjectPermission(userId: number, projectId: number, permissions: string[]): Promise<boolean> {
+  public async getPermissionByUserAndProjectId(userId: number, projectId: number) {
     const member = await this.memberModel
       .createQueryBuilder('member')
       .leftJoinAndSelect('member.role', 'role')
@@ -227,10 +231,22 @@ export class AuthService {
       total = total.concat(item.role.permissions.map(val => val.code));
       return total;
     }, []);
-    if (permissions.length === 1) {
-      return allPermissions.includes(permissions[0]);
-    } else {
-      return allPermissions.some(permission => permissions.includes(permission));
-    }
+
+    const permissions = await this.permissionModel.find();
+    return;
+  }
+
+  public async validateProjectPermission(userId: number, projectId: number): Promise<string[]> {
+    const member = await this.memberModel
+      .createQueryBuilder('member')
+      .leftJoinAndSelect('member.role', 'role')
+      .leftJoinAndSelect('role.permissions', 'permission')
+      .where('userId = :userId', { userId })
+      .where('projectId = :projectId', { projectId })
+      .getMany();
+    return member.reduce((total, item) => {
+      total = total.concat(item.role.permissions.map(val => val.code));
+      return total;
+    }, []);
   }
 }

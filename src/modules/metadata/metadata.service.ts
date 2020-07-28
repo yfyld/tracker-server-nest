@@ -523,7 +523,7 @@ export class MetadataService {
       const metadataIndex = Number(await client.get('metadataCheckedIndex')) || 0;
       let metadataIds = JSON.parse((await client.get('metadataIds')) || '[]');
 
-      if (!metadataIds.length || metadataIds.length.length < metadataIndex + 1) {
+      if (!metadataIds.length || metadataIds.length < metadataIndex + 1) {
         metadataIds = (await this.metadataModel.find({
           where: {
             status: 1,
@@ -546,13 +546,39 @@ export class MetadataService {
     }
   }
 
+  public async scheduleCronComputedAllEventAttrRecommend(): Promise<void> {
+    const client = await this.redisService.getClient();
+    const eventAttrs = JSON.parse(JSON.stringify(EVENT_ATTRS));
+
+    for (let attr of eventAttrs) {
+      if (!attr.autoRecommend) {
+        continue;
+      }
+      try {
+        const opt = {
+          // tslint:disable-next-line: max-line-length
+          query: `* | select ${attr.value} , pv from( select count(1) as pv , ${attr.value} from (select ${attr.value} from log limit 100000) group by ${attr.value} order by pv desc) order by pv desc limit 10`,
+          from: Date.now() - 86400 * 30,
+          to: Date.now()
+        };
+        const result = await this.slsService.query(opt);
+        attr.recommend.unshift(...result.map(item => ({ value: item[attr.value], text: item[attr.value] })));
+        console.log(attr.recommend);
+      } catch (error) {}
+    }
+
+    client.set(`eventAttrsRecommend`, JSON.stringify(eventAttrs));
+  }
+
   public async scheduleCronComputedEventAttrRecommend(): Promise<void> {
     const client = await this.redisService.getClient();
     const metadataIndex = Number(await client.get('metadataComputeAttrIndex')) || 0;
 
     let metadataIds = JSON.parse((await client.get('metadataComputeAttrIds')) || '[]');
+    const eventAttrs = JSON.parse(JSON.stringify(EVENT_ATTRS));
 
-    if (!metadataIds.length || metadataIds.length.length < metadataIndex + 1) {
+    // 计算所有 todo 直接copy
+    if (!metadataIds.length || metadataIds.length < metadataIndex + 1) {
       metadataIds = (await this.metadataModel.find({
         where: {
           status: 1,
@@ -562,6 +588,7 @@ export class MetadataService {
       })).map(item => item.id);
       client.set('metadataComputeAttrIndex', 0);
       client.set('metadataComputeAttrIds', JSON.stringify(metadataIds));
+
       return;
     }
 
@@ -573,24 +600,20 @@ export class MetadataService {
       return;
     }
 
-    const eventAttrs = EVENT_ATTRS;
-
     for (let attr of eventAttrs) {
-      if ((attr.eventType && metadata.type !== attr.eventType) || attr.recommend.length) {
+      if ((attr.eventType && metadata.type !== attr.eventType) || !attr.autoRecommend) {
         continue;
       }
       try {
         const opt = {
           // tslint:disable-next-line: max-line-length
-          query: `trackId : ${metadata.code} and projectId :${metadata.projectId} | select "${attr.value}" , pv from( select count(1) as pv , "${attr.value}" from (select "${attr.value}" from log limit 100000) group by "${attr.value}" order by pv desc) order by pv desc limit 10`,
+          query: `trackId : ${metadata.code} and projectId :${metadata.projectId} | select ${attr.value} , pv from( select count(1) as pv , ${attr.value} from (select ${attr.value} from log limit 100000) group by ${attr.value} order by pv desc) order by pv desc limit 10`,
           from: Date.now() - 86400 * 30,
           to: Date.now()
         };
         const result = await this.slsService.query(opt);
 
-        attr.recommend = attr.recommend.concat(
-          result.map(item => ({ value: item[attr.value], text: item[attr.value] }))
-        );
+        attr.recommend.unshift(...result.map(item => ({ value: item[attr.value], text: item[attr.value] })));
       } catch (e) {
         console.error('推荐离线查询错误');
       }
@@ -600,7 +623,11 @@ export class MetadataService {
 
   public async getFieldList(query: GetEventAttrDto): Promise<ListData<EventAttrsListDto>> {
     const client = await this.redisService.getClient();
-    let eventAttrsStr = await client.get(`eventAttrsRecommend_${query.projectId}_${query.metadataCode}`);
+    let key = 'eventAttrsRecommend';
+    if (query.metadataCode !== '_ALL_METADATA') {
+      key = `eventAttrsRecommend_${query.projectId}_${query.metadataCode}`;
+    }
+    let eventAttrsStr = (await client.get(key)) || (await client.get('eventAttrsRecommend'));
     const eventAttrs: EventAttrsListDto[] = eventAttrsStr ? JSON.parse(eventAttrsStr) : EVENT_ATTRS;
     return { list: eventAttrs };
   }

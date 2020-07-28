@@ -13,7 +13,7 @@ export class PermissionsGuard implements CanActivate {
     @Inject('AuthService') private readonly authService: AuthService
   ) {}
 
-  canActivate(context: ExecutionContext): boolean | Promise<boolean> | Observable<boolean> {
+  async canActivate(context: ExecutionContext): Promise<boolean> {
     const permissions = [
       ...(this.reflector.get<string[]>('permissions', context.getClass()) || []),
       ...(this.reflector.get<string[]>('permissions', context.getHandler()) || [])
@@ -29,6 +29,14 @@ export class PermissionsGuard implements CanActivate {
       this.handleError();
       return false;
     }
+
+    const projectId = request.params.projectId || request.body.projectId || request.query.projectId;
+    if (projectId) {
+      const allProjectPermissions = await this.authService.validateProjectPermission(request.user.id, projectId);
+
+      user.permissions.push(...allProjectPermissions);
+    }
+
     const hasPermission = () => {
       if (permissions.length === 1) {
         return user.permissions.includes(permissions[0]);
@@ -41,10 +49,6 @@ export class PermissionsGuard implements CanActivate {
       return true;
     }
 
-    const projectId = request.params.projectId || request.body.projectId || request.query.projectId;
-    if (projectId) {
-      return this.authService.validateProjectPermission(request.user.id, projectId, permissions);
-    }
     this.handleError();
     return false;
   }

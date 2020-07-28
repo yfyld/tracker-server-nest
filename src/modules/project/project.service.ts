@@ -94,7 +94,7 @@ export class ProjectService {
     return project.associationProjects.map(item => item.id);
   }
 
-  public async getProjects(query: QueryListQuery<QueryProjectsDto>): Promise<PageData<ProjectModel>> {
+  public async getProjects(user: UserModel, query: QueryListQuery<QueryProjectsDto>): Promise<PageData<ProjectModel>> {
     const findParam: FindManyOptions<ProjectModel> = {
       skip: query.skip,
       take: query.take,
@@ -104,6 +104,17 @@ export class ProjectService {
       },
       relations: ['creator']
     };
+
+    // 如果有PROJECT_SEARCH_ALL权限查询所有项目
+    if (!(user as any).permissions.includes('PROJECT_SEARCH_ALL')) {
+      const projectMembers = await this.memberModel.find({
+        where: { user, status: 1 },
+        relations: ['project']
+      });
+
+      const projectIds = projectMembers.map(item => item.project.id);
+      (findParam.where as any).id = In(projectIds);
+    }
 
     if (query.query.projectName) {
       (findParam as any).where.name = Like(`%${query.query.projectName}%`);
