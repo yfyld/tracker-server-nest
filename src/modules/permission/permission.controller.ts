@@ -9,7 +9,8 @@ import {
   PermissionItemDto,
   PermissionListItemDto,
   QueryPermissionDto,
-  UpdatePermissionDto
+  UpdatePermissionDto,
+  UserPermissionCodesDto
 } from '@/modules/permission/permission.dto';
 import { HttpProcessor } from '@/decotators/http.decotator';
 import { UserModel } from '@/modules/user/user.model';
@@ -51,6 +52,24 @@ export class PermissionController {
     @QueryList() query: QueryListQuery<QueryPermissionDto>
   ): Promise<PageData<PermissionListItemDto>> {
     return this.permissionService.getPermissionsByUser(user, query);
+  }
+
+  @HttpProcessor.handle('获取当前用户所有权限列表')
+  @Get('/all')
+  getPermissionsByUserOrProject(
+    @Auth() user: UserModel,
+    @Query('projectId') projectId?: string
+  ): Promise<UserPermissionCodesDto> {
+    if (projectId) {
+      return {
+        projectId: Number(projectId),
+        permissionCodes: (user as any).permissions
+      } as any;
+    } else {
+      return {
+        permissionCodes: (user as any).permissions
+      } as any;
+    }
   }
 
   @ApiOperation({ title: '编辑权限', description: '' })

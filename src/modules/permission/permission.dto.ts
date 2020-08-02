@@ -89,3 +89,8 @@ export class PermissionItemDto extends BasePermissionDto {
 }
 
 export class PermissionListItemDto extends BasePermissionDto {}
+
+export class UserPermissionCodesDto {
+  projectId: number;
+  permissionCodesMap: string[];
+}
