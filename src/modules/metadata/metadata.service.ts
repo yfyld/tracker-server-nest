@@ -400,23 +400,50 @@ export class MetadataService {
    * @returns {Promise<void>}
    * @memberof MetadataService
    */
-  public async updateMetadataBatch(body: UpdateMetadataBatchDto): Promise<void> {
-    let { ids, newTags, projectId, status, type, operatorType } = body;
+  public async updateMetadataBatch(body: UpdateMetadataBatchDto, manager: EntityManager): Promise<void> {
+    let { ids, newTags, projectId, status, type } = body;
+    const metadatas = await this.metadataModel.find({ id: In(ids) });
+    switch (type) {
+      case 'DEL':
+        for (const metadata of metadatas) {
+          if (metadata.log || metadata.status) {
+            metadata.isDeleted = true;
+            await manager.save(MetadataModel, metadata);
+          } else {
+            await manager.remove(MetadataModel, metadata);
+          }
+        }
 
-    if (type === 'DEL') {
-      for (const id of ids) {
-        await this.deleteMetadata(id);
+        break;
+
+      case 'UPDATE':
+        for (const metadata of metadatas) {
+          metadata.status = status;
+          await manager.save(MetadataModel, metadata);
+        }
+        break;
+
+      case 'TAG': {
+        // 先处理新增的标签
+        const newMetadataTags = [];
+        for (let tagName of newTags) {
+          if (await this.metadataTagModel.findOne({ name: tagName, projectId })) {
+            continue;
+          }
+          const newMetadataTag = this.metadataTagModel.create({ name: tagName, project: { id: projectId }, projectId });
+          newMetadataTags.push(newMetadataTag);
+          await manager.save(MetadataTagModel, newMetadataTag);
+        }
+
+        for (const metadata of metadatas) {
+          metadata.tags.push(...newMetadataTags);
+          await manager.save(MetadataModel, metadata);
+        }
+        break;
       }
-    } else {
-      for (const id of ids) {
-        await this.updateMetadata({
-          id,
-          projectId,
-          status,
-          newTags,
-          operatorType
-        });
-      }
+
+      default:
+        break;
     }
   }
 

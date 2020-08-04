@@ -84,8 +84,11 @@ export class MetadataController {
   @HttpProcessor.handle('批量更新元数据')
   @Put('/')
   @Permissions(PERMISSION_CODE.METADATA_UPDATE)
-  updateMetadataBatch(@Body() body: UpdateMetadataBatchDto): Promise<void> {
-    return this.metadataService.updateMetadataBatch(body);
+  updateMetadataBatch(
+    @Body() body: UpdateMetadataBatchDto,
+    @TransactionManager() manager: EntityManager
+  ): Promise<void> {
+    return this.metadataService.updateMetadataBatch(body, manager);
   }
 
   @HttpProcessor.handle('删除元数据')
