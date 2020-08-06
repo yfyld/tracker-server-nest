@@ -15,7 +15,8 @@ import {
   QueryEventAnalyseDataDto,
   QueryFunnelAnalyseDataDto,
   QueryPathAnalyseDataDto,
-  QueryCustomAnalyseDataDto
+  QueryCustomAnalyseDataDto,
+  QueryUserTimelineAnalyseDataDto
 } from './analyse.dto';
 import { filterToQuery } from './analyse.util';
 import { getDynamicTime } from '@/utils/date';
@@ -635,5 +636,59 @@ export class AnalyseService {
       from: timeParam.dateStart,
       to: timeParam.dateEnd
     });
+  }
+
+  async userTimeAnalyse(param: QueryUserTimelineAnalyseDataDto) {
+    const timeParam = getDynamicTime(param.dateStart, param.dateEnd, param.dateType);
+    let query = `projectId:${param.projectId} ${param.utoken ? 'and utoken:' + param.utoken : ''} ${
+      param.uid ? 'and uid:' + param.uid : ''
+    }| select url,os,version,appid,browser, trackId,trackTime,durationTime,pageId,actionType order by trackTime asc`;
+
+    const data = await this.slsService.query<{
+      trackId: string;
+      trackTime: number;
+      durationTime: number;
+      pageId: string;
+      actionType: string;
+      trackName: string;
+      pageName: string;
+    }>({
+      query,
+      from: timeParam.dateStart,
+      to: timeParam.dateEnd
+    });
+
+    let trackIdMap = {};
+    data.forEach(item => {
+      if (item.trackId) {
+        trackIdMap[item.trackId] = item.trackId;
+      }
+      if (item.pageId) {
+        trackIdMap[item.pageId] = item.pageId;
+      }
+    });
+
+    const metadatas = await this.metadataService.getMetadatasByCodes(Object.keys(trackIdMap));
+    metadatas.forEach(item => {
+      trackIdMap[item.code] = item.name;
+    });
+
+    let prevPage = null;
+    return data.reduce((total, item) => {
+      item.durationTime = item.durationTime && Number(item.durationTime);
+      item.trackName = trackIdMap[item.trackId];
+      item.pageName = trackIdMap[item.pageId];
+
+      if (item.actionType === 'PAGE') {
+        total.push(item);
+        prevPage = item;
+      } else if (item.actionType === 'EVENT') {
+        total.push(item);
+      } else if (item.actionType === 'DURATION' && prevPage && item.pageId === prevPage.trackId) {
+        prevPage.durationTime = item.durationTime;
+        prevPage = null;
+      }
+      return total;
+    }, []);
   }
 }

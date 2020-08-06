@@ -60,3 +60,12 @@ export class QueryPathAnalyseDataDto {
     }
   ];
 }
+
+export class QueryUserTimelineAnalyseDataDto {
+  projectId: number;
+  dateStart: number;
+  dateEnd: number;
+  dateType: string;
+  uid?: string;
+  utoken?: string;
+}

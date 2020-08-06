@@ -15,7 +15,8 @@ import {
   QueryEventAnalyseDataDto,
   QueryFunnelAnalyseDataDto,
   QueryPathAnalyseDataDto,
-  QueryCustomAnalyseDataDto
+  QueryCustomAnalyseDataDto,
+  QueryUserTimelineAnalyseDataDto
 } from './analyse.dto';
 import { Permissions } from '@/decotators/permissions.decotators';
 @ApiUseTags('分析')
@@ -47,8 +48,18 @@ export class AnalyseController {
 
   @HttpProcessor.handle('自定义查询')
   @Post('/custom')
-  @Permissions(PERMISSION_CODE.ANALYSE_PATH)
+  @Permissions(PERMISSION_CODE.ANALYSE_CUSTOM)
   customAnalyse(@Body() body: QueryCustomAnalyseDataDto): Promise<unknown> {
     return this.analyseService.customAnalyse(body);
+  }
+
+  @HttpProcessor.handle('用户时间轴查询')
+  @Post('/user-timeline')
+  @Permissions(PERMISSION_CODE.SEARCH_USER_TIMELINE)
+  userTimelineAnalyse(@Body() body: QueryUserTimelineAnalyseDataDto): Promise<unknown> {
+    if (!body.uid && !body.utoken) {
+      throw new Error('uid,utoken不能都为空');
+    }
+    return this.analyseService.userTimeAnalyse(body);
   }
 }

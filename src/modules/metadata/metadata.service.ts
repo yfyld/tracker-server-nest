@@ -479,6 +479,12 @@ export class MetadataService {
     return;
   }
 
+  public async getMetadatasByCodes(codes: string[]): Promise<MetadataModel[]> {
+    return await this.metadataModel.find({
+      code: In(codes)
+    });
+  }
+
   /**
    * 标签相关接口
    */
