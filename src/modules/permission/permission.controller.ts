@@ -56,6 +56,7 @@ export class PermissionController {
 
   @HttpProcessor.handle('获取当前用户所有权限列表')
   @Get('/all')
+  @Permissions(PERMISSION_CODE.PROJECT_SEARCH)
   getPermissionsByUserOrProject(
     @Auth() user: UserModel,
     @Query('projectId') projectId?: string

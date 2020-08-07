@@ -18,6 +18,8 @@ export class SlsService {
   public query = function<T>(opt): Promise<T[]> {
     const { query, from, to } = opt;
 
+    console.info(`slsquery:${query}`);
+
     const newOpt = {
       ...SLS_STORE_CONFIG,
       query: query.replace(/(^.+)(\|.*)/, ($, $1, $2) => {
