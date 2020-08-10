@@ -80,7 +80,10 @@ export class PermissionService {
       select: ['id', 'name', 'description', 'code', 'status', 'type', 'updatedAt'],
       skip: query.skip,
       take: query.take,
-      where: { name: Like(`%${query.query.name || ''}%`), isDeleted: 0 }
+      where: { name: Like(`%${query.query.name || ''}%`), isDeleted: 0 },
+      order: {
+        code: 'ASC'
+      }
     });
 
     return {
