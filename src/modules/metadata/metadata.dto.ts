@@ -95,15 +95,13 @@ export class UpdateMetadataBatchDto {
   @IsString()
   @IsOptional()
   type: string;
-  @IsOptional()
-  operatorType?: number;
 
   @IsOptional()
   @IsNumber()
   status?: number;
 
   @IsOptional()
-  newTags?: string[];
+  tags?: string[];
 
   @IsNumber()
   projectId: number;

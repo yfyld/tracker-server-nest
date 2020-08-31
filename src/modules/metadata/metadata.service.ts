@@ -89,7 +89,7 @@ export class MetadataService {
     });
 
     // 查询条件
-    let condition: string = '';
+    let condition: string = 'isDeleted = false';
     let params: {
       [propName: string]: any;
     } = {};
@@ -114,9 +114,9 @@ export class MetadataService {
       }
 
       params.projectIds = projectIds;
-      condition = 'metadata.projectId in (:projectIds)';
+      condition += ' and metadata.projectId in (:projectIds)';
     } else {
-      condition = 'metadata.projectId = :projectId';
+      condition += ' and metadata.projectId = :projectId';
     }
 
     params.projectId = projectId;
@@ -401,8 +401,8 @@ export class MetadataService {
    * @memberof MetadataService
    */
   public async updateMetadataBatch(body: UpdateMetadataBatchDto, manager: EntityManager): Promise<void> {
-    let { ids, newTags, projectId, status, type } = body;
-    const metadatas = await this.metadataModel.find({ id: In(ids) });
+    let { ids, tags, projectId, status, type } = body;
+    const metadatas = await this.metadataModel.find({ where: { id: In(ids) }, relations: ['tags'] });
     switch (type) {
       case 'DEL':
         for (const metadata of metadatas) {
@@ -416,18 +416,13 @@ export class MetadataService {
 
         break;
 
-      case 'UPDATE':
-        for (const metadata of metadatas) {
-          metadata.status = status;
-          await manager.save(MetadataModel, metadata);
-        }
-        break;
-
       case 'TAG': {
         // 先处理新增的标签
         const newMetadataTags = [];
-        for (let tagName of newTags) {
-          if (await this.metadataTagModel.findOne({ name: tagName, projectId })) {
+        for (let tagName of tags) {
+          const tag = await this.metadataTagModel.findOne({ name: tagName, projectId });
+          if (tag) {
+            newMetadataTags.push(tag);
             continue;
           }
           const newMetadataTag = this.metadataTagModel.create({ name: tagName, project: { id: projectId }, projectId });
@@ -436,6 +431,7 @@ export class MetadataService {
         }
 
         for (const metadata of metadatas) {
+          metadata.tags = metadata.tags || [];
           metadata.tags.push(...newMetadataTags);
           await manager.save(MetadataModel, metadata);
         }
@@ -443,6 +439,12 @@ export class MetadataService {
       }
 
       default:
+        {
+          for (const metadata of metadatas) {
+            metadata.status = status;
+            await manager.save(MetadataModel, metadata);
+          }
+        }
         break;
     }
   }

@@ -1,14 +1,14 @@
+import { AnalyseFunnelService } from './analyse.funnel.service';
+import { AnalyseEventService } from './analyse.event.service';
+import { AnalysePathService } from './analyse.path.service';
 import { PERMISSION_CODE } from './../../constants/permission.contant';
 import { PermissionsGuard } from '@/guards/permission.guard';
 import { IFunnelData, IPathData } from './analyse.interface';
-import { ApiOperation, ApiUseTags } from '@nestjs/swagger';
-import { MULTER_OPTIONS, BASE_URL } from '../../app.config';
-import { Controller, Post, UseInterceptors, UploadedFile, UseGuards, Get, Body } from '@nestjs/common';
-import { diskStorage } from 'multer';
+import { ApiUseTags } from '@nestjs/swagger';
+import { Controller, Post, UseGuards, Body } from '@nestjs/common';
+
 import { HttpProcessor } from '@/decotators/http.decotator';
-import { FileInterceptor } from '@nestjs/platform-express';
-import { existsSync, mkdirSync } from 'fs';
-import { extname } from 'path';
+
 import { JwtAuthGuard } from '@/guards/auth.guard';
 import { AnalyseService } from './analyse.service';
 import {
@@ -23,27 +23,32 @@ import { Permissions } from '@/decotators/permissions.decotators';
 @Controller('analyse')
 @UseGuards(JwtAuthGuard, PermissionsGuard)
 export class AnalyseController {
-  constructor(private readonly analyseService: AnalyseService) {}
+  constructor(
+    private readonly analyseService: AnalyseService,
+    private readonly analysePathService: AnalysePathService,
+    private readonly analyseEventService: AnalyseEventService,
+    private readonly analyseFunnelService: AnalyseFunnelService
+  ) {}
 
   @HttpProcessor.handle('事件分析')
   @Post('/event')
   @Permissions(PERMISSION_CODE.ANALYSE_EVENT)
   eventAnalyse(@Body() body: QueryEventAnalyseDataDto): Promise<any> {
-    return this.analyseService.eventAnalyse(body);
+    return this.analyseEventService.eventAnalyse(body);
   }
 
   @HttpProcessor.handle('漏斗分析')
   @Post('/funnel')
   @Permissions(PERMISSION_CODE.ANALYSE_FUNNEL)
   funnelAnalyse(@Body() body: QueryFunnelAnalyseDataDto): Promise<IFunnelData> {
-    return this.analyseService.funnelAnalyse(body);
+    return this.analyseFunnelService.funnelAnalyse(body);
   }
 
   @HttpProcessor.handle('路径分析')
   @Post('/path')
   @Permissions(PERMISSION_CODE.ANALYSE_PATH)
   pathAnalyse(@Body() body: QueryPathAnalyseDataDto): Promise<IPathData> {
-    return this.analyseService.pathAnalyse(body);
+    return this.analysePathService.pathAnalyse(body);
   }
 
   @HttpProcessor.handle('自定义查询')

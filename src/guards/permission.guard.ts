@@ -32,7 +32,10 @@ export class PermissionsGuard implements CanActivate {
 
     const projectId = request.params.projectId || request.body.projectId || request.query.projectId;
     if (projectId) {
-      const allProjectPermissions = await this.authService.validateProjectPermission(request.user.id, projectId);
+      const allProjectPermissions = await this.authService.validateProjectPermission(
+        request.user.id,
+        Number(projectId)
+      );
 
       user.permissions.push(...allProjectPermissions);
     }
