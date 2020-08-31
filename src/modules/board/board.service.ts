@@ -78,8 +78,6 @@ export class BoardService {
     }
     if (typeof query.query.isPublic !== 'undefined') {
       (searchBody.where as any).isPublic = query.query.isPublic;
-    } else {
-      (searchBody.where as any).creator = { id: user.id };
     }
 
     const [boards, totalCount] = await this.boardModel.findAndCount(searchBody);

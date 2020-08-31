@@ -187,3 +187,35 @@ export function filterToQuery({ filterValues, filterType }: IFilterInfo): string
     ? '(' + filterStrs.join(` ${filterType ? 'and' : 'or'} `) + ') and '
     : filterStrs.join(` ${filterType ? 'and' : 'or'} `) + ' and ';
 }
+
+/**
+ * 生成sql group order
+ * @param dimension
+ * @param hasTime
+ */
+export function getGroup(dimension: string, hasTime: boolean) {
+  if (dimension && !hasTime) {
+    return `,${dimension}  GROUP BY ${dimension}`;
+  } else if (dimension && hasTime) {
+    return `,${dimension} GROUP BY time, ${dimension} ORDER BY time`;
+  } else if (hasTime) {
+    return ` group by time order by time`;
+  } else {
+    return ``;
+  }
+}
+
+export function getProjectFilter(projectId: number, associationProjectId: number, associationProjectIds: number[]) {
+  if (projectId && (!associationProjectIds.length || associationProjectId === projectId || !associationProjectId)) {
+    return ` projectId:${projectId} `;
+  }
+
+  if (associationProjectIds.length && associationProjectId && associationProjectIds.includes(associationProjectId)) {
+    return ` projectId:${associationProjectId} `;
+  }
+
+  if (associationProjectIds.length && !associationProjectId) {
+    return associationProjectIds.map(item => ` projectId:${item} `).join(' and ');
+  }
+  throw '当前分析终数据不存在或无权限';
+}

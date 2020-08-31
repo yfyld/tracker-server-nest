@@ -82,7 +82,8 @@ export class MetadataController {
   }
 
   @HttpProcessor.handle('批量更新元数据')
-  @Put('/')
+  @Post('/batch')
+  @Transaction()
   @Permissions(PERMISSION_CODE.METADATA_UPDATE)
   updateMetadataBatch(
     @Body() body: UpdateMetadataBatchDto,

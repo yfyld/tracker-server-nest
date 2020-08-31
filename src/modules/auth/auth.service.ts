@@ -241,8 +241,7 @@ export class AuthService {
       .createQueryBuilder('member')
       .leftJoinAndSelect('member.role', 'role')
       .leftJoinAndSelect('role.permissions', 'permission')
-      .where('userId = :userId', { userId })
-      .where('projectId = :projectId', { projectId })
+      .where('userId = :userId and projectId = :projectId', { userId, projectId })
       .getMany();
     return member.reduce((total, item) => {
       total = total.concat(item.role.permissions.map(val => val.code));
