@@ -107,7 +107,8 @@ export class AnalyseService {
     const timeParam = getDynamicTime(param.dateStart, param.dateEnd, param.dateType);
     let query = `projectId:${param.projectId} ${param.utoken ? 'and utoken:' + param.utoken : ''} ${
       param.uid ? 'and uid:' + param.uid : ''
-    }| select * order by trackTime asc limit 1000`;
+      // tslint:disable-next-line: max-line-length
+    }| select url,os,version,appid,browser,browserVersion, trackId,trackTime,durationTime,pageId,actionType,deviceModel,ip,ua,title order by trackTime asc limit 1000`;
 
     const data = await this.slsService.query<{
       trackId: string;
