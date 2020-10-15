@@ -8,5 +8,6 @@ console.info(REDIS);
 export const RedisModule: DynamicModule = _RedisModule.register({
   host: REDIS.host,
   port: REDIS.port,
+  keyPrefix: 'telescope__',
   db: 10
 });
