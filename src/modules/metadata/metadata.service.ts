@@ -122,13 +122,13 @@ export class MetadataService {
     params.projectId = projectId;
 
     if (name) {
-      condition += ` and metadata.name = :name `;
-      params.name = name;
+      condition += ` and metadata.name LIKE :name`;
+      params.name = `%${name}%`;
     }
 
     if (code) {
-      condition += ` and metadata.code = :code `;
-      params.code = code;
+      condition += ` and metadata.code LIKE :code `;
+      params.code = `%${code}%`;
     }
 
     if (typeof status !== 'undefined') {

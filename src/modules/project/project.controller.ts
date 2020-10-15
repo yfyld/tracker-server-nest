@@ -98,7 +98,7 @@ export class ProjectController {
   @ApiOperation({ title: '获取所有相关应用', description: '' })
   @ApiBearerAuth()
   @HttpProcessor.handle('获取所有相关应用')
-  @Permissions(PERMISSION_CODE.BOARD_SEARCH)
+  @Permissions(PERMISSION_CODE.PROJECT_SEARCH_ALL)
   @Get('/all')
   getMyProjects(@Auth() user: UserModel): Promise<PageData<ProjectModel>> {
     return this.projectService.getMyProjects(user);

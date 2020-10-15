@@ -29,19 +29,19 @@ export class AnalyseEventService {
     if (indicatorType === 'PV') {
       countStr = `select count(1) as count`;
     } else if (indicatorType === `UV`) {
-      countStr = `select approx_distinct(utoken) as count`;
+      countStr = `select approx_distinct (coalesce(uid ,utoken)) as count`;
     } else if (indicatorType === 'APV') {
-      countStr = `select try(count(1) / approx_distinct(utoken)) as count`;
+      countStr = `select try(count(1) / approx_distinct (coalesce(uid ,utoken))) as count`;
     } else if (indicatorType === `RUV`) {
-      countStr = `select approx_distinct(uid) as count`;
+      countStr = `select approx_distinct (coalesce(uid ,utoken)) as count`;
     } else if (indicatorType === 'RAPV') {
-      countStr = `select try(count(1) / approx_distinct(uid)) as count`;
+      countStr = `select try(count(1) / approx_distinct (coalesce(uid ,utoken))) as count`;
     } else if (indicatorType === 'DPV') {
       countStr = `select count(1) / ${day} as count`;
     } else if (indicatorType === 'DUV') {
-      countStr = `select try(approx_distinct(utoken) / ${day} )as count`;
+      countStr = `select try(approx_distinct (coalesce(uid ,utoken)) / ${day} )as count`;
     } else if (indicatorType === 'DRUV') {
-      countStr = `select try(approx_distinct(uid) / ${day} )as count`;
+      countStr = `select try(approx_distinct (coalesce(uid ,utoken)) / ${day} )as count`;
     }
 
     // tslint:disable-next-line:max-line-length
@@ -79,14 +79,14 @@ export class AnalyseEventService {
     if (indicatorType === 'PV' || indicatorType === 'DPV') {
       key.push(`count(1) as count`);
     } else if (indicatorType === `UV` || indicatorType === 'DUV') {
-      key.push(`approx_distinct(utoken) as count`);
+      key.push(`approx_distinct (coalesce(uid ,utoken)) as count`);
       // key.push(`approx_distinct(CASE   WHEN uid='-1'  then utoken  ELSE uid end  ) as count`);
     } else if (indicatorType === `RUV` || indicatorType === 'DRUV') {
-      key.push(`approx_distinct(uid) as count`);
+      key.push(`approx_distinct (coalesce(uid ,utoken)) as count`);
     } else if (indicatorType === 'APV') {
-      key.push(`try(count(1) / approx_distinct(utoken)) as count`);
+      key.push(`try(count(1) / approx_distinct (coalesce(uid ,utoken))) as count`);
     } else if (indicatorType === 'RAPV') {
-      key.push(`try(count(1) / approx_distinct(uid)) as count`);
+      key.push(`try(count(1) / approx_distinct (coalesce(uid ,utoken))) as count`);
     }
     if (indicatorType === 'DRUV' || indicatorType === 'DUV' || indicatorType === 'DPV') {
       key.push(`date_format(trackTime,'%H') as time`);
