@@ -96,11 +96,12 @@ export class AnalyseService {
       query = queryArr.length > 1 ? `${query} and (${queryArr[0]}) | ${queryArr[1]}` : `${query} and (${param.query})`;
     }
 
-    return await this.slsService.query({
+    const data = await this.slsService.query({
       query,
       from: timeParam.dateStart,
       to: timeParam.dateEnd
     });
+    return data;
   }
 
   async userTimeAnalyse(param: QueryUserTimelineAnalyseDataDto) {

@@ -9,3 +9,4 @@ export const REDIS_KEY_ALL_PERMISSIONS = REDIS_PREFIX_KEY + 'all_permissions';
 export const REDIS_KEY_ALL_ROLES = REDIS_PREFIX_KEY + 'all_roles';
 export const GLOBAL_ADMIN_USERNAME = 'admin';
 export const CUSTOM_TOKEN_KEY = 'TELESCOPE_TOKEN';
+export const IS_LOGIN = 'TELESCOPE_LOGIN';

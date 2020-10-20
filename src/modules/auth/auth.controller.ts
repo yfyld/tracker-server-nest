@@ -1,3 +1,4 @@
+import { IS_LOGIN } from './../../constants/common.constant';
 import { COOKIE_HOST } from '../../app.config';
 import { AuthService } from '@/modules/auth/auth.service';
 import { ApiOperation, ApiUseTags } from '@nestjs/swagger';
@@ -53,6 +54,12 @@ export class AuthController {
       path: '/',
       domain: COOKIE_HOST
     });
+    response.cookie(IS_LOGIN, false, {
+      maxAge: 100000,
+      httpOnly: false,
+      path: '/',
+      domain: COOKIE_HOST
+    });
     return response.json({
       result: {},
       status: 200
@@ -64,9 +71,18 @@ export class AuthController {
     const result = await this.authService.singleSignOn(cookie);
     response.cookie(CUSTOM_TOKEN_KEY, result.accessToken, {
       maxAge: result.expireIn,
-      httpOnly: false,
-      path: '/'
+      httpOnly: true,
+      path: '/',
+      domain: COOKIE_HOST
     });
+
+    response.cookie(IS_LOGIN, true, {
+      maxAge: result.expireIn,
+      httpOnly: false,
+      path: '/',
+      domain: COOKIE_HOST
+    });
+
     return response.redirect(302, fromURL || `${BASE_URL.webUrl}/project-list`);
   }
 }

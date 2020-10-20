@@ -1,3 +1,5 @@
+import { RedisService } from 'nestjs-redis';
+import { CUSTOM_TOKEN_KEY } from '@/constants/common.constant';
 import { AuthGuard } from '@nestjs/passport';
 import { ExecutionContext, Injectable } from '@nestjs/common';
 import { HttpUnauthorizedError } from '@/errors/unauthorized.error';
@@ -11,17 +13,23 @@ import { AuthService } from '@/modules/auth/auth.service';
  */
 @Injectable()
 export class JwtAuthGuard extends AuthGuard('jwt') {
-  constructor(private readonly authService: AuthService) {
+  constructor(private readonly authService: AuthService, private readonly redisService: RedisService) {
     super();
   }
 
   async canActivate(context: ExecutionContext): Promise<any> {
     try {
+      const request = context.switchToHttp().getRequest();
+      if (request.cookies && request.cookies[CUSTOM_TOKEN_KEY]) {
+        request.headers.authorization = `Bearer ${request.cookies[CUSTOM_TOKEN_KEY]}`;
+      }
       return await super.canActivate(context);
     } catch (TokenExpiredError) {
       if (TokenExpiredError.response.error === 'jwt expired') {
         const request = context.switchToHttp().getRequest();
+
         const token = ExtractJwt.fromAuthHeaderAsBearerToken()(request);
+
         const result = await this.authService.refreshToken(token);
         // tslint:disable-next-line: max-line-length
         if (result) {
