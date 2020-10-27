@@ -47,19 +47,25 @@ export class AnalyseEventService {
     // tslint:disable-next-line:max-line-length
     const qoqQuery = `${filers}|select qoq[1] as qoqCurrent, qoq[2] as qoqPrev, qoq[3] as qoqPercentage from(select  compare( count , ${window}) as qoq   from (${countStr}  from log ))`;
     const yoyQuery = `${filers}|select  yoy[1] as yoyCurrent, yoy[2] as yoyPrev, yoy[3] as yoyPercentage from( select compare( count , ${86400 *
-      365}) as yoy  from (${countStr}  from log ))`;
+      30}) as yoy  from (${countStr}  from log ))`;
 
     const [qoqData, yoyData] = await Promise.all([
-      this.slsService.query<ICompare>({
-        query: qoqQuery,
-        from: timeParam.dateStart,
-        to: timeParam.dateEnd
-      }),
-      this.slsService.query<ICompare>({
-        query: yoyQuery,
-        from: timeParam.dateStart,
-        to: timeParam.dateEnd
-      })
+      this.slsService.query<ICompare>(
+        {
+          query: qoqQuery,
+          from: timeParam.dateStart,
+          to: timeParam.dateEnd
+        },
+        false
+      ),
+      this.slsService.query<ICompare>(
+        {
+          query: yoyQuery,
+          from: timeParam.dateStart,
+          to: timeParam.dateEnd
+        },
+        false
+      )
     ]);
 
     return {

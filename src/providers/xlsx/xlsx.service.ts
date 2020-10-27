@@ -21,13 +21,7 @@ export class XlsxService {
     return stream;
   }
 
-  public async exportExcel(): Promise<[Readable, number]> {
-    const data = [
-      [1, 2, 3],
-      [true, false, null, 'sheetjs'],
-      ['foo', 'bar', new Date('2014-02-19T14:30Z'), '0.3'],
-      ['baz', null, 'qux']
-    ];
+  public async exportExcel(data: (number[] | (string | boolean)[] | (string | Date)[])[]): Promise<[Readable, number]> {
     var buffer = xlsx.build([{ name: 'sheet1', data: data }]);
 
     return [this.getReadableStream(buffer), buffer.length];

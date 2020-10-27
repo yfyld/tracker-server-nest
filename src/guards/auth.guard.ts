@@ -20,7 +20,7 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
   async canActivate(context: ExecutionContext): Promise<any> {
     try {
       const request = context.switchToHttp().getRequest();
-      if (request.cookies && request.cookies[CUSTOM_TOKEN_KEY]) {
+      if (!request.headers.authorization && request.cookies && request.cookies[CUSTOM_TOKEN_KEY]) {
         request.headers.authorization = `Bearer ${request.cookies[CUSTOM_TOKEN_KEY]}`;
       }
       return await super.canActivate(context);

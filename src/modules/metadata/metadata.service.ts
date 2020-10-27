@@ -64,12 +64,7 @@ export class MetadataService {
     return metadata;
   }
 
-  /**
-   *获取metadata List
-   *
-   * @memberof MetadataService
-   */
-  public async getMetadataList(query: QueryListQuery<QueryMetadataListDto>): Promise<PageData<MetadataModel>> {
+  private async metadataListParam(query: QueryListQuery<QueryMetadataListDto>) {
     let {
       skip,
       take,
@@ -176,6 +171,23 @@ export class MetadataService {
       }
     }
 
+    return {
+      condition,
+      params,
+      skip,
+      take,
+      orderBy
+    };
+  }
+
+  /**
+   *获取metadata List
+   *
+   * @memberof MetadataService
+   */
+  public async getMetadataList(query: QueryListQuery<QueryMetadataListDto>): Promise<PageData<MetadataModel>> {
+    const { condition, params, skip, take, orderBy } = await this.metadataListParam(query);
+
     const [metadata, totalCount] = await this.metadataModel
       .createQueryBuilder('metadata')
       .leftJoinAndSelect('metadata.tags', 'tag')
@@ -191,8 +203,34 @@ export class MetadataService {
     };
   }
 
-  public async exportExcel(): Promise<[Readable, number]> {
-    const result = await this.xlsxervice.exportExcel();
+  public async exportExcel(query: QueryListQuery<QueryMetadataListDto>): Promise<[Readable, number]> {
+    const { condition, params, orderBy } = await this.metadataListParam(query);
+
+    const [metadata, totalCount] = await this.metadataModel
+      .createQueryBuilder('metadata')
+      .leftJoinAndSelect('metadata.tags', 'tag')
+      .where(condition, params)
+      // .skip(skip)
+      // .take(take)
+      .orderBy(orderBy)
+      .getManyAndCount();
+
+    let data = [['名称', 'code', '类型', '启用', '标签', '备注']];
+
+    data = data.concat(
+      metadata.map(item => {
+        return [
+          item.name,
+          item.code,
+          item.type === 1 ? '页面' : '事件',
+          item.status === 1 ? '是' : '否',
+          item.tags.map(tag => tag.name).join(','),
+          item.description
+        ];
+      })
+    );
+
+    const result = await this.xlsxervice.exportExcel(data);
     return result;
   }
 

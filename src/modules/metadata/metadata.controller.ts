@@ -126,8 +126,12 @@ export class MetadataController {
   @HttpProcessor.handle('导出元数据列表')
   @Permissions(PERMISSION_CODE.METADATA_SEARCH)
   @Get('/export')
-  public async exportExcel(@Res() res: Response): Promise<void> {
-    const [stream, length] = await this.metadataService.exportExcel();
+  public async exportExcel(
+    @Res() res: Response,
+    @QueryList(new ParsePageQueryIntPipe(['projectId', 'status', 'operatorType']))
+    query: QueryListQuery<QueryMetadataListDto>
+  ): Promise<void> {
+    const [stream, length] = await this.metadataService.exportExcel(query);
     res.set({
       'Content-Type': 'application/xlsx',
       'Content-Length': length

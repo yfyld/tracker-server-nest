@@ -32,6 +32,14 @@ export const EVENT_ATTRS = [
     autoRecommend: true
   },
   {
+    name: 'trackId',
+    value: 'trackId',
+    type: 'string',
+    eventType: 0,
+    recommend: [],
+    autoRecommend: false
+  },
+  {
     name: '事件名称',
     value: 'eventName',
     type: 'string',
@@ -82,12 +90,21 @@ export const EVENT_ATTRS = [
   },
 
   {
-    name: '设备Id',
+    name: '用户标识utoken',
     value: 'utoken',
     type: 'string',
     eventType: 0,
     recommend: [],
-    autoRecommend: true
+    autoRecommend: false
+  },
+
+  {
+    name: '设备Id',
+    value: 'deviceId',
+    type: 'string',
+    eventType: 0,
+    recommend: [],
+    autoRecommend: false
   },
 
   {
@@ -109,6 +126,14 @@ export const EVENT_ATTRS = [
   {
     name: '页面PATH',
     value: 'path',
+    type: 'string',
+    eventType: 0,
+    recommend: [],
+    autoRecommend: true
+  },
+  {
+    name: '页面HASH',
+    value: 'hash',
     type: 'string',
     eventType: 0,
     recommend: [],

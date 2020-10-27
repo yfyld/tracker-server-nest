@@ -83,6 +83,6 @@ export class AuthController {
       domain: COOKIE_HOST
     });
 
-    return response.redirect(302, fromURL || `${BASE_URL.webUrl}/project-list`);
+    return response.redirect(302, fromURL || `${BASE_URL.webUrl}/index.html#/project-list`);
   }
 }

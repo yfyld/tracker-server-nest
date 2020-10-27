@@ -15,16 +15,18 @@ export interface IQueryParams {
 @Injectable()
 export class SlsService {
   constructor() {}
-  public query = function<T>(opt): Promise<T[]> {
+  public query = function<T>(opt, fixTime = true): Promise<T[]> {
     const { query, from, to } = opt;
 
     console.info(`slsquery:${query}`);
 
     const newOpt = {
       ...SLS_STORE_CONFIG,
-      query: query.replace(/(^.+)(\|.*)/, ($, $1, $2) => {
-        return `trackTime<${to} and trackTime>${from} and (${$1})${$2}`;
-      }),
+      query: fixTime
+        ? query.replace(/(^.+)(\|.*)/, ($, $1, $2) => {
+            return `trackTime<${to} and trackTime>${from} and (${$1})${$2}`;
+          })
+        : query,
       from: Math.floor(from / 1000),
       to: Math.floor(to / 1000)
     };
