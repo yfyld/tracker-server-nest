@@ -135,8 +135,7 @@ export class AuthService {
     const data = {
       id,
       username,
-      nickname,
-      permissions: (permissions.length && permissions.map(item => item.code)) || []
+      nickname
     };
     const accessToken = this.jwtService.sign(data);
     return {

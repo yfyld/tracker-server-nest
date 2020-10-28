@@ -34,8 +34,25 @@ export class AuthController {
   @ApiOperation({ title: '登陆', description: '' })
   @Post('/signIn')
   @HttpProcessor.handle({ message: '登陆', error: HttpStatus.BAD_REQUEST })
-  signIn(@Body() body: SignInDto): Promise<TokenDto> {
-    return this.authService.signIn(body);
+  async signIn(@Body() body: SignInDto, @Res() response: Response): Promise<Response> {
+    const result = await this.authService.signIn(body);
+    response.cookie(CUSTOM_TOKEN_KEY, result.accessToken, {
+      maxAge: result.expireIn,
+      httpOnly: true,
+      path: '/',
+      domain: COOKIE_HOST
+    });
+
+    response.cookie(IS_LOGIN, true, {
+      maxAge: result.expireIn,
+      httpOnly: false,
+      path: '/',
+      domain: COOKIE_HOST
+    });
+    return response.json({
+      result: {},
+      status: 200
+    });
   }
 
   @Get('/signOut')
