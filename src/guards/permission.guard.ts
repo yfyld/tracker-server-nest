@@ -29,12 +29,10 @@ export class PermissionsGuard implements CanActivate {
       this.handleError();
       return false;
     }
-
+    user.permissions = [];
     const userPermissions = await this.authService.getPermissionsByUserId(user.id);
     if (userPermissions.length) {
       user.permissions.push(...userPermissions.map(item => item.code));
-    } else {
-      user.permissions = [];
     }
 
     const projectId = request.params.projectId || request.body.projectId || request.query.projectId;
