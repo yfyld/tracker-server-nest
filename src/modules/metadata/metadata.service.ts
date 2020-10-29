@@ -245,9 +245,10 @@ export class MetadataService {
     const { code, projectId, tags, newTags } = body;
     const oldMetadata = await this.metadataModel.findOne({
       code: code,
-      projectId
+      projectId,
+      isDeleted: false
     });
-    if (oldMetadata) {
+    if (oldMetadata && !oldMetadata.isDeleted) {
       throw new HttpBadRequestError(`元数据${code}重复`);
     }
     // 获取已有的标签
@@ -267,10 +268,22 @@ export class MetadataService {
       const newMetadataTags = await this.metadataTagModel.save(newMetadataTagModels);
       metadataTags.push(...newMetadataTags);
     }
-    const metadata = this.metadataModel.create({
+
+    if (oldMetadata) {
+      oldMetadata.isDeleted = false;
+      oldMetadata.name = body.name;
+      oldMetadata.type = body.type;
+      oldMetadata.status = body.status;
+      oldMetadata.tags.push(...metadataTags);
+      await this.metadataModel.save(oldMetadata);
+      return;
+    }
+
+    let metadata = this.metadataModel.create({
       ...body,
       tags: []
     });
+
     metadata.tags.push(...metadataTags);
     await this.metadataModel.save(metadata);
     return;
@@ -293,15 +306,20 @@ export class MetadataService {
     }, []) as string[];
 
     // 先处理新增的标签
+    const allMetadataTags = [];
     const newMetadataTags = [];
     for (let tagName of [...new Set(tagNames)]) {
-      if (await this.metadataTagModel.findOne({ name: tagName, projectId })) {
+      const oldTag = await this.metadataTagModel.findOne({ name: tagName, projectId });
+      if (oldTag) {
+        allMetadataTags.push(oldTag);
         continue;
       }
       const newMetadataTag = this.metadataTagModel.create({ name: tagName, project: { id: projectId }, projectId });
       newMetadataTags.push(newMetadataTag);
       await manager.save(MetadataTagModel, newMetadataTag);
     }
+
+    allMetadataTags.push(...newMetadataTags);
 
     for (let key in metadatas) {
       const item = datas[key];
@@ -325,7 +343,7 @@ export class MetadataService {
         projectId
       });
 
-      if (oldMetadata) {
+      if (oldMetadata && oldMetadata.isDeleted === false) {
         throw new HttpBadRequestError(`第${key}行,元数据${code}重复`);
       }
 
@@ -334,13 +352,26 @@ export class MetadataService {
       const newTags = item.newTags ? item.newTags.split(',') : [];
       if (newTags && newTags.length) {
         for (const tagName of newTags) {
-          metadataTags.push(newMetadataTags.find(val => val.name === tagName));
+          metadataTags.push(allMetadataTags.find(val => val.name === tagName));
         }
       }
-      const metadata = this.metadataModel.create({
-        ...newMetadata,
-        tags: []
-      });
+      if (oldMetadata) {
+        oldMetadata.isDeleted = false;
+        oldMetadata.name = newMetadata.name;
+        oldMetadata.type = newMetadata.type;
+        oldMetadata.status = newMetadata.status;
+        oldMetadata.tags = oldMetadata.tags || [];
+        oldMetadata.tags.push(...metadataTags);
+        await manager.save(MetadataModel, oldMetadata);
+        return;
+      }
+      const metadata =
+        oldMetadata ||
+        this.metadataModel.create({
+          ...newMetadata,
+          tags: []
+        });
+
       metadata.tags.push(...metadataTags);
       await manager.save(MetadataModel, metadata);
     }
