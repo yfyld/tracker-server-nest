@@ -363,7 +363,8 @@ export class MetadataService {
         oldMetadata.tags = oldMetadata.tags || [];
         oldMetadata.tags.push(...metadataTags);
         await manager.save(MetadataModel, oldMetadata);
-        return;
+
+        continue;
       }
       const metadata =
         oldMetadata ||
