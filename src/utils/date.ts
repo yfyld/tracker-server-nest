@@ -118,10 +118,18 @@ export function getDynamicTime(dateStart: number, dateEnd: number, dateType: str
     dateStart = new Date().setHours(0, 0, 0, 0);
     dateEnd = now;
     dateType = '今天';
+  } else if (dateType === 'YESTERDAY') {
+    dateStart = new Date().setHours(0, 0, 0, 0) - 86400000;
+    dateEnd = now - 86400000;
+    dateType = '昨天';
   } else if (dateType === 'WEEK') {
     dateStart = getWeekStartDate();
     dateEnd = now;
     dateType = '本周';
+  } else if (dateType === 'LAST_WEEK') {
+    dateStart = getMonthStartDate() - 7 * 86400000;
+    dateEnd = getWeekStartDate();
+    dateType = '上周';
   } else if (dateType === 'MONTH') {
     dateStart = getMonthStartDate();
     dateEnd = now;
@@ -147,17 +155,21 @@ export function getDynamicTime(dateStart: number, dateEnd: number, dateType: str
     dateEnd = getYearStartDate() - 1;
     dateType = '去年';
   } else if (dateType === 'RECENT_3_DAY') {
-    dateStart = new Date().setHours(0, 0, 0, 0) - 3 * 86400000;
+    dateStart = new Date().setHours(0, 0, 0, 0) - 2 * 86400000;
     dateEnd = new Date().setHours(23, 59, 59, 999);
     dateType = '最近3天';
   } else if (dateType === 'RECENT_7_DAY') {
-    dateStart = new Date().setHours(0, 0, 0, 0) - 7 * 86400000;
+    dateStart = new Date().setHours(0, 0, 0, 0) - 6 * 86400000;
     dateEnd = new Date().setHours(23, 59, 59, 999);
     dateType = '最近7天';
   } else if (dateType === 'RECENT_15_DAY') {
-    dateStart = new Date().setHours(0, 0, 0, 0) - 15 * 86400000;
+    dateStart = new Date().setHours(0, 0, 0, 0) - 14 * 86400000;
     dateEnd = new Date().setHours(23, 59, 59, 999);
     dateType = '最近15天';
+  } else if (dateType === 'RECENT_30_DAY') {
+    dateStart = new Date().setHours(0, 0, 0, 0) - 29 * 86400000;
+    dateEnd = new Date().setHours(23, 59, 59, 999);
+    dateType = '最近30天';
   }
 
   return { dateStart, dateEnd, dateType };
