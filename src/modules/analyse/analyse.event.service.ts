@@ -21,9 +21,9 @@ export class AnalyseEventService {
    * 环比同比
    */
   public async diff(filers: string, timeParam, indicatorType: string): Promise<ICompare> {
-    const window = Math.floor((timeParam.dateEnd - timeParam.dateStart) / 1000);
+    const window = Math.round((timeParam.dateEnd - timeParam.dateStart) / 1000);
 
-    const day = Math.floor(window / 86400);
+    const day = Math.round(window / 86400);
 
     let countStr = 'select count(1) as count';
     if (indicatorType === 'PV') {
@@ -37,11 +37,11 @@ export class AnalyseEventService {
     } else if (indicatorType === 'RAPV') {
       countStr = `select try(count(1) / approx_distinct (coalesce(uid ,utoken))) as count`;
     } else if (indicatorType === 'DPV') {
-      countStr = `select count(1) / ${day} as count`;
+      countStr = `select count(1) / ${day || 1} as count`;
     } else if (indicatorType === 'DUV') {
-      countStr = `select try(approx_distinct (coalesce(uid ,utoken)) / ${day} )as count`;
+      countStr = `select try(approx_distinct (coalesce(uid ,utoken)) / ${day || 1} )as count`;
     } else if (indicatorType === 'DRUV') {
-      countStr = `select try(approx_distinct (coalesce(uid ,utoken)) / ${day} )as count`;
+      countStr = `select try(approx_distinct (coalesce(uid ,utoken)) / ${day || 1} )as count`;
     }
 
     // tslint:disable-next-line:max-line-length
@@ -95,7 +95,7 @@ export class AnalyseEventService {
       key.push(`try(count(1) / approx_distinct (coalesce(uid ,utoken))) as count`);
     }
     if (indicatorType === 'DRUV' || indicatorType === 'DUV' || indicatorType === 'DPV') {
-      key.push(`date_format(trackTime,'%H') as time`);
+      key.push(`date_format(trackTime/1000,'%H') as time`);
       hasTime = true;
     } else if (isTrend) {
       key.push(`date_trunc('${timeUnit.toLowerCase()}', trackTime/1000) as time`);

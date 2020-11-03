@@ -44,7 +44,7 @@ export class AnalyseFunnelService {
     }
 
     if (indicatorType === 'DRUV' || indicatorType === 'DUV' || indicatorType === 'DPV') {
-      key.push(`date_format(trackTime,'%H') as time`);
+      key.push(`date_format(trackTime/1000,'%H') as time`);
       hasTime = true;
     } else if (isTrend) {
       key.push(`date_trunc('${timeUnit.toLowerCase()}', trackTime/1000) as time`);
