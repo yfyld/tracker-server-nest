@@ -69,7 +69,7 @@ export function filterToQuery({ filterValues, filterType }: IFilterInfo): string
         }
         break;
 
-      case 'noEqual':
+      case 'notEqual':
         {
           if (item.value.length === 1) {
             total.push(`not ${item.key}:${item.value[0]}`);
@@ -135,23 +135,47 @@ export function filterToQuery({ filterValues, filterType }: IFilterInfo): string
 
       case 'contain':
         {
-          if (typeof item.value[0] !== 'undefined') {
+          if (!item.value || typeof item.value[0] === 'undefined') {
+            return;
+          }
+
+          if (item.value.length === 1) {
             total.push(`${item.key}:*${item.value[0]}*`);
+          } else if (item.value.length) {
+            total.push(
+              `(${item.value
+                .map(val => {
+                  return `${item.key}:*${val}*`;
+                })
+                .join(' or ')})`
+            );
           }
         }
         break;
 
       case 'notContain':
         {
-          if (typeof item.value[0] !== 'undefined') {
+          if (!item.value || typeof item.value[0] === 'undefined') {
+            return;
+          }
+
+          if (item.value.length === 1) {
             total.push(`not ${item.key}:*${item.value[0]}*`);
+          } else if (item.value.length) {
+            total.push(
+              `(${item.value
+                .map(val => {
+                  return `not ${item.key}:*${val}*`;
+                })
+                .join(' and ')})`
+            );
           }
         }
         break;
 
       case 'greater':
         {
-          if (typeof item.value[0] === 'number') {
+          if (item.value && typeof item.value[0] !== 'undefined') {
             total.push(`${item.key}>${item.value[0]}`);
           }
         }
@@ -159,7 +183,7 @@ export function filterToQuery({ filterValues, filterType }: IFilterInfo): string
 
       case 'less':
         {
-          if (typeof item.value[0] === 'number') {
+          if (item.value && typeof item.value[0] !== 'undefined') {
             total.push(`${item.key}<${item.value[0]}`);
           }
         }
@@ -167,7 +191,7 @@ export function filterToQuery({ filterValues, filterType }: IFilterInfo): string
 
       case 'between':
         {
-          if (typeof item.value[0] === 'number' && typeof item.value[1] === 'number') {
+          if (item.value && typeof item.value[0] !== 'undefined' && typeof item.value[0] !== 'undefined') {
             total.push(`${item.key} in [${item.value[0]},${item.value[1]}]`);
           }
         }

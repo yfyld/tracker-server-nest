@@ -1,3 +1,5 @@
+import { BaseUserDto } from './../user/user.dto';
+import { UserModel } from './../user/user.model';
 import { ProjectModel } from './../project/project.model';
 import { ListData } from './../../interfaces/request.interface';
 import { IEventAttr } from './metadata.interface';
@@ -185,10 +187,13 @@ export class MetadataService {
    *
    * @memberof MetadataService
    */
-  public async getMetadataList(query: QueryListQuery<QueryMetadataListDto>): Promise<PageData<MetadataModel>> {
+  public async getMetadataList(
+    query: QueryListQuery<QueryMetadataListDto>,
+    user: UserModel
+  ): Promise<PageData<MetadataModel>> {
     const { condition, params, skip, take, orderBy } = await this.metadataListParam(query);
 
-    const [metadata, totalCount] = await this.metadataModel
+    let [metadata, totalCount] = await this.metadataModel
       .createQueryBuilder('metadata')
       .leftJoinAndSelect('metadata.tags', 'tag')
       .where(condition, params)
@@ -196,6 +201,31 @@ export class MetadataService {
       .take(take)
       .orderBy(orderBy)
       .getManyAndCount();
+
+    //是否显示日志数
+    if (!(user as any).permissions.includes('METADATA_SHOW_LOG')) {
+      metadata = metadata.map(item => {
+        if (item.log) {
+          (item as any).log = '**' + item.log.toString().substr(-2, 2);
+        }
+        if (item.logByApp) {
+          (item as any).logByApp = '**' + item.logByApp.toString().substr(-2, 2);
+        }
+        if (item.logByH5) {
+          (item as any).logByH5 = '**' + item.logByH5.toString().substr(-2, 2);
+        }
+        if (item.recentLog) {
+          (item as any).recentLog = '**' + item.recentLog.toString().substr(-2, 2);
+        }
+        if (item.recentLogByApp) {
+          (item as any).recentLogByApp = '**' + item.recentLogByApp.toString().substr(-2, 2);
+        }
+        if (item.recentLogByH5) {
+          (item as any).recentLogByH5 = '**' + item.recentLogByH5.toString().substr(-2, 2);
+        }
+        return item;
+      });
+    }
 
     return {
       totalCount,
@@ -260,7 +290,9 @@ export class MetadataService {
     if (newTags && newTags.length) {
       const newMetadataTagModels = [];
       for (let item of newTags) {
-        if (await this.metadataTagModel.findOne({ name: item })) {
+        const oldTag = await this.metadataTagModel.findOne({ name: item });
+        if (oldTag) {
+          metadataTags.push(oldTag);
           continue;
         }
         newMetadataTagModels.push(this.metadataTagModel.create({ name: item, project: { id: projectId }, projectId }));
@@ -343,7 +375,7 @@ export class MetadataService {
         projectId
       });
 
-      if (oldMetadata && oldMetadata.isDeleted === false) {
+      if (oldMetadata && oldMetadata.isDeleted === false && oldMetadata.name !== '') {
         throw new HttpBadRequestError(`第${key}行,元数据${code}重复`);
       }
 
@@ -360,6 +392,7 @@ export class MetadataService {
         oldMetadata.name = newMetadata.name;
         oldMetadata.type = newMetadata.type;
         oldMetadata.status = newMetadata.status;
+        oldMetadata.description = newMetadata.description;
         oldMetadata.tags = oldMetadata.tags || [];
         oldMetadata.tags.push(...metadataTags);
         await manager.save(MetadataModel, oldMetadata);
@@ -407,6 +440,10 @@ export class MetadataService {
     return;
   }
 
+  /**
+   * 离线技术日志数
+   * @param body
+   */
   public async updateMetadataLog(body: UpdateMetadataLogDto): Promise<void> {
     let { id } = body;
     let metadata = await this.metadataModel.findOne(id);
@@ -421,6 +458,10 @@ export class MetadataService {
     };
 
     const all = await this.slsService.query<any>(opt);
+
+    if (Number(all[0].count) === metadata.log) {
+      return;
+    }
     opt.from = Date.now() - 86400000 * 3;
     const recent = await this.slsService.query<any>(opt);
 
@@ -441,10 +482,6 @@ export class MetadataService {
       recentApp: Number(recentApp[0].count)
     };
 
-    if (result.all === metadata.log) {
-      return;
-    }
-
     if (!metadata.url) {
       const url = await this.slsService.query<any>({
         ...opt,
@@ -458,6 +495,9 @@ export class MetadataService {
 
     metadata.logByApp = result.allApp;
     metadata.recentLogByApp = result.recentApp;
+
+    metadata.logByH5 = result.all - result.allApp;
+    metadata.recentLogByH5 = result.recent - result.recentApp;
 
     await this.metadataModel.save(metadata);
     return;
@@ -606,20 +646,53 @@ export class MetadataService {
     return;
   }
 
+  /**
+   * 定时查找未定义的元数据
+   */
   public async scheduleIntervalFindMetadata(): Promise<void> {
-    // const client = await this.redisService.getClient();
-    // const metadataIndex = Number(await client.get(`metadataCode_${}`)) || 0;
-    // const opt = {
-    //   query: `trackId : ""|SELECT COUNT(*) as count`,
-    //   from: new Date(metadata.createdAt).getTime(),
-    //   to: Date.now()
-    // };
-    // const metadatas = await this.metadataModel.find({
-    //   where: {
-    //     status: 1,
-    //     isDeleted: false
-    //   }
-    // });
+    const client = await this.redisService.getClient();
+    const projectIndex = Number(await client.get('projectCheckedIndex')) || 0;
+    let projectIds = JSON.parse((await client.get('projectIds')) || '[]');
+
+    if (!projectIds.length || projectIds.length < projectIndex + 1) {
+      projectIds = (await this.projectModel.find({
+        where: {
+          status: 1,
+          isDeleted: false
+        }
+      })).map(item => item.id);
+      client.set('projectCheckedIndex', 0);
+      client.set('projectIds', JSON.stringify(projectIds));
+      return;
+    }
+
+    const projectId: number = projectIds[projectIndex];
+    client.set('projectCheckedIndex', projectIndex + 1);
+
+    const metadatas = await this.metadataModel.find({ projectId });
+
+    const opt = {
+      query: `trackId:* and projectId:${projectId}|SELECT trackId group by trackId`,
+      from: new Date().setHours(0, 0, 0, 0) - 8640000 * 100,
+      to: Date.now()
+    };
+
+    const result = await this.slsService.query<{ trackId: string }>(opt);
+
+    if (result && result.length) {
+      result
+        .filter(item => !metadatas.find(val => val.code === item.trackId))
+        .forEach(async item => {
+          await this.addMetadata({
+            code: item.trackId,
+            projectId,
+            name: '',
+            newTags: ['未定义'],
+            type: /page/.test(item.trackId) ? 1 : 2,
+            status: 0
+          });
+        });
+    }
   }
 
   public async scheduleIntervalCheckMetadata(): Promise<void> {

@@ -1,3 +1,4 @@
+import { UserModel } from './../user/user.model';
 import { TransactionManager, EntityManager, Transaction } from 'typeorm';
 import { PERMISSION_CODE } from './../../constants/permission.contant';
 import { PermissionsGuard } from '@/guards/permission.guard';
@@ -45,6 +46,7 @@ import {
 import { XlsxService } from '@/providers/xlsx/xlsx.service';
 import { Permissions } from '@/decotators/permissions.decotators';
 import { Response } from 'express';
+import { Auth } from '@/decotators/user.decorators';
 
 @ApiUseTags('元数据')
 @Controller('metadata')
@@ -118,9 +120,10 @@ export class MetadataController {
   @Get('/')
   getMetadataList(
     @QueryList(new ParsePageQueryIntPipe(['projectId', 'status', 'operatorType']))
-    query: QueryListQuery<QueryMetadataListDto>
+    query: QueryListQuery<QueryMetadataListDto>,
+    @Auth() user: UserModel
   ): Promise<PageData<MetadataModel>> {
-    return this.metadataService.getMetadataList(query);
+    return this.metadataService.getMetadataList(query, user);
   }
 
   @HttpProcessor.handle('导出元数据列表')

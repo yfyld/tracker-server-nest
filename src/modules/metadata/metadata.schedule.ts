@@ -9,12 +9,12 @@ export class MetadataSchedule extends NestSchedule {
     super();
   }
 
-  @Interval(5000)
+  @Interval(10000)
   intervalCheckMetadata() {
     this.metadataService.scheduleIntervalCheckMetadata();
   }
 
-  @Interval(5000)
+  @Interval(50000)
   intervalFindMetadata() {
     this.metadataService.scheduleIntervalFindMetadata();
   }

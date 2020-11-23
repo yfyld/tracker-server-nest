@@ -67,5 +67,7 @@ export class QueryUserTimelineAnalyseDataDto {
   dateEnd: number;
   dateType: string;
   uid?: string;
-  utoken?: string;
+  deviceId?: string;
+  mobile?: string;
+  ip?: string;
 }

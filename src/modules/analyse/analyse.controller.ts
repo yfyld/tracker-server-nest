@@ -62,8 +62,8 @@ export class AnalyseController {
   @Post('/user-timeline')
   @Permissions(PERMISSION_CODE.SEARCH_USER_TIMELINE)
   userTimelineAnalyse(@Body() body: QueryUserTimelineAnalyseDataDto): Promise<unknown> {
-    if (!body.uid && !body.utoken) {
-      throw new Error('uid,utoken不能都为空');
+    if (!body.uid && !body.deviceId && !body.ip) {
+      throw new Error('uid,deviceId,ip不能都为空');
     }
     return this.analyseService.userTimeAnalyse(body);
   }

@@ -106,7 +106,20 @@ export class AnalyseService {
 
   async userTimeAnalyse(param: QueryUserTimelineAnalyseDataDto) {
     const timeParam = getDynamicTime(param.dateStart, param.dateEnd, param.dateType);
-    let query = `projectId:${param.projectId} ${param.utoken ? 'and utoken:' + param.utoken : ''} ${
+    //一个ip不能对应多个设备
+    if (param.ip) {
+      const deviceIds = await this.slsService.query({
+        query: `projectId:${param.projectId} and ip:${param.ip} | select deviceId group by deviceId`,
+        from: timeParam.dateStart,
+        to: timeParam.dateEnd
+      });
+      if (deviceIds.length > 1) {
+        throw '该ip当前时间不止一个用户';
+      }
+    }
+    let query = `projectId:${param.projectId} ${param.deviceId ? 'and deviceId:' + param.deviceId : ''}  ${
+      param.ip ? 'and ip:' + param.ip : ''
+    } ${
       param.uid ? 'and uid:' + param.uid : ''
       // tslint:disable-next-line: max-line-length
     }| select url,os,version,appid,browser,browserVersion, trackId,trackTime,durationTime,pageId,actionType,deviceModel,ip,ua,title order by trackTime asc limit 1000`;
@@ -153,7 +166,8 @@ export class AnalyseService {
       if (item.actionType === 'PAGE') {
         total.push(item);
         prevPage = item;
-      } else if (item.actionType === 'EVENT') {
+      } else if (!item.actionType || item.actionType === 'EVENT') {
+        //!item.actionType  临时兼容老日志信息不全
         total.push(item);
       } else if (item.actionType === 'DURATION' && prevPage && item.pageId === prevPage.trackId) {
         prevPage.durationTime = item.durationTime;

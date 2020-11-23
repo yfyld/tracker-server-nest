@@ -79,6 +79,11 @@ export class MetadataModel {
   recentLogByApp: number;
 
   @Column()
+  logByH5: number;
+  @Column()
+  recentLogByH5: number;
+
+  @Column()
   url: string;
 
   @Column()
