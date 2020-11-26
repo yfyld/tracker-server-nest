@@ -673,7 +673,7 @@ export class MetadataService {
 
     const opt = {
       query: `trackId:* and projectId:${projectId}|SELECT trackId group by trackId`,
-      from: new Date().setHours(0, 0, 0, 0) - 8640000 * 100,
+      from: new Date().setHours(0, 0, 0, 0) - 8640000 * 1,
       to: Date.now()
     };
 

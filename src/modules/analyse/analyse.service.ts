@@ -122,7 +122,7 @@ export class AnalyseService {
     } ${
       param.uid ? 'and uid:' + param.uid : ''
       // tslint:disable-next-line: max-line-length
-    }| select url,os,version,appid,browser,browserVersion, trackId,trackTime,durationTime,pageId,actionType,deviceModel,ip,ua,title order by trackTime asc limit 1000`;
+    }| select url,os,version,appid,browser,browserVersion, deviceId,trackId,trackTime,durationTime,pageId,actionType,deviceModel,ip,ua,title,custom order by trackTime asc limit 1000`;
 
     const data = await this.slsService.query<{
       trackId: string;
@@ -166,7 +166,7 @@ export class AnalyseService {
       if (item.actionType === 'PAGE') {
         total.push(item);
         prevPage = item;
-      } else if (!item.actionType || item.actionType === 'EVENT') {
+      } else if (!item.actionType || item.actionType === 'null' || item.actionType === 'EVENT') {
         //!item.actionType  临时兼容老日志信息不全
         total.push(item);
       } else if (item.actionType === 'DURATION' && prevPage && item.pageId === prevPage.trackId) {
