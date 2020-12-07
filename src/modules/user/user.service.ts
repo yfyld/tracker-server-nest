@@ -125,11 +125,11 @@ export class UserService {
   public async updateUserByAdmin(body: UpdateUserByAdminDto): Promise<void> {
     // todo
     // if (currentUser.id !== body.id) await this.checkGlobalAdmin(currentUser, true);
-    const { mobile, roleIds, nickname, email } = body;
+    const { mobile, roleIds, nickname, email, password } = body;
     const roles = roleIds.map(id => ({ id }));
     const user = await this.userModel.findOne(body.id);
     user.roles = roles as any;
-    await this.userModel.save({ ...user, mobile, roles, nickname, email });
+    await this.userModel.save({ ...user, mobile, roles, nickname, email, password });
   }
 
   /**

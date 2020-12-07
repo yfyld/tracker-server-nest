@@ -212,7 +212,7 @@ export class AuthService {
         mobile: userInfo.mobile,
         username: userInfo.username,
         nickname: userInfo.nickname,
-        password: userInfo.email
+        password: Utils.generatePassword(8)
       });
       return this.createToken(newUser);
     }

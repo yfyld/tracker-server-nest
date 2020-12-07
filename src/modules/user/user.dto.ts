@@ -1,4 +1,5 @@
-import { IsString, IsNotEmpty, Length, IsOptional, IsInt, IsBoolean, IsArray } from 'class-validator';
+import { Optional } from '@nestjs/common';
+import { IsString, IsNotEmpty, Length, IsOptional, IsInt, IsBoolean, IsArray, MinLength } from 'class-validator';
 
 export class TokenDto {
   accessToken: string;
@@ -16,8 +17,12 @@ export class UpdateUserDto {
   @IsString({ message: '邮箱必须为字符串' })
   email: string;
 
-  @IsString({ message: '手机号号必须为字符串' })
+  @IsString({ message: '手机号必须为字符串' })
   mobile: string;
+  @IsString({ message: '密码必须为超6位字符串' })
+  @Optional()
+  @MinLength(6)
+  password?: string;
 }
 
 export class UpdateUserByAdminDto extends UpdateUserDto {
