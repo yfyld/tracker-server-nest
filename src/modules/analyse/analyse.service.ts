@@ -104,22 +104,11 @@ export class AnalyseService {
     return data;
   }
 
-  async userTimeAnalyse(param: QueryUserTimelineAnalyseDataDto) {
+  private async getUserTimeData(param: QueryUserTimelineAnalyseDataDto) {
     const timeParam = getDynamicTime(param.dateStart, param.dateEnd, param.dateType);
-    //一个ip不能对应多个设备
-    if (param.ip) {
-      const deviceIds = await this.slsService.query({
-        query: `projectId:${param.projectId} and ip:${param.ip} | select deviceId group by deviceId`,
-        from: timeParam.dateStart,
-        to: timeParam.dateEnd
-      });
-      if (deviceIds.length > 1) {
-        throw '该ip当前时间不止一个用户';
-      }
-    }
     let query = `projectId:${param.projectId} ${param.deviceId ? 'and deviceId:' + param.deviceId : ''}  ${
       param.ip ? 'and ip:' + param.ip : ''
-    } ${
+    } ${param.custom ? 'and custom:' + param.custom : ''} ${
       param.uid ? 'and uid:' + param.uid : ''
       // tslint:disable-next-line: max-line-length
     }| select url,os,version,appid,browser,browserVersion, deviceId,trackId,trackTime,durationTime,pageId,actionType,deviceModel,ip,ua,title,custom order by trackTime asc limit 1000`;
@@ -175,5 +164,36 @@ export class AnalyseService {
       }
       return total;
     }, []);
+  }
+
+  async userTimeAnalyse(param: QueryUserTimelineAnalyseDataDto) {
+    const result = { list: [] };
+    if (param.uid || param.deviceId) {
+      result.list.push({ userTime: await this.getUserTimeData(param), user: param.uid || param.deviceId });
+    } else {
+      const timeParam = getDynamicTime(param.dateStart, param.dateEnd, param.dateType);
+
+      const deviceIds = await this.slsService.query<{ deviceId: string }>({
+        query: `projectId:${param.projectId} ${param.ip ? 'and ip:' + param.ip : ''} ${
+          param.custom ? 'and custom:' + param.custom : ''
+        } | select deviceId group by deviceId`,
+        from: timeParam.dateStart,
+        to: timeParam.dateEnd
+      });
+      if (deviceIds.length === 1) {
+        result.list.push({ userTime: await this.getUserTimeData(param), user: deviceIds[0].deviceId });
+      } else if (deviceIds.length >= 10) {
+        throw new Error('超过了10个用户');
+      } else {
+        for (let item of deviceIds) {
+          result.list.push({
+            userTime: await this.getUserTimeData({ ...param, deviceId: item.deviceId }),
+            user: item.deviceId
+          });
+        }
+      }
+    }
+
+    return result;
   }
 }

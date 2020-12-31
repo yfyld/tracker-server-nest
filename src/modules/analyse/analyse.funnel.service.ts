@@ -63,7 +63,7 @@ export class AnalyseFunnelService {
     if (!all) {
       return null;
     } else {
-      return Math.floor((part / all) * 100);
+      return Math.floor((part / all) * 10000) / 100;
     }
   }
 

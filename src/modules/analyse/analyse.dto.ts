@@ -70,4 +70,5 @@ export class QueryUserTimelineAnalyseDataDto {
   deviceId?: string;
   mobile?: string;
   ip?: string;
+  custom?: string;
 }

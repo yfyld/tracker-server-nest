@@ -129,7 +129,10 @@ export class UserService {
     const roles = roleIds.map(id => ({ id }));
     const user = await this.userModel.findOne(body.id);
     user.roles = roles as any;
-    await this.userModel.save({ ...user, mobile, roles, nickname, email, password });
+    if (password) {
+      user.password = AuthService.encryptPassword(password);
+    }
+    await this.userModel.save({ ...user, mobile, roles, nickname, email });
   }
 
   /**
