@@ -661,13 +661,13 @@ export class MetadataService {
           isDeleted: false
         }
       })).map(item => item.id);
-      client.set('projectCheckedIndex', 0);
-      client.set('projectIds', JSON.stringify(projectIds));
+      client.set('projectCheckedIndex', 0, 'PX', 60 * 24 * 3);
+      client.set('projectIds', JSON.stringify(projectIds), 'PX', 60 * 24 * 3);
       return;
     }
 
     const projectId: number = projectIds[projectIndex];
-    client.set('projectCheckedIndex', projectIndex + 1);
+    client.set('projectCheckedIndex', projectIndex + 1, 'PX', 60 * 24 * 3);
 
     const metadatas = await this.metadataModel.find({ projectId });
 
@@ -708,13 +708,13 @@ export class MetadataService {
             isDeleted: false
           }
         })).map(item => item.id);
-        client.set('metadataCheckedIndex', 0);
-        client.set('metadataIds', JSON.stringify(metadataIds));
+        client.set('metadataCheckedIndex', 0, 'PX', 60 * 24 * 3);
+        client.set('metadataIds', JSON.stringify(metadataIds), 'PX', 60 * 24 * 3);
         return;
       }
 
       const metadataId = metadataIds[metadataIndex];
-      client.set('metadataCheckedIndex', metadataIndex + 1);
+      client.set('metadataCheckedIndex', metadataIndex + 1, 'PX', 60 * 24 * 3);
 
       await this.updateMetadataLog({
         id: metadataId
@@ -745,7 +745,7 @@ export class MetadataService {
       } catch (error) {}
     }
 
-    client.set(`eventAttrsRecommend`, JSON.stringify(eventAttrs));
+    client.set(`eventAttrsRecommend`, JSON.stringify(eventAttrs), 'PX', 60 * 24 * 3);
   }
 
   public async scheduleCronComputedEventAttrRecommend(): Promise<void> {
@@ -764,14 +764,14 @@ export class MetadataService {
           recentLog: MoreThan(1000)
         }
       })).map(item => item.id);
-      client.set('metadataComputeAttrIndex', 0);
-      client.set('metadataComputeAttrIds', JSON.stringify(metadataIds));
+      client.set('metadataComputeAttrIndex', 0, 'PX', 60 * 24 * 3);
+      client.set('metadataComputeAttrIds', JSON.stringify(metadataIds), 'PX', 60 * 24 * 3);
 
       return;
     }
 
     const metadataId = metadataIds[metadataIndex];
-    client.set('metadataComputeAttrIndex', metadataIndex + 1);
+    client.set('metadataComputeAttrIndex', metadataIndex + 1, 'PX', 60 * 24 * 3);
 
     const metadata = await this.metadataModel.findOne(metadataId);
     if (!metadata) {
@@ -796,7 +796,12 @@ export class MetadataService {
         console.error('推荐离线查询错误');
       }
     }
-    client.set(`eventAttrsRecommend${metadata.projectId}_${metadata.code}`, JSON.stringify(eventAttrs));
+    client.set(
+      `eventAttrsRecommend${metadata.projectId}_${metadata.code}`,
+      JSON.stringify(eventAttrs),
+      'PX',
+      60 * 24 * 3
+    );
   }
 
   public async getFieldList(query: GetEventAttrDto): Promise<ListData<EventAttrsListDto>> {
