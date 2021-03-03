@@ -24,6 +24,22 @@ export const EVENT_ATTRS = [
     ]
   },
   {
+    name: '端类型',
+    value: 'ua',
+    type: 'string',
+    eventType: 0,
+    recommend: [
+      {
+        text: '智云健康',
+        value: 'zhiyun_patient'
+      },
+      {
+        text: '微信',
+        value: 'micromessenger'
+      }
+    ]
+  },
+  {
     name: '页面Id',
     value: 'pageId',
     type: 'string',
