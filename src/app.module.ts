@@ -18,6 +18,7 @@ import { ReportModule } from './modules/report/report.module';
 import { RedisModule } from './providers/redis/redis.module';
 import { AnalyseModule } from './modules/analyse/analyse.module';
 import { ModuleModule } from './modules/module/module.module';
+import { AppIdModule } from './modules/appId/appId.module';
 @Module({
   imports: [
     DatabaseModule,
@@ -27,6 +28,7 @@ import { ModuleModule } from './modules/module/module.module';
     CommonModule,
     HelperModule,
     XlsxModule,
+    AppIdModule,
 
     BullQueueModule,
     ReportModule,

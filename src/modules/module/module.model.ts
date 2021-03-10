@@ -1,66 +1,26 @@
-// import { IsString, IsDefined, IsNotEmpty } from 'class-validator';
-// import { ApiModelProperty } from '@nestjs/swagger';
-import {
-  Entity,
-  Column,
-  PrimaryGeneratedColumn,
-  // OneToMany,
-  // ManyToMany,
-  // JoinTable,
-  // ManyToOne,
-  // JoinColumn,
-  // PrimaryColumn,
-  CreateDateColumn,
-  UpdateDateColumn
-} from 'typeorm';
-// import { ProjectModel } from '../project/project.model';
-
-// @Entity()
-// export class MetadataTagModel {
-//   @PrimaryGeneratedColumn()
-//   id: number;
-//   @Column()
-//   name: string;
-//   @Column()
-//   description: string;
-//   @ManyToOne(type => ProjectModel)
-//   project: ProjectModel;
-//   @Column()
-//   projectId: number;
-// }
-
-// @Entity()
-// export class FieldModel {
-//   @PrimaryGeneratedColumn()
-//   id: number;
-//   @Column()
-//   code: string;
-//   @Column()
-//   type: string;
-//   @Column()
-//   status: number;
-//   @Column()
-//   name: string;
-// }
+import { IsDate, IsInt } from 'class-validator';
+import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn } from 'typeorm';
 
 @Entity()
 export class ModuleModel {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column()
+  @Column({ type: 'varchar', length: 128, comment: '模块名称' })
   name: string;
 
-  @Column()
+  @Column({ type: 'varchar', length: 1024, comment: '描述' })
   description: string;
 
-  @CreateDateColumn()
+  @IsDate()
+  @CreateDateColumn({ comment: '创建时间' })
   createdAt: Date;
 
-  @UpdateDateColumn()
+  @IsDate()
+  @UpdateDateColumn({ comment: '更新时间' })
   updatedAt: Date;
 
-  // @ManyToMany(type => MetadataTagModel)
-  // @JoinTable()
-  // tags: MetadataTagModel[];
+  @IsInt()
+  @Column({ type: 'tinyint', default: 0, comment: '0/1:，软删：否/是' })
+  isDeleted: number;
 }
