@@ -1,4 +1,4 @@
-import { ModuleSchedule } from './module.schedule';
+// import { ModuleSchedule } from './module.schedule';
 import { Module } from '@nestjs/common';
 import { ModuleController } from './module.controller';
 import { ModuleService } from './module.service';
@@ -19,7 +19,7 @@ import { ProjectModel } from '../project/project.model';
       //  ModuleTagModel,  FieldModel
     ])
   ],
-  providers: [ModuleService, ModuleSchedule],
+  providers: [ModuleService],
   controllers: [ModuleController],
   exports: [ModuleService]
 })

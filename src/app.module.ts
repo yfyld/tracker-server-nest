@@ -17,6 +17,7 @@ import { TeamModule } from './modules/team/team.module';
 import { ReportModule } from './modules/report/report.module';
 import { RedisModule } from './providers/redis/redis.module';
 import { AnalyseModule } from './modules/analyse/analyse.module';
+import { ModuleModule } from './modules/module/module.module';
 @Module({
   imports: [
     DatabaseModule,
@@ -33,7 +34,8 @@ import { AnalyseModule } from './modules/analyse/analyse.module';
     MetadataModule,
     TeamModule,
     SlsModule,
-    RedisModule
+    RedisModule,
+    ModuleModule
   ],
   controllers: [AppController],
   providers: [PermissionsGuard]

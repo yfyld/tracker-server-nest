@@ -32,20 +32,7 @@ import { ModuleService } from './module.service';
 import { HttpProcessor } from '@/decotators/http.decotator';
 import { JwtAuthGuard } from '@/guards/auth.guard';
 import { ApiBearerAuth, ApiOperation, ApiUseTags, ApiResponse } from '@nestjs/swagger';
-import {
-  QueryMetadataListDto,
-  UpdateMetadataDto,
-  UpdateMetadataLogDto,
-  AddMetadataDto,
-  EventAttrsListDto,
-  QueryMetadataTagListDto,
-  AddMetadataTagDto,
-  UpdateMetadataTagDto,
-  QueryFieldListDto,
-  AddMetadataByExcelDto,
-  GetEventAttrDto,
-  UpdateMetadataBatchDto
-} from './module.dto';
+import { AddModuleDto, ModuleListItemDto, ModuleListReqDto } from './module.dto';
 import { XlsxService } from '@/providers/xlsx/xlsx.service';
 import { Permissions } from '@/decotators/permissions.decotators';
 import { Response } from 'express';
@@ -57,62 +44,55 @@ import { Auth } from '@/decotators/user.decorators';
 export class ModuleController {
   constructor(private readonly moduleService: ModuleService) {}
 
-  @HttpProcessor.handle('新增模块')
-  @Post('/')
-  @Permissions(PERMISSION_CODE.MODULE_ADD)
-  addModule(@Body() body: AddModuleDto): Promise<void> {
-    return this.moduleService.addModule(body);
-  }
-
-  // @HttpProcessor.handle('上传元数据')
-  // @Post('/upload')
-  // @Transaction()
-  // @Permissions(PERMISSION_CODE.METADATA_ADD)
-  // addMetadataByExcel(@Body() body: AddMetadataByExcelDto, @TransactionManager() manager: EntityManager): Promise<void> {
-  //   return this.metadataService.addMetadataByExcel(body.projectId, body.path, manager);
-  // }
-
-  @HttpProcessor.handle('更新模块')
-  @Put('/')
-  @Permissions(PERMISSION_CODE.MODULE_UPDATE)
-  updateModule(@Body() body: UpdateModuleDto): Promise<void> {
-    return this.moduleService.updateModule(body);
-  }
-
-  @HttpProcessor.handle('删除模块')
-  @Delete('/:moduleId')
-  @Permissions(PERMISSION_CODE.MODULE_DEL)
-  deleteModule(@Param('moduleId', new ParseIntPipe()) moduleID: number): Promise<void> {
-    return this.moduleService.deleteMetadata(moduleID);
-  }
-
   @HttpProcessor.handle('获取模块列表')
   @Permissions(PERMISSION_CODE.MODULE_SEARCH)
   @Get('/')
   getModuleList(
-    @QueryList(new ParsePageQueryIntPipe(['projectId', 'status', 'operatorType']))
-    query: QueryListQuery<QueryMetadataListDto>,
+    @QueryList(new ParsePageQueryIntPipe([]))
+    query: QueryListQuery<ModuleListReqDto>,
     @Auth() user: UserModel
   ): Promise<PageData<ModuleModel>> {
-    return this.moduleService.getModuleList(query, user);
+    return this.moduleService.getModuleList(query);
   }
 
-  @HttpProcessor.handle('导出模块列表')
-  @Permissions(PERMISSION_CODE.MODULE_SEARCH)
-  @Get('/export')
-  public async exportExcel(
-    @Res() res: Response,
-    @QueryList(new ParsePageQueryIntPipe(['projectId', 'status', 'operatorType']))
-    query: QueryListQuery<QueryModuleListDto>
-  ): Promise<void> {
-    const [stream, length] = await this.moduleService.exportExcel(query);
-    res.set({
-      'Content-Type': 'application/xlsx',
-      'Content-Length': length
-    });
-    res.attachment('module.xlsx');
-    stream.pipe(res);
+  @HttpProcessor.handle('新增模块')
+  @Post('/')
+  // @Permissions(PERMISSION_CODE.MODULE_ADD)
+  addModule(@Body() body: AddModuleDto): Promise<void> {
+    console.log('addModuleaddModule', body);
+    return this.moduleService.addModule(body);
   }
+
+  // @HttpProcessor.handle('更新模块')
+  // @Put('/')
+  // @Permissions(PERMISSION_CODE.MODULE_UPDATE)
+  // updateModule(@Body() body: UpdateModuleDto): Promise<void> {
+  //   return this.moduleService.updateModule(body);
+  // }
+
+  // @HttpProcessor.handle('删除模块')
+  // @Delete('/:moduleId')
+  // @Permissions(PERMISSION_CODE.MODULE_DEL)
+  // deleteModule(@Param('moduleId', new ParseIntPipe()) moduleID: number): Promise<void> {
+  //   return this.moduleService.deleteMetadata(moduleID);
+  // }
+
+  // @HttpProcessor.handle('导出模块列表')
+  // @Permissions(PERMISSION_CODE.MODULE_SEARCH)
+  // @Get('/export')
+  // public async exportExcel(
+  //   @Res() res: Response,
+  //   @QueryList(new ParsePageQueryIntPipe(['projectId', 'status', 'operatorType']))
+  //   query: QueryListQuery<QueryModuleListDto>
+  // ): Promise<void> {
+  //   const [stream, length] = await this.moduleService.exportExcel(query);
+  //   res.set({
+  //     'Content-Type': 'application/xlsx',
+  //     'Content-Length': length
+  //   });
+  //   res.attachment('module.xlsx');
+  //   stream.pipe(res);
+  // }
 
   // @HttpProcessor.handle('更新元数据日志数据')
   // @Put('/log')
