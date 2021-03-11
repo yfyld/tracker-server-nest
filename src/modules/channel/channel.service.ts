@@ -12,6 +12,7 @@ import { Readable } from 'typeorm/platform/PlatformTools';
 import { FieldModel } from '../metadata/metadata.model';
 import { XlsxService } from '@/providers/xlsx/xlsx.service';
 import { ChannelListItemDto, ChannelListReqDto, QueryChannelListDto, UpdateChannelDto } from './channel.dto';
+import { HttpBadRequestError } from '@/errors/bad-request.error';
 
 @Injectable()
 export class ChannelService {
@@ -67,12 +68,21 @@ export class ChannelService {
    * @return Promise<void>
    */
   public async addChannel(channel: AddChannelDto): Promise<void> {
-    await this.channelModel
-      .createQueryBuilder()
-      .insert()
-      .values(channel)
-      .execute();
-    return;
+    const existedChannel = await this.channelModel.findOne({
+      name: channel.name,
+      isDeleted: 0
+    });
+
+    if (!existedChannel) {
+      await this.channelModel
+        .createQueryBuilder()
+        .insert()
+        .values(channel)
+        .execute();
+      return;
+    } else {
+      throw new HttpBadRequestError(`渠道名${channel.name}重复`);
+    }
   }
 
   /**

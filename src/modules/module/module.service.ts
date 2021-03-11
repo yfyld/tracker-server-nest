@@ -18,6 +18,7 @@ import { ModuleModel } from './module.model';
 import { Readable } from 'typeorm/platform/PlatformTools';
 import { FieldModel } from '../metadata/metadata.model';
 import { XlsxService } from '@/providers/xlsx/xlsx.service';
+import { HttpBadRequestError } from '@/errors/bad-request.error';
 
 @Injectable()
 export class ModuleService {
@@ -76,12 +77,21 @@ export class ModuleService {
    * @return Promise<void>
    */
   public async addModule(module: AddModuleDto): Promise<void> {
-    await this.moduleModel
-      .createQueryBuilder()
-      .insert()
-      .values(module)
-      .execute();
-    return;
+    const existedModule = await this.moduleModel.findOne({
+      name: module.name,
+      isDeleted: 0
+    });
+
+    if (!existedModule) {
+      await this.moduleModel
+        .createQueryBuilder()
+        .insert()
+        .values(module)
+        .execute();
+      return;
+    } else {
+      throw new HttpBadRequestError(`模块名${module.name}重复`);
+    }
   }
 
   /**

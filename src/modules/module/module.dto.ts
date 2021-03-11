@@ -15,6 +15,7 @@ export class AddModuleDto {
   @Length(0, 32, { message: '请不要超过32个字符' })
   name: string;
 
+  @IsOptional()
   @IsString({ message: '描述必须为字符串' })
   description?: string;
 }
@@ -49,9 +50,11 @@ export class ModuleTypesItemDto {
 
 export class UpdateModuleDto {
   @IsString({ message: '模块名必须为字符串' })
+  @IsOptional()
   @Length(0, 32, { message: '请不要超过32个字符' })
   name?: string;
 
+  @IsOptional()
   @IsString({ message: '描述必须为字符串' })
   description?: string;
 

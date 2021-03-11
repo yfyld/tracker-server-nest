@@ -33,18 +33,22 @@ export class AddChannelDto {
 
   @IsString({ message: '活动必须为字符串' })
   @Length(0, 1024, { message: '请不要超过1024个字符' })
+  @IsOptional()
   activity?: string;
 
   @IsString({ message: '内容必须为字符串' })
   @Length(0, 1024, { message: '请不要超过1024个字符' })
+  @IsOptional()
   content?: string;
 
   @IsString({ message: '关键词必须为字符串' })
   @Length(0, 1024, { message: '请不要超过1024个字符' })
+  @IsOptional()
   keyword?: string;
 
   @IsString({ message: '描述必须为字符串' })
   @Length(0, 1024, { message: '请不要超过1024个字符' })
+  @IsOptional()
   description?: string;
 }
 
