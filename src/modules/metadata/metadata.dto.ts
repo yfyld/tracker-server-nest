@@ -38,6 +38,7 @@ export class AddMetadataDto {
   projectId: number;
 
   @IsString()
+  @IsOptional()
   moduleName: string;
 
   @IsString()

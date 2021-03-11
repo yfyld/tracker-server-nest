@@ -24,9 +24,5 @@ export class AppIdInsertDto {
 export class AppIdListDto {
   @IsString({ message: '应用名必须为字符串' })
   @Length(0, 32, { message: '请不要超过32个字符' })
-  appName: string;
-
-  // @IsString({ message: '应用名必须为字符串' })
-  @Length(0, 32, { message: '请不要超过32个字符' })
-  appId: number;
+  fuzzyName: string;
 }
