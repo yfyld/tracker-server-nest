@@ -36,6 +36,12 @@ export class AddMetadataDto {
 
   @IsNumber()
   projectId: number;
+
+  @IsString()
+  moduleName: string;
+
+  @IsString()
+  pageType: string;
 }
 
 export class AddMetadataByExcelDto {
