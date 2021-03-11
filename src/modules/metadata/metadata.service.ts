@@ -33,6 +33,7 @@ import { XlsxService } from '@/providers/xlsx/xlsx.service';
 import * as path from 'path';
 
 import { Readable } from 'typeorm/platform/PlatformTools';
+import { PageTypes } from '@/constants/common.constant';
 
 @Injectable()
 export class MetadataService {
@@ -689,7 +690,9 @@ export class MetadataService {
             name: '',
             newTags: ['未定义'],
             type: /page/.test(item.trackId) ? 1 : 2,
-            status: 0
+            status: 0,
+            moduleName: '',
+            pageType: PageTypes[0].value
           });
         });
     }
