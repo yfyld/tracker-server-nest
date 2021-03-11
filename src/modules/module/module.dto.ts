@@ -38,6 +38,15 @@ export class ModuleListItemDto {
   updatedAt: Date;
 }
 
+export class ModuleTypesItemDto {
+  @IsNumber()
+  id: number;
+
+  @IsString()
+  @Length(0, 32, { message: '请不要超过32个字符' })
+  name: string;
+}
+
 export class UpdateModuleDto {
   @IsString({ message: '模块名必须为字符串' })
   @Length(0, 32, { message: '请不要超过32个字符' })

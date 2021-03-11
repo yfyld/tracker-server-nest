@@ -19,6 +19,7 @@ import { RedisModule } from './providers/redis/redis.module';
 import { AnalyseModule } from './modules/analyse/analyse.module';
 import { ModuleModule } from './modules/module/module.module';
 import { AppIdModule } from './modules/appId/appId.module';
+import { ChannelModule } from './modules/channel/channel.module';
 @Module({
   imports: [
     DatabaseModule,
@@ -37,7 +38,8 @@ import { AppIdModule } from './modules/appId/appId.module';
     TeamModule,
     SlsModule,
     RedisModule,
-    ModuleModule
+    ModuleModule,
+    ChannelModule
   ],
   controllers: [AppController],
   providers: [PermissionsGuard]

@@ -17,7 +17,14 @@ import { ModuleService } from './module.service';
 import { HttpProcessor } from '@/decotators/http.decotator';
 import { JwtAuthGuard } from '@/guards/auth.guard';
 import { ApiBearerAuth, ApiOperation, ApiUseTags, ApiResponse } from '@nestjs/swagger';
-import { AddModuleDto, ModuleListItemDto, ModuleListReqDto, QueryModuleListDto, UpdateModuleDto } from './module.dto';
+import {
+  AddModuleDto,
+  ModuleListItemDto,
+  ModuleListReqDto,
+  ModuleTypesItemDto,
+  QueryModuleListDto,
+  UpdateModuleDto
+} from './module.dto';
 
 import { Permissions } from '@/decotators/permissions.decotators';
 import { Auth } from '@/decotators/user.decorators';
@@ -34,6 +41,14 @@ export class ModuleController {
   // @Permissions(PERMISSION_CODE.MODULE_ADD)
   addModule(@Body() body: AddModuleDto): Promise<void> {
     return this.moduleService.addModule(body);
+  }
+
+  @ApiOperation({ title: '获取模块种类', description: '' })
+  @HttpProcessor.handle('获取模块列表')
+  // @Permissions(PERMISSION_CODE.MODULE_TYPE_SEARCH)
+  @Get('/')
+  getModuleTypes(): Promise<ModuleTypesItemDto[]> {
+    return this.moduleService.getModuleTypes();
   }
 
   @ApiOperation({ title: '获取模块列表', description: '' })

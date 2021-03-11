@@ -1,4 +1,11 @@
-import { ModuleListReqDto, ModuleListItemDto, AddModuleDto, UpdateModuleDto, QueryModuleListDto } from './module.dto';
+import {
+  ModuleListReqDto,
+  ModuleListItemDto,
+  AddModuleDto,
+  UpdateModuleDto,
+  QueryModuleListDto,
+  ModuleTypesItemDto
+} from './module.dto';
 
 // import { MetadataModel, FieldModel, MetadataTagModel } from './module.model';
 import { Injectable, HttpService } from '@nestjs/common';
@@ -44,12 +51,23 @@ export class ModuleService {
       take: query.take
     });
 
-    console.log('getModuleList', modules);
-
     return {
       totalCount,
       list: modules
     };
+  }
+
+  public async getModuleTypes(): Promise<ModuleTypesItemDto[]> {
+    const [moduleTypes, totalCount] = await this.moduleModel.findAndCount({
+      select: ['id', 'name'],
+      where: [
+        {
+          isDeleted: 0
+        }
+      ]
+    });
+
+    return moduleTypes;
   }
 
   /**
