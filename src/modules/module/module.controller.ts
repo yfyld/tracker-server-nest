@@ -46,7 +46,7 @@ export class ModuleController {
   @ApiOperation({ title: '获取模块种类', description: '' })
   @HttpProcessor.handle('获取模块列表')
   // @Permissions(PERMISSION_CODE.MODULE_TYPE_SEARCH)
-  @Get('/')
+  @Get('/moduletypes')
   getModuleTypes(): Promise<ModuleTypesItemDto[]> {
     return this.moduleService.getModuleTypes();
   }
