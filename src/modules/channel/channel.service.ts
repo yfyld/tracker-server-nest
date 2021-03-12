@@ -110,13 +110,14 @@ export class ChannelService {
    * @return Promise<void>
    */
   public async updateChannel(body: UpdateChannelDto): Promise<void> {
+    const { id } = body;
+
     const existedChannel = await this.channelModel.findOne({
-      name: body.name,
+      id,
       isDeleted: 0
     });
 
-    if (!existedChannel) {
-      const { id } = body;
+    if (existedChannel) {
       await this.channelModel
         .createQueryBuilder()
         .update(ChannelModel)
@@ -124,10 +125,6 @@ export class ChannelService {
         .where('id = :id', { id })
         .execute();
       return;
-    } else if (existedChannel.id == body.id) {
-      return;
-    } else {
-      throw new HttpBadRequestError(`渠道名${body.name}已存在`);
     }
   }
 

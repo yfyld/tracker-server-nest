@@ -110,24 +110,24 @@ export class ModuleService {
    * @param module: 模块名+描述
    * @return Promise<void>
    */
-  public async updateModule({ description, name, id }: UpdateModuleDto): Promise<void> {
+  public async updateModule(body: UpdateModuleDto): Promise<void> {
+    const { description, name, id } = body;
+
     const existedModule = await this.moduleModel.findOne({
-      name,
+      id,
       isDeleted: 0
     });
 
-    if (!existedModule) {
+    if (existedModule) {
+      console.log('updateModule1', body);
+
       await this.moduleModel
         .createQueryBuilder()
         .update(ModuleModel)
-        .set({ description, name })
+        .set(body)
         .where('id = :id', { id })
         .execute();
       return;
-    } else if (existedModule.id === id) {
-      return;
-    } else {
-      throw new HttpBadRequestError(`模块名${name}已存在`);
     }
   }
 
