@@ -72,7 +72,7 @@ export class MetadataService {
       skip,
       take,
       sort: { key: sortKey, value: sortValue },
-      query: { projectId, status, type, name, code, tags, log, operatorType }
+      query: { projectId, status, type, name, code, tags, log, operatorType, pageTypes, modules }
     } = query;
 
     // 排序
@@ -147,6 +147,16 @@ export class MetadataService {
     if (tags) {
       condition += ' and tag.id in (:tags)';
       params.tags = tags.split(',');
+    }
+
+    if (pageTypes) {
+      condition += ' and metadata.pageType in (:pageTypes)';
+      params.pageTypes = pageTypes.split(',');
+    }
+
+    if (modules) {
+      condition += ' and metadata.module in (:modules)';
+      params.modules = modules.split(',');
     }
 
     if (log) {

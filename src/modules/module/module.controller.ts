@@ -38,16 +38,16 @@ export class ModuleController {
   @ApiOperation({ title: '新增模块', description: '' })
   @HttpProcessor.handle('新增模块')
   @Post('/')
-  // @Permissions(PERMISSION_CODE.MODULE_ADD)
+  @Permissions(PERMISSION_CODE.MODULE_ADD)
   addModule(@Body() body: AddModuleDto): Promise<void> {
     return this.moduleService.addModule(body);
   }
 
   @ApiOperation({ title: '获取模块种类', description: '' })
   @HttpProcessor.handle('获取模块列表')
-  // @Permissions(PERMISSION_CODE.MODULE_TYPE_SEARCH)
+  @Permissions(PERMISSION_CODE.MODULE_OPITONS)
   @Get('/moduletypes')
-  getModuleTypes(): Promise<ModuleTypesItemDto[]> {
+  getModuleTypes() {
     return this.moduleService.getModuleTypes();
   }
 
@@ -64,7 +64,7 @@ export class ModuleController {
 
   @ApiOperation({ title: '删除模块', description: '' })
   @HttpProcessor.handle('删除模块')
-  // @Permissions(PERMISSION_CODE.MODULE_SEARCH)
+  @Permissions(PERMISSION_CODE.MODULE_DEL)
   @Delete('/:moduleId')
   deleteModule(@Param('moduleId', new ParseIntPipe()) moduleId: number): Promise<void> {
     return this.moduleService.deleteModule(moduleId);
@@ -73,13 +73,13 @@ export class ModuleController {
   @ApiOperation({ title: '修改模块', description: '' })
   @HttpProcessor.handle('修改模块')
   @Put('/')
-  // @Permissions(PERMISSION_CODE.MODULE_UPDATE)
+  @Permissions(PERMISSION_CODE.MODULE_UPDATE)
   updateModule(@Body() body: UpdateModuleDto): Promise<void> {
     return this.moduleService.updateModule(body);
   }
 
   @HttpProcessor.handle('导出模块列表')
-  // @Permissions(PERMISSION_CODE.METADATA_EXPORT)
+  @Permissions(PERMISSION_CODE.MODULE_EXPORT)
   @Get('/export')
   public async exportExcel(
     @Res() res: Response,

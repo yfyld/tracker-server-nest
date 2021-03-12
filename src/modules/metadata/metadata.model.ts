@@ -106,4 +106,7 @@ export class MetadataModel {
 
   @Column()
   pageType: string;
+
+  @Column()
+  module: string;
 }

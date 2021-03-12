@@ -54,7 +54,7 @@ export class ModuleService {
     };
   }
 
-  public async getModuleTypes(): Promise<ModuleTypesItemDto[]> {
+  public async getModuleTypes() {
     const [moduleTypes, totalCount] = await this.moduleModel.findAndCount({
       select: ['id', 'name'],
       where: [
@@ -64,7 +64,10 @@ export class ModuleService {
       ]
     });
 
-    return moduleTypes;
+    return moduleTypes.map(v => ({
+      label: v.name,
+      value: String(v.id)
+    }));
   }
 
   /**

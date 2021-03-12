@@ -22,7 +22,6 @@ export class AppIdController {
   @ApiOperation({ title: '新增appId', description: '' })
   // @ApiBearerAuth()
   @HttpProcessor.handle('新增appId')
-  // @Permissions(PERMISSION_CODE)
   @Post('/')
   add(@Body() body: AppIdInsertDto): Promise<void> {
     return this.appIdService.insert(body);
@@ -31,18 +30,18 @@ export class AppIdController {
   @ApiOperation({ title: '获取AppId列表', description: '' })
   @ApiBearerAuth()
   @HttpProcessor.handle('获取AppId列表')
-  // @Permissions(PERMISSION_CODE.PERMISSION_SEARCH)
+  @Permissions(PERMISSION_CODE.APPID_LIST)
   @Get('/')
   getPermissions(@QueryList() query: QueryListQuery<AppIdListDto>): Promise<PageData<AppIdInsertDto>> {
     return this.appIdService.getList(query);
   }
 
-  @HttpProcessor.handle('导出模块列表')
-  // @Permissions(PERMISSION_CODE.METADATA_EXPORT)
+  @HttpProcessor.handle('导出APPID列表')
+  @Permissions(PERMISSION_CODE.APPID_EXPORT)
   @Get('/export')
   public async exportExcel(
     @Res() res: Response,
-    @QueryList(new ParsePageQueryIntPipe([]))
+    // @QueryList(new ParsePageQueryIntPipe([]))
     query: QueryListQuery<AppIdListDto>
   ): Promise<void> {
     const [stream, length] = await this.appIdService.exportExcel(query);

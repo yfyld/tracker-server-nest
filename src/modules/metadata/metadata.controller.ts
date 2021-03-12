@@ -47,6 +47,7 @@ import { XlsxService } from '@/providers/xlsx/xlsx.service';
 import { Permissions } from '@/decotators/permissions.decotators';
 import { Response } from 'express';
 import { Auth } from '@/decotators/user.decorators';
+import { PageTypes } from '@/constants/common.constant';
 
 @ApiUseTags('元数据')
 @Controller('metadata')

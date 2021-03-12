@@ -20,6 +20,7 @@ import {
 
 import { Permissions } from '@/decotators/permissions.decotators';
 import { Auth } from '@/decotators/user.decorators';
+import { PERMISSION_CODE } from '@/constants/permission.contant';
 
 @ApiUseTags('channel')
 @Controller('channel')
@@ -30,14 +31,14 @@ export class ChannelController {
   @ApiOperation({ title: '新增渠道', description: '' })
   @HttpProcessor.handle('新增渠道')
   @Post('/')
-  // @Permissions(PERMISSION_CODE.CHANNEL_ADD)
+  @Permissions(PERMISSION_CODE.CHANNEL_ADD)
   addChannel(@Body() body: AddChannelDto): Promise<void> {
     return this.channelService.addChannel(body);
   }
 
   @ApiOperation({ title: '获取渠道列表', description: '' })
   @HttpProcessor.handle('获取渠道列表')
-  // @Permissions(PERMISSION_CODE.CHANNEL_SEARCH)
+  @Permissions(PERMISSION_CODE.CHANNEL_SEARCH)
   @Get('/')
   getChannelList(
     @QueryList()
@@ -48,7 +49,7 @@ export class ChannelController {
 
   @ApiOperation({ title: '删除渠道', description: '' })
   @HttpProcessor.handle('删除渠道')
-  // @Permissions(PERMISSION_CODE.CHANNEL_SEARCH)
+  @Permissions(PERMISSION_CODE.CHANNEL_DELETE)
   @Delete('/:channelId')
   deleteChannel(@Param('channelId', new ParseIntPipe()) channelId: number): Promise<void> {
     return this.channelService.deleteChannel(channelId);
@@ -57,13 +58,13 @@ export class ChannelController {
   @ApiOperation({ title: '修改渠道', description: '' })
   @HttpProcessor.handle('修改渠道')
   @Put('/')
-  // @Permissions(PERMISSION_CODE.CHANNEL_UPDATE)
+  @Permissions(PERMISSION_CODE.CHANNEL_UPDATE)
   updateChannel(@Body() body: UpdateChannelDto): Promise<void> {
     return this.channelService.updateChannel(body);
   }
 
   @HttpProcessor.handle('导出渠道列表')
-  // @Permissions(PERMISSION_CODE.METADATA_EXPORT)
+  @Permissions(PERMISSION_CODE.CHANNEL_EXPORT)
   @Get('/export')
   public async exportExcel(
     @Res() res: Response,
