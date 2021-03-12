@@ -48,7 +48,10 @@ export class AppIdService {
         }
       ],
       skip: query.skip,
-      take: query.take
+      take: query.take,
+      order: {
+        createdAt: 'DESC'
+      }
     });
 
     let data = [['appId', '应用名称', '业务线', '客户端类型', '从属端类型']];

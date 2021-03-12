@@ -45,7 +45,10 @@ export class ModuleService {
         }
       ],
       skip: query.skip,
-      take: query.take
+      take: query.take,
+      order: {
+        updatedAt: 'DESC'
+      }
     });
 
     return {

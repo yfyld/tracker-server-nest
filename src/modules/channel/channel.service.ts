@@ -57,7 +57,10 @@ export class ChannelService {
         }
       ],
       skip: query.skip,
-      take: query.take
+      take: query.take,
+      order: {
+        createdAt: 'DESC'
+      }
     });
 
     return {
