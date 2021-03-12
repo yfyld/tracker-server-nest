@@ -168,6 +168,10 @@ export class QueryMetadataListDto {
   tags: string;
   @IsString()
   log: string;
+  @IsString()
+  pageTypes: string;
+  @IsString()
+  modules: string;
 }
 
 export class AddMetadataTagDto {

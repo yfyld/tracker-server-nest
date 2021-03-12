@@ -47,7 +47,7 @@ export class ModuleController {
   @HttpProcessor.handle('获取模块列表')
   // @Permissions(PERMISSION_CODE.MODULE_TYPE_SEARCH)
   @Get('/moduletypes')
-  getModuleTypes(): Promise<ModuleTypesItemDto[]> {
+  getModuleTypes() {
     return this.moduleService.getModuleTypes();
   }
 
