@@ -56,7 +56,7 @@ export class ModuleController {
   @Permissions(PERMISSION_CODE.MODULE_SEARCH)
   @Get('/')
   getModuleList(
-    @QueryList(new ParsePageQueryIntPipe([]))
+    @QueryList()
     query: QueryListQuery<ModuleListReqDto>
   ): Promise<PageData<ModuleListItemDto>> {
     return this.moduleService.getModuleList(query);
@@ -83,7 +83,7 @@ export class ModuleController {
   @Get('/export')
   public async exportExcel(
     @Res() res: Response,
-    @QueryList(new ParsePageQueryIntPipe([]))
+    @QueryList()
     query: QueryListQuery<QueryModuleListDto>
   ): Promise<void> {
     const [stream, length] = await this.moduleService.exportExcel(query);

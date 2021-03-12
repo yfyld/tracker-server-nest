@@ -1,17 +1,9 @@
-import { IsNotEmpty, IsDefined, IsInt, IsString, IsOptional, IsDate, IsNumber, Length } from 'class-validator';
-import { ApiModelProperty } from '@nestjs/swagger';
-import { ProjectModel } from '../project/project.model';
-import { ChannelModel } from './channel.model';
-import { Column, CreateDateColumn, UpdateDateColumn } from 'typeorm';
+import { IsString, IsOptional, IsNumber, Length } from 'class-validator';
 
 export class ChannelListReqDto {
   @IsOptional()
   @IsString({ message: '渠道名必须为字符串' })
   name?: string;
-
-  @IsOptional()
-  @IsNumber()
-  id?: string;
 }
 
 export class AddChannelDto {
@@ -127,7 +119,6 @@ export class UpdateChannelDto {
 }
 
 export class QueryChannelListDto {
-  // todo: fix this dto
   @IsOptional()
   @IsString({ message: '渠道名必须为字符串' })
   name?: string;

@@ -8,17 +8,17 @@ import {
 } from './module.dto';
 
 // import { MetadataModel, FieldModel, MetadataTagModel } from './module.model';
-import { Injectable, HttpService } from '@nestjs/common';
-import { Repository, In, LessThan, MoreThan, Between, Like, FindManyOptions, EntityManager } from 'typeorm';
+import { Injectable } from '@nestjs/common';
+import { Repository, Like } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 
 import { QueryListQuery, PageData } from '@/interfaces/request.interface';
 
 import { ModuleModel } from './module.model';
 import { Readable } from 'typeorm/platform/PlatformTools';
-import { FieldModel } from '../metadata/metadata.model';
 import { XlsxService } from '@/providers/xlsx/xlsx.service';
 import { HttpBadRequestError } from '@/errors/bad-request.error';
+import * as moment from 'moment';
 
 @Injectable()
 export class ModuleService {
@@ -35,11 +35,7 @@ export class ModuleService {
    * @memberof ModuleService
    */
 
-  public async getModuleList(
-    // currentUser: UserModel,
-    query: QueryListQuery<ModuleListReqDto>
-  ): Promise<PageData<ModuleListItemDto>> {
-    console.log('queryquery', query);
+  public async getModuleList(query: QueryListQuery<ModuleListReqDto>): Promise<PageData<ModuleListItemDto>> {
     const [modules, totalCount] = await this.moduleModel.findAndCount({
       select: ['id', 'name', 'description', 'createdAt', 'updatedAt'],
       where: [
@@ -90,7 +86,7 @@ export class ModuleService {
         .execute();
       return;
     } else {
-      throw new HttpBadRequestError(`模块名${module.name}重复`);
+      throw new HttpBadRequestError(`模块名${module.name}已存在`);
     }
   }
 
@@ -115,13 +111,24 @@ export class ModuleService {
    * @return Promise<void>
    */
   public async updateModule({ description, name, id }: UpdateModuleDto): Promise<void> {
-    await this.moduleModel
-      .createQueryBuilder()
-      .update(ModuleModel)
-      .set({ description, name })
-      .where('id = :id', { id })
-      .execute();
-    return;
+    const existedModule = await this.moduleModel.findOne({
+      name,
+      isDeleted: 0
+    });
+
+    if (!existedModule) {
+      await this.moduleModel
+        .createQueryBuilder()
+        .update(ModuleModel)
+        .set({ description, name })
+        .where('id = :id', { id })
+        .execute();
+      return;
+    } else if (existedModule.id === id) {
+      return;
+    } else {
+      throw new HttpBadRequestError(`模块名${name}已存在`);
+    }
   }
 
   public async exportExcel(query: QueryListQuery<QueryModuleListDto>): Promise<[Readable, number]> {
@@ -138,19 +145,17 @@ export class ModuleService {
     });
 
     let data = [['id', '模块名称', '描述', '创建时间', '更新时间']];
-    console.log('exportExcel', modules);
     data = data.concat(
       modules.map(item => {
         return [
           item.id.toString(),
           item.name.toString(),
           item.description.toString(),
-          item.createdAt.toString(),
-          item.updatedAt.toString()
+          moment(item.createdAt).format('L'),
+          moment(item.updatedAt).format('L')
         ];
       })
     );
-    console.log(typeof this.xlsxervice);
 
     const result = await this.xlsxervice.exportExcel(data);
     return result;

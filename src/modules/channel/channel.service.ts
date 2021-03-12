@@ -2,17 +2,17 @@ import { AddChannelDto } from './channel.dto';
 
 // import { MetadataModel, FieldModel, MetadataTagModel } from './module.model';
 import { Injectable, HttpService } from '@nestjs/common';
-import { Repository, In, LessThan, MoreThan, Between, Like, FindManyOptions, EntityManager } from 'typeorm';
+import { Repository, Like } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 
 import { QueryListQuery, PageData } from '@/interfaces/request.interface';
 
 import { ChannelModel } from './channel.model';
 import { Readable } from 'typeorm/platform/PlatformTools';
-import { FieldModel } from '../metadata/metadata.model';
 import { XlsxService } from '@/providers/xlsx/xlsx.service';
 import { ChannelListItemDto, ChannelListReqDto, QueryChannelListDto, UpdateChannelDto } from './channel.dto';
 import { HttpBadRequestError } from '@/errors/bad-request.error';
+import * as moment from 'moment';
 
 @Injectable()
 export class ChannelService {
@@ -50,6 +50,10 @@ export class ChannelService {
         {
           name: Like(`%${query.query.name || ''}%`),
           isDeleted: 0
+        },
+        {
+          id: Like(`%${query.query.name}%`),
+          isDeleted: 0
         }
       ],
       skip: query.skip,
@@ -81,7 +85,7 @@ export class ChannelService {
         .execute();
       return;
     } else {
-      throw new HttpBadRequestError(`渠道名${channel.name}重复`);
+      throw new HttpBadRequestError(`渠道名${channel.name}已存在`);
     }
   }
 
@@ -105,14 +109,26 @@ export class ChannelService {
    * @param channel: 渠道名+描述
    * @return Promise<void>
    */
-  public async updateChannel({ description, name, id }: UpdateChannelDto): Promise<void> {
-    await this.channelModel
-      .createQueryBuilder()
-      .update(ChannelModel)
-      .set({ description, name })
-      .where('id = :id', { id })
-      .execute();
-    return;
+  public async updateChannel(body: UpdateChannelDto): Promise<void> {
+    const existedChannel = await this.channelModel.findOne({
+      name: body.name,
+      isDeleted: 0
+    });
+
+    if (!existedChannel) {
+      const { id } = body;
+      await this.channelModel
+        .createQueryBuilder()
+        .update(ChannelModel)
+        .set(body)
+        .where('id = :id', { id })
+        .execute();
+      return;
+    } else if (existedChannel.id == body.id) {
+      return;
+    } else {
+      throw new HttpBadRequestError(`渠道名${body.name}已存在`);
+    }
   }
 
   public async exportExcel(query: QueryListQuery<QueryChannelListDto>): Promise<[Readable, number]> {
@@ -140,7 +156,6 @@ export class ChannelService {
     });
 
     let data = [['id', '渠道名称', '渠道类型', '业务线', '来源', '活动', '内容', '关键字', '描述', '创建时间']];
-    console.log('exportExcel', channels);
     data = data.concat(
       channels.map(item => {
         return [
@@ -153,7 +168,7 @@ export class ChannelService {
           item.content.toString(),
           item.keyword.toString(),
           item.description.toString(),
-          item.createdAt.toString()
+          moment(item.createdAt).format('L')
         ];
       })
     );

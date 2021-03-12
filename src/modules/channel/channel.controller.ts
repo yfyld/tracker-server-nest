@@ -1,18 +1,11 @@
-import { UserModel } from './../user/user.model';
-import { TransactionManager, EntityManager, Transaction } from 'typeorm';
-import { PERMISSION_CODE } from './../../constants/permission.contant';
 import { PermissionsGuard } from '@/guards/permission.guard';
-import { ParsePageQueryIntPipe } from '../../pipes/parse-page-query-int.pipe';
 import { ParseIntPipe } from './../../pipes/parse-int.pipe';
 import { Response } from 'express';
 import { QueryListQuery, ListData } from '@/interfaces/request.interface';
 import { QueryList } from '../../decotators/query-list.decorators';
 import { PageData } from '../../interfaces/request.interface';
 import { Controller, Get, Post, Body, UseGuards, Delete, Param, Put, Res } from '@nestjs/common';
-import {
-  ChannelModel
-  //  FieldModel, MetadataTagModel
-} from './channel.model';
+
 import { ChannelService } from './channel.service';
 import { HttpProcessor } from '@/decotators/http.decotator';
 import { JwtAuthGuard } from '@/guards/auth.guard';
@@ -38,7 +31,7 @@ export class ChannelController {
   @HttpProcessor.handle('新增渠道')
   @Post('/')
   // @Permissions(PERMISSION_CODE.CHANNEL_ADD)
-  addModule(@Body() body: AddChannelDto): Promise<void> {
+  addChannel(@Body() body: AddChannelDto): Promise<void> {
     return this.channelService.addChannel(body);
   }
 
@@ -46,8 +39,8 @@ export class ChannelController {
   @HttpProcessor.handle('获取渠道列表')
   // @Permissions(PERMISSION_CODE.CHANNEL_SEARCH)
   @Get('/')
-  getModuleList(
-    @QueryList(new ParsePageQueryIntPipe([]))
+  getChannelList(
+    @QueryList()
     query: QueryListQuery<ChannelListReqDto>
   ): Promise<PageData<ChannelListItemDto>> {
     return this.channelService.getChannelList(query);
@@ -57,7 +50,7 @@ export class ChannelController {
   @HttpProcessor.handle('删除渠道')
   // @Permissions(PERMISSION_CODE.CHANNEL_SEARCH)
   @Delete('/:channelId')
-  deleteModule(@Param('channelId', new ParseIntPipe()) channelId: number): Promise<void> {
+  deleteChannel(@Param('channelId', new ParseIntPipe()) channelId: number): Promise<void> {
     return this.channelService.deleteChannel(channelId);
   }
 
@@ -65,7 +58,7 @@ export class ChannelController {
   @HttpProcessor.handle('修改渠道')
   @Put('/')
   // @Permissions(PERMISSION_CODE.CHANNEL_UPDATE)
-  updateModule(@Body() body: UpdateChannelDto): Promise<void> {
+  updateChannel(@Body() body: UpdateChannelDto): Promise<void> {
     return this.channelService.updateChannel(body);
   }
 
@@ -74,7 +67,7 @@ export class ChannelController {
   @Get('/export')
   public async exportExcel(
     @Res() res: Response,
-    @QueryList(new ParsePageQueryIntPipe([]))
+    @QueryList()
     query: QueryListQuery<QueryChannelListDto>
   ): Promise<void> {
     const [stream, length] = await this.channelService.exportExcel(query);

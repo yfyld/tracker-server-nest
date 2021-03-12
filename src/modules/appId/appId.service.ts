@@ -52,7 +52,6 @@ export class AppIdService {
     });
 
     let data = [['appId', '应用名称', '业务线', '客户端类型', '从属端类型']];
-    console.log('exportExcel', modules);
     data = data.concat(
       modules.map(item => {
         return [

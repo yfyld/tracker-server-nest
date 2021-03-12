@@ -1,8 +1,4 @@
-import { IsNotEmpty, IsDefined, IsInt, IsString, IsOptional, IsDate, IsNumber, Length } from 'class-validator';
-import { ApiModelProperty } from '@nestjs/swagger';
-import { ProjectModel } from '../project/project.model';
-import { ModuleModel } from './module.model';
-import { Column, CreateDateColumn, UpdateDateColumn } from 'typeorm';
+import { IsString, IsOptional, IsDate, IsNumber, Length } from 'class-validator';
 
 export class ModuleListReqDto {
   @IsOptional()
