@@ -103,4 +103,10 @@ export class MetadataModel {
   @ManyToMany(type => MetadataTagModel)
   @JoinTable()
   tags: MetadataTagModel[];
+
+  @Column()
+  pageType: string;
+
+  @Column()
+  module: string;
 }
