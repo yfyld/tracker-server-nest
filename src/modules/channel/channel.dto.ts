@@ -23,6 +23,10 @@ export class AddChannelDto {
   @Length(0, 1024, { message: '请不要超过1024个字符' })
   source: string;
 
+  @IsString({ message: '位置必须为字符串' })
+  @Length(0, 1024, { message: '请不要超过1024个字符' })
+  position?: string;
+
   @IsString({ message: '活动必须为字符串' })
   @Length(0, 1024, { message: '请不要超过1024个字符' })
   @IsOptional()
@@ -64,6 +68,10 @@ export class ChannelListItemDto {
   @Length(0, 1024, { message: '请不要超过1024个字符' })
   source: string;
 
+  @IsString({ message: '位置必须为字符串' })
+  @Length(0, 1024, { message: '请不要超过1024个字符' })
+  position?: string;
+
   @IsString({ message: '活动必须为字符串' })
   @Length(0, 1024, { message: '请不要超过1024个字符' })
   activity?: string;
@@ -97,6 +105,10 @@ export class UpdateChannelDto {
   @IsString({ message: '来源必须为字符串' })
   @Length(0, 1024, { message: '请不要超过1024个字符' })
   source?: string;
+
+  @IsString({ message: '位置必须为字符串' })
+  @Length(0, 1024, { message: '请不要超过1024个字符' })
+  position?: string;
 
   @IsString({ message: '活动必须为字符串' })
   @Length(0, 1024, { message: '请不要超过1024个字符' })

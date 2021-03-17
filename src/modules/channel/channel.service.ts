@@ -40,6 +40,7 @@ export class ChannelService {
         'type',
         'business',
         'source',
+        'position',
         'activity',
         'content',
         'keyword',
@@ -139,6 +140,7 @@ export class ChannelService {
         'type',
         'business',
         'source',
+        'position',
         'activity',
         'content',
         'keyword',
@@ -155,7 +157,7 @@ export class ChannelService {
       take: query.take
     });
 
-    let data = [['id', '渠道名称', '渠道类型', '业务线', '来源', '活动', '内容', '关键字', '描述', '创建时间']];
+    let data = [['id', '渠道名称', '渠道类型', '业务线', '来源', '位置', '活动', '内容', '关键字', '描述', '创建时间']];
     data = data.concat(
       channels.map(item => {
         return [
@@ -164,6 +166,7 @@ export class ChannelService {
           item.type.toString(),
           item.business.toString(),
           item.source.toString(),
+          item.position.toString(),
           item.activity.toString(),
           item.content.toString(),
           item.keyword.toString(),

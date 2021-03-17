@@ -18,6 +18,9 @@ export class ChannelModel {
   @Column({ type: 'varchar', length: 1024, comment: '来源' })
   source: string;
 
+  @Column({ type: 'varchar', length: 1024, comment: '来源' })
+  position: string;
+
   @Column({ type: 'varchar', length: 1024, comment: '活动' })
   activity: string;
 
