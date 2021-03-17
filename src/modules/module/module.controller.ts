@@ -28,12 +28,13 @@ import {
 
 import { Permissions } from '@/decotators/permissions.decotators';
 import { Auth } from '@/decotators/user.decorators';
+import { MetadataService } from '../metadata/metadata.service';
 
 @ApiUseTags('module')
 @Controller('module')
 @UseGuards(JwtAuthGuard, PermissionsGuard)
 export class ModuleController {
-  constructor(private readonly moduleService: ModuleService) {}
+  constructor(private readonly moduleService: ModuleService, private readonly metadataService: MetadataService) {}
 
   @ApiOperation({ title: '新增模块', description: '' })
   @HttpProcessor.handle('新增模块')
@@ -66,8 +67,20 @@ export class ModuleController {
   @HttpProcessor.handle('删除模块')
   @Permissions(PERMISSION_CODE.MODULE_DEL)
   @Delete('/:moduleId')
-  deleteModule(@Param('moduleId', new ParseIntPipe()) moduleId: number): Promise<void> {
-    return this.moduleService.deleteModule(moduleId);
+  async deleteModule(@Param('moduleId', new ParseIntPipe()) moduleId: number): Promise<void> {
+    const metaData = await this.metadataService.isMetaDataAssocited(moduleId);
+    if (!metaData) {
+      return this.moduleService.deleteModule(moduleId);
+    }
+  }
+
+  @ApiOperation({ title: '是否关联元数据', description: '' })
+  @HttpProcessor.handle('是否关联元数据')
+  @Permissions(PERMISSION_CODE.MODULE_DEL)
+  @Delete('/relationMetaData/:moduleId')
+  async isMetaDataAssocited(@Param('moduleId', new ParseIntPipe()) moduleId: number): Promise<Boolean> {
+    const metaData = await this.metadataService.isMetaDataAssocited(moduleId);
+    return new Boolean(metaData);
   }
 
   @ApiOperation({ title: '修改模块', description: '' })

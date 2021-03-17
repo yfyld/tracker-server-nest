@@ -69,7 +69,7 @@ export class ModuleService {
 
     return moduleTypes.map(v => ({
       label: v.name,
-      value: String(v.id)
+      value: v.id
     }));
   }
 

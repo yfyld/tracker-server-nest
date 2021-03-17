@@ -332,6 +332,14 @@ export class MetadataService {
     return;
   }
 
+  public async isMetaDataAssocited(moduleId: number) {
+    const metadata = await this.metadataModel
+      .createQueryBuilder('metadata')
+      .where('module = :moduleId', { moduleId })
+      .getOne();
+    return metadata;
+  }
+
   public async addMetadataByExcel(projectId: number, pathStr: string, manager: EntityManager): Promise<void> {
     const datas = await this.xlsxervice.parseByPath(
       path.join(__dirname, '../../', pathStr),

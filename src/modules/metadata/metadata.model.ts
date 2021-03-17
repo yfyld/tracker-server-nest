@@ -108,5 +108,5 @@ export class MetadataModel {
   pageType: string;
 
   @Column()
-  module: string;
+  module: number;
 }

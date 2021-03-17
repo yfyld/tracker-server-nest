@@ -81,7 +81,8 @@ export class UpdateMetadataDto {
   tags?: number[];
   @IsOptional()
   newTags?: string[];
-
+  @IsNumber()
+  module: number;
   @IsNumber()
   @IsOptional()
   log?: number;
