@@ -4,6 +4,18 @@ export class ChannelListReqDto {
   @IsOptional()
   @IsString({ message: '渠道名必须为字符串' })
   name?: string;
+
+  @IsOptional()
+  business?: number;
+
+  @IsOptional()
+  type?: number;
+
+  @IsOptional()
+  source?: number;
+
+  @IsOptional()
+  position?: number;
 }
 
 export class AddChannelDto {
@@ -25,6 +37,7 @@ export class AddChannelDto {
 
   @IsString({ message: '位置必须为字符串' })
   @Length(0, 1024, { message: '请不要超过1024个字符' })
+  @IsOptional()
   position?: string;
 
   @IsString({ message: '活动必须为字符串' })
@@ -51,6 +64,9 @@ export class AddChannelDto {
 export class ChannelListItemDto {
   @IsNumber()
   id: number;
+
+  @IsString()
+  channelId: string;
 
   @IsString({ message: '渠道名必须为字符串' })
   @Length(0, 128, { message: '请不要超过128个字符' })
@@ -108,22 +124,27 @@ export class UpdateChannelDto {
 
   @IsString({ message: '位置必须为字符串' })
   @Length(0, 1024, { message: '请不要超过1024个字符' })
+  @IsOptional()
   position?: string;
 
   @IsString({ message: '活动必须为字符串' })
   @Length(0, 1024, { message: '请不要超过1024个字符' })
+  @IsOptional()
   activity?: string;
 
   @IsString({ message: '内容必须为字符串' })
   @Length(0, 1024, { message: '请不要超过1024个字符' })
+  @IsOptional()
   content?: string;
 
   @IsString({ message: '关键词必须为字符串' })
   @Length(0, 1024, { message: '请不要超过1024个字符' })
+  @IsOptional()
   keyword?: string;
 
   @IsString({ message: '描述必须为字符串' })
   @Length(0, 1024, { message: '请不要超过1024个字符' })
+  @IsOptional()
   description?: string;
 
   @IsNumber()

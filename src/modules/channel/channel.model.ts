@@ -1,10 +1,13 @@
 import { IsDate, IsInt } from 'class-validator';
-import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, BaseEntity } from 'typeorm';
 
 @Entity()
-export class ChannelModel {
-  @PrimaryGeneratedColumn({ comment: '渠道ID' })
+export class ChannelModel extends BaseEntity {
+  @PrimaryGeneratedColumn({ comment: 'id' })
   id: number;
+
+  @Column({ comment: '渠道ID' })
+  channelId: string;
 
   @Column({ type: 'varchar', length: 128, comment: '渠道名称' })
   name: string;

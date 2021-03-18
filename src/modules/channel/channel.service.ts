@@ -13,6 +13,7 @@ import { XlsxService } from '@/providers/xlsx/xlsx.service';
 import { ChannelListItemDto, ChannelListReqDto, QueryChannelListDto, UpdateChannelDto } from './channel.dto';
 import { HttpBadRequestError } from '@/errors/bad-request.error';
 import * as moment from 'moment';
+import Utils from '@/utils/utils';
 
 @Injectable()
 export class ChannelService {
@@ -22,6 +23,53 @@ export class ChannelService {
 
     private readonly xlsxervice: XlsxService
   ) {}
+
+  private async channelListParam(query: QueryListQuery<ChannelListReqDto>) {
+    let {
+      skip,
+      take,
+      sort: { key: sortKey, value: sortValue },
+      query: { source, type, name, position, business }
+    } = query;
+
+    // 查询条件
+    let condition: string = 'isDeleted = false';
+    let params: {
+      [propName: string]: any;
+    } = {};
+
+    if (name) {
+      condition += ` and channel.name LIKE :name`;
+      params.name = `%${name}%`;
+    }
+
+    if (type) {
+      condition += ` and channel.type LIKE :type `;
+      params.type = `%${type}%`;
+    }
+
+    if (source) {
+      condition += ` and channel.source LIKE :source`;
+      params.source = `%${source}%`;
+    }
+
+    if (business) {
+      condition += ` and channel.business LIKE :business `;
+      params.business = `%${business}%`;
+    }
+
+    if (position) {
+      condition += ` and channel.position LIKE :position `;
+      params.position = `%${position}%`;
+    }
+
+    return {
+      condition,
+      params,
+      skip,
+      take
+    };
+  }
 
   /**
    *获取module List
@@ -33,36 +81,47 @@ export class ChannelService {
     // currentUser: UserModel,
     query: QueryListQuery<ChannelListReqDto>
   ): Promise<PageData<ChannelListItemDto>> {
-    const [modules, totalCount] = await this.channelModel.findAndCount({
-      select: [
-        'id',
-        'name',
-        'type',
-        'business',
-        'source',
-        'position',
-        'activity',
-        'content',
-        'keyword',
-        'description',
-        'createdAt'
-      ],
-      where: [
-        {
-          name: Like(`%${query.query.name || ''}%`),
-          isDeleted: 0
-        },
-        {
-          id: Like(`%${query.query.name}%`),
-          isDeleted: 0
-        }
-      ],
-      skip: query.skip,
-      take: query.take,
-      order: {
-        createdAt: 'DESC'
-      }
-    });
+    const { condition, params, skip, take } = await this.channelListParam(query);
+
+    let [modules, totalCount] = await this.channelModel
+      .createQueryBuilder('channel')
+      .where(condition, params)
+      .skip(query.skip)
+      .take(query.take)
+      // .orderBy(orderBy)
+      .getManyAndCount();
+
+    // const [modules, totalCount] = await this.channelModel.findAndCount({
+    //   select: [
+    //     'id',
+    //     'name',
+    //     'type',
+    //     'business',
+    //     'source',
+    //     'position',
+    //     'activity',
+    //     'content',
+    //     'keyword',
+    //     'description',
+    //     'createdAt',
+    //     'channelId'
+    //   ],
+    //   where: [
+    //     {
+    //       name: Like(`%${query.query.name || ''}%`),
+    //       isDeleted: 0
+    //     },
+    //     {
+    //       id: Like(`%${query.query.name}%`),
+    //       isDeleted: 0
+    //     }
+    //   ],
+    //   skip: query.skip,
+    //   take: query.take,
+    //   order: {
+    //     createdAt: 'DESC'
+    //   }
+    // });
 
     return {
       totalCount,
@@ -80,13 +139,21 @@ export class ChannelService {
       name: channel.name,
       isDeleted: 0
     });
-
     if (!existedChannel) {
-      await this.channelModel
-        .createQueryBuilder()
-        .insert()
-        .values(channel)
-        .execute();
+      let newChannel = new ChannelModel();
+      newChannel.name = channel.name;
+      newChannel.type = channel.type;
+      newChannel.business = channel.business;
+      newChannel.source = channel.source;
+      newChannel.position = channel.position;
+      newChannel.activity = channel.activity;
+      newChannel.content = channel.content;
+      newChannel.keyword = channel.keyword;
+      newChannel.description = channel.description;
+      await newChannel.save();
+      newChannel.channelId = Utils.enCodeID(newChannel.id);
+      await newChannel.save();
+
       return;
     } else {
       throw new HttpBadRequestError(`渠道名${channel.name}已存在`);
@@ -133,35 +200,47 @@ export class ChannelService {
   }
 
   public async exportExcel(query: QueryListQuery<QueryChannelListDto>): Promise<[Readable, number]> {
-    const [channels, totalCount] = await this.channelModel.findAndCount({
-      select: [
-        'id',
-        'name',
-        'type',
-        'business',
-        'source',
-        'position',
-        'activity',
-        'content',
-        'keyword',
-        'description',
-        'createdAt'
-      ],
-      where: [
-        {
-          name: Like(`%${query.query.name || ''}%`),
-          isDeleted: 0
-        }
-      ],
-      skip: query.skip,
-      take: query.take
-    });
+    const { condition, params, skip, take } = await this.channelListParam(query);
 
-    let data = [['id', '渠道名称', '渠道类型', '业务线', '来源', '位置', '活动', '内容', '关键字', '描述', '创建时间']];
+    let [channels, totalCount] = await this.channelModel
+      .createQueryBuilder('channel')
+      .where(condition, params)
+      .skip(query.skip)
+      .take(query.take)
+      // .orderBy(orderBy)
+      .getManyAndCount();
+
+    // const [channels, totalCount] = await this.channelModel.findAndCount({
+    //   select: [
+    //     'channelId',
+    //     'name',
+    //     'type',
+    //     'business',
+    //     'source',
+    //     'position',
+    //     'activity',
+    //     'content',
+    //     'keyword',
+    //     'description',
+    //     'createdAt'
+    //   ],
+    //   where: [
+    //     {
+    //       name: Like(`%${query.query.name || ''}%`),
+    //       isDeleted: 0
+    //     }
+    //   ],
+    //   skip: query.skip,
+    //   take: query.take
+    // });
+
+    let data = [
+      ['渠道id', '渠道名称', '渠道类型', '业务线', '来源', '位置', '活动', '内容', '关键字', '描述', '创建时间']
+    ];
     data = data.concat(
       channels.map(item => {
         return [
-          item.id.toString(),
+          item.channelId.toString(),
           item.name.toString(),
           item.type.toString(),
           item.business.toString(),

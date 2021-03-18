@@ -36,6 +36,23 @@ export default class Utils {
     return value.replace(/\s+/g, '');
   }
 
+  static enCodeID(id): string {
+    let sourceString = '431EYZDOWGVJ5AQMSFCU2TBIRPN796XH0KL';
+    let num = parseInt(id) + 100000000000;
+
+    let code = '';
+
+    while (num > 0) {
+      let mod = num % 35;
+
+      num = (num - mod) / 35;
+
+      code = sourceString.substr(mod, 1) + code;
+    }
+
+    return code;
+  }
+
   /**
    * 移除首尾空格
    * @param value: 需要移除首尾空格的字符串
