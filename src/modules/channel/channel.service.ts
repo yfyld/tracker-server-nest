@@ -43,6 +43,11 @@ export class ChannelService {
       params.name = `%${name}%`;
     }
 
+    if (name) {
+      condition += ` or channel.channelId LIKE :channelId`;
+      params.channelId = `%${name}%`;
+    }
+
     if (type) {
       condition += ` and channel.type LIKE :type `;
       params.type = `%${type}%`;
