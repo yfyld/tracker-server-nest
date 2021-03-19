@@ -25,4 +25,10 @@ export class AppIdListDto {
   @IsString({ message: '应用名必须为字符串' })
   @Length(0, 32, { message: '请不要超过32个字符' })
   fuzzyName: string;
+
+  @IsOptional()
+  sortKey?: string;
+
+  @IsOptional()
+  sortType?: string;
 }

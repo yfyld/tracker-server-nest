@@ -87,15 +87,19 @@ export class ChannelService {
     query: QueryListQuery<ChannelListReqDto>
   ): Promise<PageData<ChannelListItemDto>> {
     const { condition, params, skip, take } = await this.channelListParam(query);
-
+    const { key, value } = query.sort;
+    const order = {};
+    if (typeof key !== 'string') {
+      order['createdAt'] = 'DESC';
+    } else {
+      order[key] = value;
+    }
     let [modules, totalCount] = await this.channelModel
       .createQueryBuilder('channel')
       .where(condition, params)
       .skip(query.skip)
       .take(query.take)
-      .orderBy({
-        createdAt: 'DESC'
-      })
+      .orderBy(order)
       .getManyAndCount();
 
     // const [modules, totalCount] = await this.channelModel.findAndCount({
@@ -208,13 +212,19 @@ export class ChannelService {
 
   public async exportExcel(query: QueryListQuery<QueryChannelListDto>): Promise<[Readable, number]> {
     const { condition, params, skip, take } = await this.channelListParam(query);
-
+    const { key, value } = query.sort;
+    const order = {};
+    if (typeof key !== 'string') {
+      order['createdAt'] = 'DESC';
+    } else {
+      order[key] = value;
+    }
     let [channels, totalCount] = await this.channelModel
       .createQueryBuilder('channel')
       .where(condition, params)
       .skip(query.skip)
       .take(query.take)
-      // .orderBy(orderBy)
+      .orderBy(order)
       .getManyAndCount();
 
     // const [channels, totalCount] = await this.channelModel.findAndCount({

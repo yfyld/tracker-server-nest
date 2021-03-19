@@ -16,6 +16,12 @@ export class ChannelListReqDto {
 
   @IsOptional()
   position?: number;
+
+  @IsOptional()
+  sortKey?: number;
+
+  @IsOptional()
+  sortType?: number;
 }
 
 export class AddChannelDto {

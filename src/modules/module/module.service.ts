@@ -36,6 +36,13 @@ export class ModuleService {
    */
 
   public async getModuleList(query: QueryListQuery<ModuleListReqDto>): Promise<PageData<ModuleListItemDto>> {
+    const { key, value } = query.sort;
+    const order = {};
+    if (typeof key !== 'string') {
+      order['createdAt'] = 'DESC';
+    } else {
+      order[key] = value;
+    }
     const [modules, totalCount] = await this.moduleModel.findAndCount({
       select: ['id', 'name', 'description', 'createdAt', 'updatedAt'],
       where: [
@@ -46,9 +53,7 @@ export class ModuleService {
       ],
       skip: query.skip,
       take: query.take,
-      order: {
-        createdAt: 'DESC'
-      }
+      order
     });
 
     return {
@@ -138,6 +143,13 @@ export class ModuleService {
   }
 
   public async exportExcel(query: QueryListQuery<QueryModuleListDto>): Promise<[Readable, number]> {
+    const { key, value } = query.sort;
+    const order = {};
+    if (typeof key !== 'string') {
+      order['createdAt'] = 'DESC';
+    } else {
+      order[key] = value;
+    }
     const [modules, totalCount] = await this.moduleModel.findAndCount({
       select: ['id', 'name', 'description', 'createdAt', 'updatedAt'],
       where: [
@@ -147,7 +159,8 @@ export class ModuleService {
         }
       ],
       skip: query.skip,
-      take: query.take
+      take: query.take,
+      order
     });
 
     let data = [['id', '模块名称', '描述', '创建时间', '更新时间']];
