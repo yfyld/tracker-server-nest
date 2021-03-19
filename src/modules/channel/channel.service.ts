@@ -93,7 +93,9 @@ export class ChannelService {
       .where(condition, params)
       .skip(query.skip)
       .take(query.take)
-      // .orderBy(orderBy)
+      .orderBy({
+        createdAt: 'DESC'
+      })
       .getManyAndCount();
 
     // const [modules, totalCount] = await this.channelModel.findAndCount({

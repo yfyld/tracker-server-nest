@@ -34,6 +34,8 @@ import * as path from 'path';
 
 import { Readable } from 'typeorm/platform/PlatformTools';
 import { PageTypes } from '@/constants/common.constant';
+import { ModuleService } from '../module/module.service';
+import Utils from '@/utils/utils';
 
 @Injectable()
 export class MetadataService {
@@ -51,7 +53,8 @@ export class MetadataService {
     private readonly fieldModel: Repository<FieldModel>,
     private readonly slsService: SlsService,
     private readonly redisService: RedisService,
-    private readonly xlsxervice: XlsxService
+    private readonly xlsxervice: XlsxService,
+    private readonly modelService: ModuleService
   ) {}
 
   /**
@@ -247,7 +250,7 @@ export class MetadataService {
   public async exportExcel(query: QueryListQuery<QueryMetadataListDto>): Promise<[Readable, number]> {
     const { condition, params, orderBy } = await this.metadataListParam(query);
 
-    const [metadata, totalCount] = await this.metadataModel
+    let [metadata, totalCount] = await this.metadataModel
       .createQueryBuilder('metadata')
       .leftJoinAndSelect('metadata.tags', 'tag')
       .where(condition, params)
@@ -256,8 +259,14 @@ export class MetadataService {
       .orderBy(orderBy)
       .getManyAndCount();
 
-    let data = [['名称', 'code', '类型', '启用', '标签', '备注']];
+    // const modules = await this.modelService.getModuleByIds(metadata.map(md => md.module));
 
+    // const moduleMap = Utils.arrToMap(modules, ['id']);
+    // const newMetadata = metadata.map(md => {
+    //   return { ...md, module: moduleMap.get(md.module.toString()).name };
+    // });
+
+    let data = [['名称', 'code', '类型', '启用', '标签', '模块', '页面类型', '备注']];
     data = data.concat(
       metadata.map(item => {
         return [
@@ -266,6 +275,8 @@ export class MetadataService {
           item.type === 1 ? '页面' : '事件',
           item.status === 1 ? '是' : '否',
           item.tags.map(tag => tag.name).join(','),
+          item.module.toString(),
+          PageTypes.find(i => i.value === item.pageType) && PageTypes.find(i => i.value === item.pageType).label,
           item.description
         ];
       })
@@ -343,12 +354,20 @@ export class MetadataService {
   public async addMetadataByExcel(projectId: number, pathStr: string, manager: EntityManager): Promise<void> {
     const datas = await this.xlsxervice.parseByPath(
       path.join(__dirname, '../../', pathStr),
-      ['名称', 'code', '类型', '启用', '标签', '备注'],
-      ['name', 'code', 'type', 'status', 'newTags', 'description']
+      ['名称', 'code', '类型', '启用', '标签', '模块', '页面类型', '备注'],
+      ['name', 'code', 'type', 'status', 'newTags', 'module', 'pageType', 'description']
     );
 
     const metadatas = datas.filter(
-      item => item.name || item.code || item.type || item.status || item.newTags || item.description
+      item =>
+        item.name ||
+        item.code ||
+        item.type ||
+        item.status ||
+        item.newTags ||
+        item.module ||
+        item.pageType ||
+        item.description
     );
 
     const tagNames = metadatas.reduce((total, item) => {
@@ -377,7 +396,8 @@ export class MetadataService {
       if (!item.name || !item.code || !item.type) {
         throw `第${key}行格式错误`;
       }
-
+      const pageType =
+        PageTypes.find(i => i.value === item.pageType) && PageTypes.find(i => i.value === item.pageType).label;
       const newMetadata = {
         projectId,
         name: item.name,
@@ -385,6 +405,8 @@ export class MetadataService {
         url: item.url,
         type: item.type === '页面' ? 1 : 2,
         status: item.status === '是' ? 1 : 0,
+        module: item.module,
+        pageType,
         description: item.description
       };
 
@@ -412,6 +434,8 @@ export class MetadataService {
         oldMetadata.type = newMetadata.type;
         oldMetadata.status = newMetadata.status;
         oldMetadata.description = newMetadata.description;
+        oldMetadata.module = newMetadata.module;
+        oldMetadata.pageType = newMetadata.pageType;
         oldMetadata.tags = oldMetadata.tags || [];
         oldMetadata.tags.push(...metadataTags);
         await manager.save(MetadataModel, oldMetadata);

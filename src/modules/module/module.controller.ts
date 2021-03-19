@@ -25,7 +25,8 @@ import {
   QueryModuleListDto,
   UpdateModuleDto
 } from './module.dto';
-
+import * as moment from 'moment';
+moment.locale('zh-cn');
 import { Permissions } from '@/decotators/permissions.decotators';
 import { Auth } from '@/decotators/user.decorators';
 import { MetadataService } from '../metadata/metadata.service';
@@ -104,7 +105,7 @@ export class ModuleController {
       'Content-Type': 'application/xlsx',
       'Content-Length': length
     });
-    res.attachment('module.xlsx');
+    res.attachment(`模块 ${moment().format('lll')}.xlsx`);
     stream.pipe(res);
   }
 }

@@ -47,7 +47,7 @@ export class ModuleService {
       skip: query.skip,
       take: query.take,
       order: {
-        updatedAt: 'DESC'
+        createdAt: 'DESC'
       }
     });
 
@@ -165,5 +165,14 @@ export class ModuleService {
 
     const result = await this.xlsxervice.exportExcel(data);
     return result;
+  }
+
+  public async getModuleByIds(ids: number[]): Promise<ModuleListItemDto[]> {
+    const modules = await this.moduleModel
+      .createQueryBuilder()
+      .whereInIds(ids)
+      .execute();
+
+    return modules;
   }
 }

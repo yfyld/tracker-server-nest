@@ -54,5 +54,13 @@ export const PageTypes = [
   {
     label: '处方页',
     value: 'prescription_page'
+  },
+  {
+    label: '购物车页',
+    value: 'shop_cart'
+  },
+  {
+    label: '其他',
+    value: 'other'
   }
 ];

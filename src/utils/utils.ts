@@ -62,6 +62,17 @@ export default class Utils {
     return value.replace(/^\s+|\s+$/gm, '');
   }
 
+  static arrToMap<T = any>(arr: T[], fieldNameArr: string[]) {
+    const map = new Map<string, T>();
+    arr.forEach(item => {
+      const fieldValue = fieldNameArr.reduce((result, fieldName) => result + item[fieldName], '');
+      if (fieldValue) {
+        map.set(fieldValue, item);
+      }
+    });
+    return map;
+  }
+
   static generatePassword(pasLen: number) {
     const pasArr = [
       'a',
