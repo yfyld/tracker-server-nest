@@ -47,6 +47,8 @@ import { XlsxService } from '@/providers/xlsx/xlsx.service';
 import { Permissions } from '@/decotators/permissions.decotators';
 import { Response } from 'express';
 import { Auth } from '@/decotators/user.decorators';
+import { PageTypes } from '@/constants/common.constant';
+import * as moment from 'moment';
 
 @ApiUseTags('元数据')
 @Controller('metadata')
@@ -139,7 +141,7 @@ export class MetadataController {
       'Content-Type': 'application/xlsx',
       'Content-Length': length
     });
-    res.attachment('metadata.xlsx');
+    res.attachment(`元数据 ${moment().format('lll')}.xlsx`);
     stream.pipe(res);
   }
 

@@ -36,6 +36,23 @@ export default class Utils {
     return value.replace(/\s+/g, '');
   }
 
+  static enCodeID(id): string {
+    let sourceString = '431EYZDOWGVJ5AQMSFCU2TBIRPN796XH0KL';
+    let num = parseInt(id) + 100000000000;
+
+    let code = '';
+
+    while (num > 0) {
+      let mod = num % 35;
+
+      num = (num - mod) / 35;
+
+      code = sourceString.substr(mod, 1) + code;
+    }
+
+    return code;
+  }
+
   /**
    * 移除首尾空格
    * @param value: 需要移除首尾空格的字符串
@@ -43,6 +60,17 @@ export default class Utils {
    */
   static trim(value: string): string {
     return value.replace(/^\s+|\s+$/gm, '');
+  }
+
+  static arrToMap<T = any>(arr: T[], fieldNameArr: string[]) {
+    const map = new Map<string, T>();
+    arr.forEach(item => {
+      const fieldValue = fieldNameArr.reduce((result, fieldName) => result + item[fieldName], '');
+      if (fieldValue) {
+        map.set(fieldValue, item);
+      }
+    });
+    return map;
   }
 
   static generatePassword(pasLen: number) {

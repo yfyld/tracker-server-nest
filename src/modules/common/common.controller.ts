@@ -8,11 +8,19 @@ import { existsSync, mkdirSync } from 'fs';
 import { extname } from 'path';
 import { JwtAuthGuard } from '@/guards/auth.guard';
 import { SlsService } from '@/providers/sls/sls.service';
+import { PageTypes } from '@/constants/common.constant';
 
 @ApiUseTags('公共')
 @Controller('common')
 export class CommonController {
   constructor(private readonly slsService: SlsService) {}
+
+  @HttpProcessor.handle('获取页面类型列表')
+  @Get('/pageTypes')
+  // @Permissions(PERMISSION_CODE.METADATA_ADD)
+  getPageTypes() {
+    return PageTypes;
+  }
 
   @ApiOperation({ title: '上传文件', description: '' })
   @HttpProcessor.handle('上传文件')
