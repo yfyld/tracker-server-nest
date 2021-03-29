@@ -39,6 +39,15 @@ export class AppIdService {
     } else {
       where.appId = Like(`%${query.query.fuzzyName}%`);
     }
+
+    const { key, value } = query.sort;
+    const order = {};
+    if (typeof key !== 'string') {
+      order['createdAt'] = 'DESC';
+    } else {
+      order[key] = value;
+    }
+
     const [modules, totalCount] = await this.appIdModel.findAndCount({
       select: ['appId', 'appName', 'business', 'clientType', 'subordinateType'],
       where: [
@@ -49,9 +58,7 @@ export class AppIdService {
       ],
       skip: query.skip,
       take: query.take,
-      order: {
-        createdAt: 'DESC'
-      }
+      order
     });
 
     let data = [['appId', '应用名称', '业务线', '客户端类型', '从属端类型']];
@@ -77,12 +84,20 @@ export class AppIdService {
    * @return Promise<PermissionListItemDto>
    */
   public async getList(query: QueryListQuery<AppIdListDto>): Promise<PageData<AppIdModel>> {
+    const { key, value } = query.sort;
+    const order = {};
+    if (typeof key !== 'string') {
+      order['createdAt'] = 'DESC';
+    } else {
+      order[key] = value;
+    }
     const findParam: FindManyOptions<AppIdModel> = {
       skip: query.skip,
       take: query.take,
       where: {
         isDeleted: 0
-      }
+      },
+      order
     };
     if (isNaN(Number(query.query.fuzzyName))) {
       (findParam as any).where.appName = Like(`%${query.query.fuzzyName}%`);

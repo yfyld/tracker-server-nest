@@ -4,6 +4,12 @@ export class ModuleListReqDto {
   @IsOptional()
   @IsString({ message: '模块名必须为字符串' })
   name?: string;
+
+  @IsOptional()
+  sortKey?: string;
+
+  @IsOptional()
+  sortType?: string;
 }
 
 export class AddModuleDto {

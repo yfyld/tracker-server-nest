@@ -18,10 +18,12 @@ import {
   UpdateChannelDto
 } from './channel.dto';
 
+import * as moment from 'moment';
+
 import { Permissions } from '@/decotators/permissions.decotators';
 import { Auth } from '@/decotators/user.decorators';
 import { PERMISSION_CODE } from '@/constants/permission.contant';
-
+moment.locale('zh-cn');
 @ApiUseTags('channel')
 @Controller('channel')
 @UseGuards(JwtAuthGuard, PermissionsGuard)
@@ -76,7 +78,7 @@ export class ChannelController {
       'Content-Type': 'application/xlsx',
       'Content-Length': length
     });
-    res.attachment('channel.xlsx');
+    res.attachment(`渠道 ${moment().format('lll')}.xlsx`);
     stream.pipe(res);
   }
 }

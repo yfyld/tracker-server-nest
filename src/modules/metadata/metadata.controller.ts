@@ -48,6 +48,7 @@ import { Permissions } from '@/decotators/permissions.decotators';
 import { Response } from 'express';
 import { Auth } from '@/decotators/user.decorators';
 import { PageTypes } from '@/constants/common.constant';
+import * as moment from 'moment';
 
 @ApiUseTags('元数据')
 @Controller('metadata')
@@ -67,7 +68,7 @@ export class MetadataController {
   @Transaction()
   @Permissions(PERMISSION_CODE.METADATA_ADD)
   addMetadataByExcel(@Body() body: AddMetadataByExcelDto, @TransactionManager() manager: EntityManager): Promise<void> {
-    return this.metadataService.addMetadataByExcel(body.projectId, body.path, manager);
+    return this.metadataService.addMetadataByExcel(body.projectId, body.url, manager);
   }
 
   @HttpProcessor.handle('更新元数据')
@@ -140,7 +141,7 @@ export class MetadataController {
       'Content-Type': 'application/xlsx',
       'Content-Length': length
     });
-    res.attachment('metadata.xlsx');
+    res.attachment(`元数据 ${moment().format('lll')}.xlsx`);
     stream.pipe(res);
   }
 

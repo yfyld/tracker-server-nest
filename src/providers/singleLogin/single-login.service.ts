@@ -21,7 +21,8 @@ export class SingleLoginService {
     if (!this.sso) {
       this.sso = require('@91jkys/sso-client');
     }
-    return this.sso.EmployeeService.getEmployeeInfo(sessionId);
+    const user = this.sso.EmployeeService.getEmployeeInfo(sessionId);
+    return user;
   }
 
   public async getCookieName(): Promise<string> {
