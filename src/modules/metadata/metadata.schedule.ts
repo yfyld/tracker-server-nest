@@ -9,25 +9,25 @@ export class MetadataSchedule extends NestSchedule {
     super();
   }
 
-  @Interval(10000)
-  intervalCheckMetadata() {
-    this.metadataService.scheduleIntervalCheckMetadata();
-  }
+  // @Interval(10000)
+  // intervalCheckMetadata() {
+  //   this.metadataService.scheduleIntervalCheckMetadata();
+  // }
 
-  @Interval(50000)
-  intervalFindMetadata() {
-    this.metadataService.scheduleIntervalFindMetadata();
-  }
+  // @Interval(50000)
+  // intervalFindMetadata() {
+  //   this.metadataService.scheduleIntervalFindMetadata();
+  // }
 
-  //@Cron('0 0 2 * *')
-  @Interval(30000)
-  async cronComputedEventAttrRecommend() {
-    this.metadataService.scheduleCronComputedEventAttrRecommend();
-  }
+  // //@Cron('0 0 2 * *')
+  // @Interval(30000)
+  // async cronComputedEventAttrRecommend() {
+  //   this.metadataService.scheduleCronComputedEventAttrRecommend();
+  // }
 
-  //@Cron('0 0 2 * *')
-  @Interval(300000)
-  async cronComputedAllEventAttrRecommend() {
-    this.metadataService.scheduleCronComputedAllEventAttrRecommend();
-  }
+  // //@Cron('0 0 2 * *')
+  // @Interval(300000)
+  // async cronComputedAllEventAttrRecommend() {
+  //   this.metadataService.scheduleCronComputedAllEventAttrRecommend();
+  // }
 }

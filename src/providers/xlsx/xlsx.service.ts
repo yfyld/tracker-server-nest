@@ -46,4 +46,24 @@ export class XlsxService {
       }, {});
     });
   }
+
+  public async parseByBuffer(buffer: Buffer, name: string[], key: string[]): Promise<{ [prop: string]: any }[]> {
+    const data = xlsx.parse(buffer);
+    if (
+      !data ||
+      !data.length ||
+      !data[0].data ||
+      !data[0].data.length ||
+      JSON.stringify(data[0].data[0]) !== JSON.stringify(name)
+    ) {
+      throw 'excel 格式不对';
+    }
+    const sheetData: string[][] = data[0].data;
+    return sheetData.slice(1).map(item => {
+      return key.reduce((total, val, index) => {
+        total[val] = item[index];
+        return total;
+      }, {});
+    });
+  }
 }

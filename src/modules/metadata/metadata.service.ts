@@ -321,9 +321,26 @@ export class MetadataService {
     return;
   }
 
-  public async addMetadataByExcel(projectId: number, pathStr: string, manager: EntityManager): Promise<void> {
-    const datas = await this.xlsxervice.parseByPath(
-      path.join(__dirname, '../../', pathStr),
+  private async getHttpBuffer(url: string): Promise<Buffer> {
+    const request = require('request');
+    const res = await request.get(url);
+    const response = [];
+    return new Promise((resolve, reject) => {
+      res.on('data', function(chunk) {
+        response.push(chunk);
+      });
+
+      res.on('end', function() {
+        resolve(Buffer.concat(response));
+      });
+    });
+  }
+
+  public async addMetadataByExcel(projectId: number, url: string, manager: EntityManager): Promise<void> {
+    const res = await this.getHttpBuffer(url);
+
+    const datas = await this.xlsxervice.parseByBuffer(
+      res,
       ['名称', 'code', '类型', '启用', '标签', '备注'],
       ['name', 'code', 'type', 'status', 'newTags', 'description']
     );

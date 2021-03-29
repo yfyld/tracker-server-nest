@@ -66,7 +66,7 @@ export class MetadataController {
   @Transaction()
   @Permissions(PERMISSION_CODE.METADATA_ADD)
   addMetadataByExcel(@Body() body: AddMetadataByExcelDto, @TransactionManager() manager: EntityManager): Promise<void> {
-    return this.metadataService.addMetadataByExcel(body.projectId, body.path, manager);
+    return this.metadataService.addMetadataByExcel(body.projectId, body.url, manager);
   }
 
   @HttpProcessor.handle('更新元数据')
