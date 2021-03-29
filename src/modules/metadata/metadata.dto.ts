@@ -36,6 +36,13 @@ export class AddMetadataDto {
 
   @IsNumber()
   projectId: number;
+
+  @IsString()
+  @IsOptional()
+  moduleName: string;
+
+  @IsString()
+  pageType: string;
 }
 
 export class AddMetadataByExcelDto {
@@ -74,7 +81,8 @@ export class UpdateMetadataDto {
   tags?: number[];
   @IsOptional()
   newTags?: string[];
-
+  @IsNumber()
+  module: number;
   @IsNumber()
   @IsOptional()
   log?: number;
@@ -161,6 +169,10 @@ export class QueryMetadataListDto {
   tags: string;
   @IsString()
   log: string;
+  @IsString()
+  pageTypes: string;
+  @IsString()
+  modules: string;
 }
 
 export class AddMetadataTagDto {
