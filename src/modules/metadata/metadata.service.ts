@@ -33,9 +33,10 @@ import { XlsxService } from '@/providers/xlsx/xlsx.service';
 import * as path from 'path';
 
 import { Readable } from 'typeorm/platform/PlatformTools';
-import { PageTypes } from '@/constants/common.constant';
+
 import { ModuleService } from '../module/module.service';
 import Utils from '@/utils/utils';
+import { ModuleModel } from '../module/module.model';
 
 @Injectable()
 export class MetadataService {
@@ -49,12 +50,13 @@ export class MetadataService {
     @InjectRepository(ProjectModel)
     private readonly projectModel: Repository<ProjectModel>,
 
-    @InjectRepository(FieldModel)
-    private readonly fieldModel: Repository<FieldModel>,
+    @InjectRepository(ModuleModel)
+    private readonly moduleModel: Repository<ModuleModel>,
+
+    private readonly httpService: HttpService,
     private readonly slsService: SlsService,
     private readonly redisService: RedisService,
-    private readonly xlsxervice: XlsxService,
-    private readonly modelService: ModuleService
+    private readonly xlsxervice: XlsxService
   ) {}
 
   /**
@@ -68,6 +70,27 @@ export class MetadataService {
   public async getMetadataByCode(code: string, projectId: number): Promise<MetadataModel> {
     let metadata = await this.metadataModel.findOne({ code, projectId });
     return metadata;
+  }
+
+  private getActionTypeName(type: string) {
+    switch (type) {
+      case '页面':
+        return 1;
+
+      case '页面曝光':
+        return 1;
+      case '事件':
+        return 0;
+
+      case '区域曝光':
+        return 2;
+
+      case '点击':
+        return 0;
+
+      default:
+        break;
+    }
   }
 
   private async metadataListParam(query: QueryListQuery<QueryMetadataListDto>) {
@@ -158,7 +181,7 @@ export class MetadataService {
     }
 
     if (modules) {
-      condition += ' and metadata.module in (:modules)';
+      condition += ' and metadata.moduleId in (:modules)';
       params.modules = modules.split(',');
     }
 
@@ -207,6 +230,12 @@ export class MetadataService {
   ): Promise<PageData<MetadataModel>> {
     const { condition, params, skip, take, orderBy } = await this.metadataListParam(query);
 
+    let modules = await this.moduleModel.find();
+    let moduleByIdMap = modules.reduce((total, item) => {
+      total[item.id] = item.name;
+      return total;
+    }, {});
+
     let [metadata, totalCount] = await this.metadataModel
       .createQueryBuilder('metadata')
       .leftJoinAndSelect('metadata.tags', 'tag')
@@ -216,9 +245,11 @@ export class MetadataService {
       .orderBy(orderBy)
       .getManyAndCount();
 
-    //是否显示日志数
-    if (!(user as any).permissions.includes('METADATA_SHOW_LOG')) {
-      metadata = metadata.map(item => {
+    metadata = metadata.map(item => {
+      (item as any).module = moduleByIdMap[item.moduleId] || null;
+
+      //是否显示日志数
+      if (!(user as any).permissions.includes('METADATA_SHOW_LOG')) {
         if (item.log) {
           (item as any).log = '**' + item.log.toString().substr(-2, 2);
         }
@@ -237,9 +268,9 @@ export class MetadataService {
         if (item.recentLogByH5) {
           (item as any).recentLogByH5 = '**' + item.recentLogByH5.toString().substr(-2, 2);
         }
-        return item;
-      });
-    }
+      }
+      return item;
+    });
 
     return {
       totalCount,
@@ -266,6 +297,10 @@ export class MetadataService {
     //   return { ...md, module: moduleMap.get(md.module.toString()).name };
     // });
 
+    const pageTypes = await this.httpService
+      .get<{ label: string; value: string }[]>('https://static.91jkys.com/dms/defa6d786f0531ab6fedb525705b53de.json')
+      .toPromise();
+
     let data = [['名称', 'code', '类型', '启用', '标签', '模块', '页面类型', '备注']];
     data = data.concat(
       metadata.map(item => {
@@ -275,8 +310,8 @@ export class MetadataService {
           item.type === 1 ? '页面' : '事件',
           item.status === 1 ? '是' : '否',
           item.tags.map(tag => tag.name).join(','),
-          item.module.toString(),
-          PageTypes.find(i => i.value === item.pageType) && PageTypes.find(i => i.value === item.pageType).label,
+          item.moduleId.toString(),
+          pageTypes.data.find(i => i.value === item.pageType).label,
           item.description
         ];
       })
@@ -284,6 +319,14 @@ export class MetadataService {
 
     const result = await this.xlsxervice.exportExcel(data);
     return result;
+  }
+
+  public async isMetaDataAssocited(moduleId: number) {
+    const metadata = await this.metadataModel
+      .createQueryBuilder('metadata')
+      .where('moduleId = :moduleId', { moduleId })
+      .getOne();
+    return metadata;
   }
 
   /**
@@ -303,6 +346,7 @@ export class MetadataService {
     if (oldMetadata && !oldMetadata.isDeleted) {
       throw new HttpBadRequestError(`元数据${code}重复`);
     }
+
     // 获取已有的标签
     let metadataTags = [];
     if (tags && tags.length) {
@@ -363,7 +407,7 @@ export class MetadataService {
     const datas = await this.xlsxervice.parseByBuffer(
       res,
       ['名称', 'code', '类型', '启用', '标签', '模块', '页面类型', '备注'],
-      ['name', 'code', 'type', 'status', 'newTags', 'module', 'pageType', 'description']
+      ['name', 'code', 'type', 'status', 'newTags', 'moduleName', 'pageTypeName', 'description']
     );
 
     const metadatas = datas.filter(
@@ -373,8 +417,8 @@ export class MetadataService {
         item.type ||
         item.status ||
         item.newTags ||
-        item.module ||
-        item.pageType ||
+        item.moduleName ||
+        item.pageTypeName ||
         item.description
     );
 
@@ -399,22 +443,38 @@ export class MetadataService {
 
     allMetadataTags.push(...newMetadataTags);
 
+    //处理模块
+
+    const moduleNames = [...new Set(datas.filter(item => !!item.moduleName).map(item => item.moduleName))] as string[];
+    const modules = await this.moduleModel.find({ name: In(moduleNames) });
+
+    if (modules.length !== moduleNames.length) {
+      throw new Error('模块不能未空');
+    }
+
+    //处理页面类型
+    const pageTypes = await this.httpService
+      .get<{ label: string; value: string }[]>('https://static.91jkys.com/dms/defa6d786f0531ab6fedb525705b53de.json')
+      .toPromise();
+
     for (let key in metadatas) {
       const item = datas[key];
       if (!item.name || !item.code || !item.type) {
         throw `第${key}行格式错误`;
       }
-      const pageType =
-        PageTypes.find(i => i.value === item.pageType) && PageTypes.find(i => i.value === item.pageType).label;
+
+      const pageType = pageTypes.data.find(i => i.label == item.pageTypeName);
+
+      const curModule = modules.find(val => val.name == item.moduleName);
       const newMetadata = {
         projectId,
         name: item.name,
         code: item.code,
         url: item.url,
-        type: item.type === '页面' ? 1 : 2,
+        type: this.getActionTypeName(item.type),
         status: item.status === '是' ? 1 : 0,
-        module: item.module,
-        pageType,
+        moduleId: curModule ? curModule.id : null,
+        pageType: pageType ? pageType.value : null,
         description: item.description
       };
 
@@ -442,7 +502,7 @@ export class MetadataService {
         oldMetadata.type = newMetadata.type;
         oldMetadata.status = newMetadata.status;
         oldMetadata.description = newMetadata.description;
-        oldMetadata.module = newMetadata.module;
+        oldMetadata.moduleId = newMetadata.moduleId;
         oldMetadata.pageType = newMetadata.pageType;
         oldMetadata.tags = oldMetadata.tags || [];
         oldMetadata.tags.push(...metadataTags);
@@ -742,7 +802,7 @@ export class MetadataService {
             type: /page/.test(item.trackId) ? 1 : 2,
             status: 0,
             moduleName: '',
-            pageType: PageTypes[0].value
+            pageType: null
           });
         });
     }
