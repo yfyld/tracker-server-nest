@@ -10,7 +10,7 @@ export class MetadataSchedule extends NestSchedule {
     super();
   }
 
-  @Interval(1000)
+  @Interval(100000)
   intervalCheckMetadata() {
     this.enumService.scheduleIntervalUpdateEnum();
   }

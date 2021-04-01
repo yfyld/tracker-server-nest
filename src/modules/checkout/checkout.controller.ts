@@ -14,7 +14,8 @@ import { Auth } from '@/decotators/user.decorators';
 import { PERMISSION_CODE } from '@/constants/permission.contant';
 import { AddCheckoutLogDto, UpdateCheckoutLogDto } from './checkout.dto';
 import { UserModel } from '../user/user.model';
-import { Cookie } from '@/../dist/decotators/cookie.decorators';
+import { Cookie } from '@/decotators/cookie.decorators';
+
 moment.locale('zh-cn');
 @Controller('checkout')
 @UseGuards(JwtAuthGuard, PermissionsGuard)
