@@ -243,3 +243,13 @@ export function getProjectFilter(projectId: number, associationProjectId: number
   }
   throw '当前分析终数据不存在或无权限';
 }
+
+export function clearNullStr<T>(obj: T & Object): T {
+  let newObj = {} as T;
+  for (let i in obj) {
+    if (obj[i] !== 'null') {
+      newObj[i] = obj[i];
+    }
+  }
+  return newObj;
+}

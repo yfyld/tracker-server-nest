@@ -1,3 +1,5 @@
+import { CheckoutModule } from './../checkout/checkout.module';
+import { ChannelModule } from './../channel/channel.module';
 import { AnalyseFunnelService } from './analyse.funnel.service';
 import { AnalyseEventService } from './analyse.event.service';
 import { AnalysePathService } from './analyse.path.service';
@@ -10,7 +12,7 @@ import { AnalyseController } from './analyse.controller';
 import { AnalyseService } from './analyse.service';
 
 @Module({
-  imports: [MetadataModule, ProjectModule],
+  imports: [MetadataModule, ProjectModule, ChannelModule, CheckoutModule],
   controllers: [AnalyseController],
   providers: [AnalyseService, AnalysePathService, AnalyseEventService, AnalyseFunnelService],
   exports: [AnalyseService, AnalysePathService, AnalyseEventService, AnalyseFunnelService]

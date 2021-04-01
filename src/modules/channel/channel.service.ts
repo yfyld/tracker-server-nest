@@ -1,8 +1,9 @@
+import { Length } from 'class-validator';
 import { AddChannelDto } from './channel.dto';
 
 // import { MetadataModel, FieldModel, MetadataTagModel } from './module.model';
 import { Injectable, HttpService } from '@nestjs/common';
-import { Repository, Like } from 'typeorm';
+import { Repository, Like, In } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 
 import { QueryListQuery, PageData } from '@/interfaces/request.interface';
@@ -24,7 +25,7 @@ export class ChannelService {
     private readonly xlsxervice: XlsxService
   ) {}
 
-  private async channelListParam(query: QueryListQuery<ChannelListReqDto>) {
+  private channelListParam(query: QueryListQuery<ChannelListReqDto>) {
     let {
       skip,
       take,
@@ -77,6 +78,16 @@ export class ChannelService {
   }
 
   /**
+   * getChannelByCodes
+   */
+  public async getChannelByCodes(channelIds) {
+    if (!channelIds.length) {
+      return [];
+    }
+    return await this.channelModel.find({ channelId: In(channelIds) });
+  }
+
+  /**
    *获取module List
    *
    * @memberof ChannelService
@@ -86,7 +97,7 @@ export class ChannelService {
     // currentUser: UserModel,
     query: QueryListQuery<ChannelListReqDto>
   ): Promise<PageData<ChannelListItemDto>> {
-    const { condition, params, skip, take } = await this.channelListParam(query);
+    const { condition, params, skip, take } = this.channelListParam(query);
     const { key, value } = query.sort;
     const order = {};
     if (typeof key !== 'string') {
@@ -94,7 +105,7 @@ export class ChannelService {
     } else {
       order[key] = value;
     }
-    let [modules, totalCount] = await this.channelModel
+    let [channel, totalCount] = await this.channelModel
       .createQueryBuilder('channel')
       .where(condition, params)
       .skip(query.skip)
@@ -102,7 +113,7 @@ export class ChannelService {
       .orderBy(order)
       .getManyAndCount();
 
-    // const [modules, totalCount] = await this.channelModel.findAndCount({
+    // const [channel, totalCount] = await this.channelModel.findAndCount({
     //   select: [
     //     'id',
     //     'name',
@@ -136,7 +147,7 @@ export class ChannelService {
 
     return {
       totalCount,
-      list: modules
+      list: channel
     };
   }
 
@@ -211,7 +222,7 @@ export class ChannelService {
   }
 
   public async exportExcel(query: QueryListQuery<QueryChannelListDto>): Promise<[Readable, number]> {
-    const { condition, params, skip, take } = await this.channelListParam(query);
+    const { condition, params, skip, take } = this.channelListParam(query);
     const { key, value } = query.sort;
     const order = {};
     if (typeof key !== 'string') {

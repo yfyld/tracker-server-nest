@@ -16,7 +16,8 @@ import {
   QueryFunnelAnalyseDataDto,
   QueryPathAnalyseDataDto,
   QueryCustomAnalyseDataDto,
-  QueryUserTimelineAnalyseDataDto
+  QueryUserTimelineAnalyseDataDto,
+  QueryCheckoutAnalyseDataDto
 } from './analyse.dto';
 import { Permissions } from '@/decotators/permissions.decotators';
 @ApiUseTags('分析')
@@ -66,5 +67,15 @@ export class AnalyseController {
       throw new Error('uid,deviceId,ip不能都为空');
     }
     return this.analyseService.userTimeAnalyse(body);
+  }
+
+  @HttpProcessor.handle('验证数据')
+  @Post('/checkout')
+  @Permissions(PERMISSION_CODE.SEARCH_USER_TIMELINE) //todo
+  checkoutAnalyse(@Body() body: QueryCheckoutAnalyseDataDto): Promise<unknown> {
+    if (!body.uid && !body.deviceId && !body.ip && !body.custom && !body.slsquery) {
+      throw new Error('uid,deviceId,ip不能都为空');
+    }
+    return this.analyseService.checkoutAnalyse(body);
   }
 }

@@ -1,3 +1,5 @@
+import { CheckoutService } from './../checkout/checkout.service';
+import { ChannelService } from './../channel/channel.service';
 import {
   IFunnelQueryDataItem,
   IFunnelData,
@@ -16,9 +18,10 @@ import {
   QueryFunnelAnalyseDataDto,
   QueryPathAnalyseDataDto,
   QueryCustomAnalyseDataDto,
-  QueryUserTimelineAnalyseDataDto
+  QueryUserTimelineAnalyseDataDto,
+  QueryCheckoutAnalyseDataDto
 } from './analyse.dto';
-import { filterToQuery } from './analyse.util';
+import { clearNullStr, filterToQuery } from './analyse.util';
 import { getDynamicTime } from '@/utils/date';
 import { MetadataService } from '../metadata/metadata.service';
 import { ProjectService } from '../project/project.service';
@@ -39,6 +42,8 @@ export class AnalyseService {
   constructor(
     private readonly slsService: SlsService,
     private readonly metadataService: MetadataService,
+    private readonly checkoutService: CheckoutService,
+    private readonly channelService: ChannelService,
     private readonly projectService: ProjectService
   ) {}
   /**
@@ -206,5 +211,196 @@ export class AnalyseService {
     }
 
     return result;
+  }
+
+  async checkoutAnalyse(param: QueryCheckoutAnalyseDataDto) {
+    if (param.uid || param.deviceId) {
+      return await this.getCheckoutData(param);
+    } else {
+      const timeParam = getDynamicTime(param.dateStart, param.dateEnd, param.dateType);
+
+      const deviceIds = await this.slsService.query<{ deviceId: string }>({
+        query: `${[
+          param.ip && 'ip:' + param.ip,
+          param.appId && 'appId:' + param.appId,
+          param.sessionId && 'sessionId:' + param.sessionId,
+          param.channel && 'channel:' + param.channel,
+          param.custom && 'custom:' + param.custom,
+          param.slsquery && param.slsquery
+        ]
+          .filter(item => !!item)
+          .join(' and ')}| select deviceId group by deviceId`,
+        from: timeParam.dateStart,
+        to: timeParam.dateEnd
+      });
+      if (deviceIds.length !== 1) {
+        throw new Error('超过了1个用户');
+      } else {
+        param.deviceId = deviceIds[0].deviceId;
+      }
+      return await this.getCheckoutData(param);
+    }
+  }
+
+  async getCheckoutData(param: QueryCheckoutAnalyseDataDto) {
+    const timeParam = getDynamicTime(param.dateStart, param.dateEnd, param.dateType);
+    let query = `${[
+      param.ip && 'ip:' + param.ip,
+      param.appId && 'appId:' + param.appId,
+      param.sessionId && 'sessionId:' + param.sessionId,
+      param.channel && 'channel:' + param.channel,
+      param.custom && 'custom:' + param.custom,
+      param.slsquery && param.slsquery,
+      param.deviceId && param.deviceId,
+      param.uid && param.uid,
+      param.projectId && param.projectId
+    ]
+      .filter(item => !!item)
+      .join(' and ')}| select ${[
+      'id',
+      // 'debug',
+      'actionType',
+      'trackId',
+      'startTime',
+      'durationTime',
+      'trackTime',
+      'libVersion',
+      'libType',
+      'version',
+      // 'appVersion',
+      'url',
+      'title',
+      'eventName',
+      'domPath',
+      'netType',
+      'clientWidth',
+      'clientHeight',
+      'radio',
+      'engineVersion',
+      'os',
+      'osVersion',
+      'deviceType',
+      'browser',
+      'browserVersion',
+      'engine',
+      'deviceManufacturer',
+      'deviceModel',
+      'deviceId',
+      'product',
+      'deviceBrand',
+      'supportedAbi',
+      'androidSdkInt',
+      'isPhysicalDevice',
+      'custom',
+      'uid',
+      'isLogin',
+      // 'contentId',
+      // 'patientId',
+      // 'doctorId',
+      // 'skuId',
+      // 'prescriptionId',
+      // 'storeId',
+      // 'inquiryId',
+      // 'orderId',
+      // 'activityId',
+      // 'bizId',
+      // 'masterId',
+      'pageId',
+      'referrerId',
+      'referrerUrl',
+      // 'sourceEventId',
+      'channel',
+      // 'sessionId',
+      // 'marketid',
+      // 'appId',
+      'projectId'
+      // 'appType',
+      // 'seKeywords'
+    ].join(',')} order by trackTime desc limit 1000`;
+
+    const data = await this.slsService.query<{
+      trackId: string;
+      trackTime: number;
+      durationTime: number;
+      pageId: string;
+      actionType: string;
+      trackName: string;
+      pageName: string;
+      masterId?: string;
+      channel?: string;
+      referrerId?: string;
+      sourceEventId?: string;
+      id: string;
+    }>({
+      query,
+      from: timeParam.dateStart,
+      to: timeParam.dateEnd
+    });
+
+    if (!data.length) {
+      return [];
+    }
+
+    let trackIdMap = {};
+    let durationMasterIdMap = {};
+    let channelMap = {};
+    let checkoutMap = {};
+
+    const newdata = data
+      .filter(item => item.trackId !== 'null')
+      .map(item => {
+        item = clearNullStr(item);
+        if (item.trackId) {
+          trackIdMap[item.trackId] = { code: item.trackId, name: '', actionType: '', checkoutStatus: 1 };
+        }
+        if (item.referrerId) {
+          trackIdMap[item.referrerId] = { code: item.referrerId, name: '', actionType: '', checkoutStatus: 1 };
+        }
+        if (item.sourceEventId) {
+          trackIdMap[item.sourceEventId] = { code: item.sourceEventId, name: '', actionType: '', checkoutStatus: 1 };
+        }
+        if (item.pageId) {
+          trackIdMap[item.pageId] = { code: item.trackId, name: '', actionType: 'PAGE' };
+        }
+        if (item.actionType === 'DURATION') {
+          durationMasterIdMap[item.masterId] = item;
+        } else {
+          checkoutMap[item.id] = { trackId: item.trackId, status: 1, logId: item.id };
+        }
+        if (item.channel) {
+          channelMap[item.channel] = { code: item.channel, name: '' };
+        }
+
+        return item;
+      })
+      .filter(item => item.actionType !== 'DURATION');
+
+    const metadatas = await this.metadataService.getMetadatasByCodes(Object.keys(trackIdMap));
+    metadatas.forEach(item => {
+      trackIdMap[item.code] = item;
+    });
+
+    const checkoutLogs = await this.checkoutService.getCheckoutLogByLogIds(Object.keys(checkoutMap));
+    checkoutLogs.forEach(item => {
+      checkoutMap[item.id] = item;
+    });
+
+    const channels = await this.channelService.getChannelByCodes(Object.keys(channelMap));
+    channels.forEach(item => {
+      channelMap[item.channelId] = item;
+    });
+    const list = newdata.map(item => {
+      return {
+        ...item,
+        channelInfo: channelMap[item.channel] || {},
+        trackIdInfo: trackIdMap[item.trackId] || {},
+        pageIdInfo: trackIdMap[item.pageId] || {},
+        referrerInfo: trackIdMap[item.referrerId] || {},
+        sourceEventInfo: trackIdMap[item.sourceEventId] || {},
+        durationInfo: durationMasterIdMap[item.id] || {},
+        checkoutInfo: checkoutMap[item.id] || {}
+      };
+    });
+    return { list };
   }
 }

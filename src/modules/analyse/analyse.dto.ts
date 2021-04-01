@@ -72,3 +72,19 @@ export class QueryUserTimelineAnalyseDataDto {
   ip?: string;
   custom?: string;
 }
+
+export class QueryCheckoutAnalyseDataDto {
+  projectId: number;
+  dateStart: number;
+  dateEnd: number;
+  dateType: string;
+  uid?: string;
+  deviceId?: string;
+  mobile?: string;
+  ip?: string;
+  custom?: string;
+  appId?: string;
+  slsquery?: string;
+  channel?: string;
+  sessionId?: string;
+}

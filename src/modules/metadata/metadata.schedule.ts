@@ -1,3 +1,4 @@
+import { EnumService } from './enum.service';
 import { ALARM_INTERVAL } from '../../app.config';
 import { MetadataService } from './metadata.service';
 import { Injectable } from '@nestjs/common';
@@ -5,8 +6,13 @@ import { Cron, Interval, Timeout, NestSchedule } from 'nest-schedule';
 
 @Injectable()
 export class MetadataSchedule extends NestSchedule {
-  constructor(private readonly metadataService: MetadataService) {
+  constructor(private readonly metadataService: MetadataService, private readonly enumService: EnumService) {
     super();
+  }
+
+  @Interval(1000)
+  intervalCheckMetadata() {
+    this.enumService.scheduleIntervalUpdateEnum();
   }
 
   // @Interval(10000)

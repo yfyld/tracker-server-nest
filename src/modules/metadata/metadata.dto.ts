@@ -22,7 +22,9 @@ export class AddMetadataDto {
 
   @IsOptional()
   url?: string;
-
+  @IsOptional()
+  @IsNumber()
+  checkoutStatus?: number;
   @IsOptional()
   operatorType?: number;
 
@@ -37,9 +39,8 @@ export class AddMetadataDto {
   @IsNumber()
   projectId: number;
 
-  @IsString()
-  @IsOptional()
-  moduleName: string;
+  @IsNumber()
+  moduleId: number;
 
   @IsString()
   pageType: string;
@@ -78,11 +79,14 @@ export class UpdateMetadataDto {
   @IsOptional()
   status?: number;
   @IsOptional()
+  @IsNumber()
+  checkoutStatus?: number;
+  @IsOptional()
   tags?: number[];
   @IsOptional()
   newTags?: string[];
   @IsNumber()
-  module: number;
+  moduleId: number;
   @IsNumber()
   @IsOptional()
   log?: number;
@@ -109,6 +113,10 @@ export class UpdateMetadataBatchDto {
   status?: number;
 
   @IsOptional()
+  @IsNumber()
+  checkoutStatus?: number;
+
+  @IsOptional()
   tags?: string[];
 
   @IsNumber()
@@ -130,6 +138,9 @@ export class MetadataDto {
   level: number;
   @ApiModelProperty()
   status: number;
+  @IsOptional()
+  @IsNumber()
+  checkoutStatus?: number;
   @ApiModelProperty()
   message: string;
   @ApiModelProperty()
@@ -158,6 +169,9 @@ export class QueryMetadataListDto {
   @IsOptional()
   @IsNumber()
   status: number;
+  @IsOptional()
+  @IsNumber()
+  checkoutStatus?: number;
   @IsOptional()
   @IsString()
   name: string;

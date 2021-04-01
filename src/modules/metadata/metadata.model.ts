@@ -63,6 +63,9 @@ export class MetadataModel {
   @Column({ default: 1 })
   status: number;
 
+  @Column({ default: 1 })
+  checkoutStatus: number;
+
   @Column({ default: false })
   isDeleted: boolean;
 

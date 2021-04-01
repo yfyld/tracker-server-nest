@@ -98,7 +98,7 @@ export class MetadataService {
       skip,
       take,
       sort: { key: sortKey, value: sortValue },
-      query: { projectId, status, type, name, code, tags, log, operatorType, pageTypes, modules }
+      query: { projectId, status, checkoutStatus, type, name, code, tags, log, operatorType, pageTypes, modules }
     } = query;
 
     // 排序
@@ -158,6 +158,11 @@ export class MetadataService {
     if (typeof status !== 'undefined') {
       condition += ' and metadata.status = :status';
       params.status = status;
+    }
+
+    if (typeof checkoutStatus !== 'undefined') {
+      condition += ' and metadata.checkoutStatus = :checkoutStatus';
+      params.checkoutStatus = checkoutStatus;
     }
 
     if (type) {
@@ -534,19 +539,21 @@ export class MetadataService {
   public async updateMetadata(body: UpdateMetadataDto): Promise<void> {
     let { id, tags, projectId } = body;
     let metadata = await this.metadataModel.findOne(id);
-    // 获取已有的标签
-    const metadataTags = await this.metadataTagModel.findByIds(tags);
+
     // 处理新增的标签
     if (body.newTags && body.newTags.length) {
+      // 获取已有的标签
+      const metadataTags = await this.metadataTagModel.findByIds(tags);
       const newMetadataTagModels = [];
       body.newTags.forEach(item => {
         newMetadataTagModels.push(this.metadataTagModel.create({ name: item, project: { id: projectId }, projectId }));
       });
       const newMetadataTags = await this.metadataTagModel.save(newMetadataTagModels);
       metadataTags.push(...newMetadataTags);
+      metadata.tags = [...metadataTags];
     }
-    metadata = { ...metadata, ...body, tags: [] };
-    metadata.tags.push(...metadataTags);
+    metadata = { ...metadata, ...body, tags: metadata.tags };
+
     await this.metadataModel.save(metadata);
     return;
   }
@@ -633,6 +640,21 @@ export class MetadataService {
           } else {
             await manager.remove(MetadataModel, metadata);
           }
+        }
+
+        break;
+
+      case 'CHECKOUT':
+        for (const metadata of metadatas) {
+          metadata.checkoutStatus = 2;
+          await manager.save(MetadataModel, metadata);
+        }
+
+        break;
+      case 'FAIL_CHECKOUT':
+        for (const metadata of metadatas) {
+          metadata.checkoutStatus = 0;
+          await manager.save(MetadataModel, metadata);
         }
 
         break;
@@ -801,7 +823,7 @@ export class MetadataService {
             newTags: ['未定义'],
             type: /page/.test(item.trackId) ? 1 : 2,
             status: 0,
-            moduleName: '',
+            moduleId: null,
             pageType: null
           });
         });
