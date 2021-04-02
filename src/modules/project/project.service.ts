@@ -59,6 +59,15 @@ export class ProjectService {
     return project;
   }
 
+  public async getProjectsByIds(projectIds: number[]): Promise<ProjectModel[]> {
+    if (!projectIds.length) {
+      return [];
+    }
+    const projects = await this.projectModel.find({ id: In(projectIds) });
+
+    return projects;
+  }
+
   public async getProjectInfo(projectId: number): Promise<ProjectDto> {
     const project = await this.projectModel.findOne({
       where: { id: projectId },

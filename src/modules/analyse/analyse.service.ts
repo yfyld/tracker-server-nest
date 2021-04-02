@@ -27,6 +27,7 @@ import { MetadataService } from '../metadata/metadata.service';
 import { ProjectService } from '../project/project.service';
 
 import * as sk from '@91jkys/service-kit';
+import { SlsF2eService } from '@/providers/sls/sls.f2e.service';
 
 async function test() {
   try {
@@ -41,6 +42,8 @@ test();
 export class AnalyseService {
   constructor(
     private readonly slsService: SlsService,
+    private readonly slsF2eService: SlsF2eService,
+
     private readonly metadataService: MetadataService,
     private readonly checkoutService: CheckoutService,
     private readonly channelService: ChannelService,
@@ -124,7 +127,7 @@ export class AnalyseService {
     const timeParam = getDynamicTime(param.dateStart, param.dateEnd, param.dateType);
     let query = `projectId:${param.projectId} ${param.deviceId ? 'and deviceId:' + param.deviceId : ''}  ${
       param.ip ? 'and ip:' + param.ip : ''
-    } ${param.custom ? 'and custom:' + param.custom : ''} ${
+    } ${param.custom ? 'and custom:' + param.custom : ''} ${param.id ? 'and id:' + param.id : ''} ${
       param.uid ? 'and uid:' + param.uid : ''
       // tslint:disable-next-line: max-line-length
     }| select url,os,version,appid,browser,browserVersion, deviceId,trackId,trackTime,durationTime,pageId,actionType,deviceModel,ip,ua,title,custom order by trackTime asc limit 1000`;
@@ -189,7 +192,7 @@ export class AnalyseService {
     } else {
       const timeParam = getDynamicTime(param.dateStart, param.dateEnd, param.dateType);
 
-      const deviceIds = await this.slsService.query<{ deviceId: string }>({
+      const deviceIds = await this.slsF2eService.query<{ deviceId: string }>({
         query: `projectId:${param.projectId} ${param.ip ? 'and ip:' + param.ip : ''} ${
           param.custom ? 'and custom:' + param.custom : ''
         } | select deviceId group by deviceId`,
@@ -312,7 +315,7 @@ export class AnalyseService {
       'channel',
       // 'sessionId',
       // 'marketid',
-      // 'appId',
+      'appId',
       'projectId'
       // 'appType',
       // 'seKeywords'
@@ -331,6 +334,7 @@ export class AnalyseService {
       referrerId?: string;
       sourceEventId?: string;
       id: string;
+      projectId: string;
     }>({
       query,
       from: timeParam.dateStart,
@@ -345,10 +349,17 @@ export class AnalyseService {
     let durationMasterIdMap = {};
     let channelMap = {};
     let checkoutMap = {};
+    let projectMap = {};
 
     const newdata = data
-      .filter(item => item.trackId !== 'null')
+
       .map(item => {
+        if (item.trackId === 'null') {
+          if (item.actionType === 'DURATION') {
+            durationMasterIdMap[item.masterId] = item;
+          }
+          return item;
+        }
         item = clearNullStr(item);
         if (item.trackId) {
           trackIdMap[item.trackId] = { code: item.trackId, name: '', actionType: '', checkoutStatus: 1 };
@@ -362,22 +373,28 @@ export class AnalyseService {
         if (item.pageId) {
           trackIdMap[item.pageId] = { code: item.trackId, name: '', actionType: 'PAGE' };
         }
-        if (item.actionType === 'DURATION') {
-          durationMasterIdMap[item.masterId] = item;
-        } else {
-          checkoutMap[item.id] = { trackId: item.trackId, status: 1, logId: item.id };
-        }
+
+        checkoutMap[item.id] = { trackId: item.trackId, status: 1, logId: item.id };
+
         if (item.channel) {
           channelMap[item.channel] = { code: item.channel, name: '' };
+        }
+        if (item.projectId) {
+          projectMap[item.projectId] = { id: item.projectId, name: '' };
         }
 
         return item;
       })
-      .filter(item => item.actionType !== 'DURATION');
+      .filter(item => item.actionType !== 'DURATION' && item.trackId !== 'null');
 
     const metadatas = await this.metadataService.getMetadatasByCodes(Object.keys(trackIdMap));
     metadatas.forEach(item => {
       trackIdMap[item.code] = item;
+    });
+
+    const projects = await this.projectService.getProjectsByIds(Object.keys(projectMap).map(item => Number(item)));
+    projects.forEach(item => {
+      projectMap[item.id] = item;
     });
 
     const checkoutLogs = await this.checkoutService.getCheckoutLogByLogIds(Object.keys(checkoutMap));
@@ -398,7 +415,8 @@ export class AnalyseService {
         referrerInfo: trackIdMap[item.referrerId] || {},
         sourceEventInfo: trackIdMap[item.sourceEventId] || {},
         durationInfo: durationMasterIdMap[item.id] || {},
-        checkoutInfo: checkoutMap[item.id] || {}
+        checkoutInfo: checkoutMap[item.id] || {},
+        projectInfo: projectMap[Number(item.projectId)] || {}
       };
     });
     return { list };

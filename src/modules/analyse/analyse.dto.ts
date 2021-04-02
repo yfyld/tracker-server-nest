@@ -71,6 +71,7 @@ export class QueryUserTimelineAnalyseDataDto {
   mobile?: string;
   ip?: string;
   custom?: string;
+  id?: string;
 }
 
 export class QueryCheckoutAnalyseDataDto {

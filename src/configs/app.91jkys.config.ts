@@ -71,3 +71,8 @@ export const SLS_CONFIG = {
 export const SLS_STORE_CONFIG = {
   ...opsConfig.slsLogStroe
 };
+
+export const F2E_LOG_CONFIG = {
+  projectName: 'k8s-log-custom-ks-pro',
+  logStoreName: 'frontlo-collection-telescope-debug'
+};
