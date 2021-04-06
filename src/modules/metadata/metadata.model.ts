@@ -97,12 +97,6 @@ export class MetadataModel {
   @Column()
   projectId: number;
 
-  @CreateDateColumn()
-  createdAt: Date;
-
-  @UpdateDateColumn()
-  updatedAt: Date;
-
   @ManyToMany(type => MetadataTagModel)
   @JoinTable()
   tags: MetadataTagModel[];
@@ -112,4 +106,9 @@ export class MetadataModel {
 
   @Column()
   moduleId: number;
+  @CreateDateColumn()
+  createdAt: Date;
+
+  @UpdateDateColumn()
+  updatedAt: Date;
 }

@@ -373,9 +373,14 @@ export class MetadataService {
     }
 
     if (oldMetadata) {
+      if (oldMetadata.projectId !== projectId) {
+        throw `${code} 已经在Id为${oldMetadata.projectId}的项目中添加了`;
+      }
       oldMetadata.isDeleted = false;
       oldMetadata.name = body.name;
       oldMetadata.type = body.type;
+      oldMetadata.pageType = body.pageType;
+      oldMetadata.moduleId = body.moduleId;
       oldMetadata.status = body.status;
       oldMetadata.tags.push(...metadataTags);
       await this.metadataModel.save(oldMetadata);
@@ -453,9 +458,9 @@ export class MetadataService {
     const moduleNames = [...new Set(datas.filter(item => !!item.moduleName).map(item => item.moduleName))] as string[];
     const modules = await this.moduleModel.find({ name: In(moduleNames) });
 
-    if (modules.length !== moduleNames.length) {
-      throw new Error('模块不能未空');
-    }
+    // if (modules.length !== moduleNames.length) {
+    //   throw new Error('模块不能未空');
+    // }
 
     //处理页面类型
     const pageTypes = await this.httpService
@@ -485,13 +490,16 @@ export class MetadataService {
 
       const { code } = newMetadata;
       const oldMetadata = await this.metadataModel.findOne({
-        code: code,
-        projectId
+        code: code
       });
 
-      if (oldMetadata && oldMetadata.isDeleted === false && oldMetadata.name !== '') {
-        throw new HttpBadRequestError(`第${key}行,元数据${code}重复`);
+      if (oldMetadata && oldMetadata.projectId !== projectId) {
+        throw `第${key}行 ${code} 已经在Id位${oldMetadata.projectId}的项目中添加了`;
       }
+
+      // if (oldMetadata && oldMetadata.isDeleted === false && oldMetadata.name !== '') {
+      //   throw new HttpBadRequestError(`第${key}行,元数据${code}重复`);
+      // }
 
       let metadataTags = [];
 
