@@ -362,13 +362,29 @@ export class AnalyseService {
         }
         item = clearNullStr(item);
         if (item.trackId) {
-          trackIdMap[item.trackId] = { code: item.trackId, name: '', actionType: '', checkoutStatus: 1 };
+          trackIdMap[item.trackId] = {
+            code: item.trackId,
+            name: '',
+            actionType: item.actionType,
+            checkoutStatus: 1,
+            projectId: Number(item.projectId)
+          };
         }
         if (item.referrerId) {
-          trackIdMap[item.referrerId] = { code: item.referrerId, name: '', actionType: '', checkoutStatus: 1 };
+          trackIdMap[item.referrerId] = {
+            code: item.referrerId,
+            name: '',
+            actionType: item.actionType,
+            checkoutStatus: 1
+          };
         }
         if (item.sourceEventId) {
-          trackIdMap[item.sourceEventId] = { code: item.sourceEventId, name: '', actionType: '', checkoutStatus: 1 };
+          trackIdMap[item.sourceEventId] = {
+            code: item.sourceEventId,
+            name: '',
+            actionType: item.actionType,
+            checkoutStatus: 1
+          };
         }
         if (item.pageId) {
           trackIdMap[item.pageId] = { code: item.trackId, name: '', actionType: 'PAGE' };

@@ -483,8 +483,8 @@ export class MetadataService {
         url: item.url,
         type: this.getActionTypeName(item.type),
         status: item.status === '是' ? 1 : 0,
-        moduleId: curModule ? curModule.id : null,
-        pageType: pageType ? pageType.value : null,
+        moduleId: curModule ? curModule.id : 0,
+        pageType: pageType ? pageType.value : 'undefined',
         description: item.description
       };
 
