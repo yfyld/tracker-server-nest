@@ -115,7 +115,7 @@ export class AnalyseService {
       query = queryArr.length > 1 ? `${query} and (${queryArr[0]}) | ${queryArr[1]}` : `${query} and (${param.query})`;
     }
 
-    const data = await this.slsService.query({
+    const data = await this.slsF2eService.query({
       query,
       from: timeParam.dateStart,
       to: timeParam.dateEnd
@@ -132,7 +132,7 @@ export class AnalyseService {
       // tslint:disable-next-line: max-line-length
     }| select url,os,version,appid,browser,browserVersion, deviceId,trackId,trackTime,durationTime,pageId,actionType,deviceModel,ip,ua,title,custom order by trackTime asc limit 1000`;
 
-    const data = await this.slsService.query<{
+    const data = await this.slsF2eService.query<{
       trackId: string;
       trackTime: number;
       durationTime: number;

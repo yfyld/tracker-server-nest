@@ -1,6 +1,6 @@
 import { PermissionsGuard } from '@/guards/permission.guard';
 
-import { Controller, Get, Post, Body, UseGuards, Delete, Param, Put, Res } from '@nestjs/common';
+import { Controller, Get, Post, Body, UseGuards, Delete, Param, Put, Res, Headers } from '@nestjs/common';
 
 import { CheckoutService } from './checkout.service';
 import { HttpProcessor } from '@/decotators/http.decotator';
@@ -18,16 +18,15 @@ import { Cookie } from '@/decotators/cookie.decorators';
 
 moment.locale('zh-cn');
 @Controller('checkout')
-@UseGuards(JwtAuthGuard, PermissionsGuard)
 export class CheckoutController {
   constructor(private readonly checkoutService: CheckoutService) {}
-
+  @UseGuards(JwtAuthGuard, PermissionsGuard)
   @HttpProcessor.handle('新增校验日志')
   @Post('/add-log')
   addCheckoutLog(@Body() body: AddCheckoutLogDto, @Auth() user: UserModel): Promise<void> {
     return this.checkoutService.addCheckoutLog(body, user);
   }
-
+  @UseGuards(JwtAuthGuard, PermissionsGuard)
   @HttpProcessor.handle('修改校验日志')
   @Post('/add-log')
   updateCheckoutLog(@Body() body: UpdateCheckoutLogDto, @Auth() user: UserModel): Promise<void> {
