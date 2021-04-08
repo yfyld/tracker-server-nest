@@ -1,3 +1,4 @@
+import { EnumModel } from './enum.model';
 import { BaseUserDto } from './../user/user.dto';
 import { UserModel } from './../user/user.model';
 import { ProjectModel } from './../project/project.model';
@@ -52,6 +53,8 @@ export class MetadataService {
 
     @InjectRepository(ModuleModel)
     private readonly moduleModel: Repository<ModuleModel>,
+    @InjectRepository(EnumModel)
+    private readonly enumModel: Repository<EnumModel>,
 
     private readonly httpService: HttpService,
     private readonly slsService: SlsService,
@@ -72,7 +75,7 @@ export class MetadataService {
     return metadata;
   }
 
-  private getActionTypeName(type: string) {
+  private getActionType(type: string) {
     switch (type) {
       case '页面':
         return 1;
@@ -93,12 +96,38 @@ export class MetadataService {
     }
   }
 
+  private getActionTypeName(type: number) {
+    switch (type) {
+      case 1:
+        return '页面曝光';
+      case 0:
+        return '事件';
+      case 2:
+        return '区域曝光';
+      default:
+        return '';
+    }
+  }
+
   private async metadataListParam(query: QueryListQuery<QueryMetadataListDto>) {
     let {
       skip,
       take,
       sort: { key: sortKey, value: sortValue },
-      query: { projectId, status, checkoutStatus, type, name, code, tags, log, operatorType, pageTypes, modules }
+      query: {
+        projectId,
+
+        status,
+        checkoutStatus,
+        type,
+        name,
+        code,
+        tags,
+        log,
+        operatorType,
+        pageTypes,
+        modules
+      }
     } = query;
 
     // 排序
@@ -118,32 +147,38 @@ export class MetadataService {
       [propName: string]: any;
     } = {};
 
-    if (query.query.isAssociation) {
-      const projectInfo = await this.projectModel.findOne({
-        where: {
-          id: projectId
-        },
-        relations: ['associationProjects']
-      });
-      const associationProjectIds = projectInfo.associationProjects.map(item => item.id);
-      let projectIds = query.query.projectIds
-        ? query.query.projectIds
-            .split(',')
-            .map(item => Number(item))
-            .filter(item => associationProjectIds.includes(item))
-        : null;
-      if (!projectIds || !projectIds.length) {
-        projectIds = associationProjectIds;
-        projectIds.push(projectId);
+    if (projectId || query.query.projectIds) {
+      if (query.query.isAssociation && projectId) {
+        const projectInfo = await this.projectModel.findOne({
+          where: {
+            id: projectId
+          },
+          relations: ['associationProjects']
+        });
+        const associationProjectIds = projectInfo.associationProjects.map(item => item.id);
+        let projectIds = query.query.projectIds
+          ? query.query.projectIds
+              .split(',')
+              .map(item => Number(item))
+              .filter(item => associationProjectIds.includes(item))
+          : null;
+        if (!projectIds || !projectIds.length) {
+          projectIds = associationProjectIds;
+          projectIds.push(projectId);
+        }
+
+        params.projectIds = projectIds;
+        condition += ' and metadata.projectId in (:projectIds)';
+      } else if (query.query.projectIds) {
+        let projectIds = query.query.projectIds.split(',').map(item => Number(item));
+        params.projectIds = projectIds;
+        condition += ' and metadata.projectId in (:projectIds)';
+      } else {
+        condition += ' and metadata.projectId = :projectId';
       }
 
-      params.projectIds = projectIds;
-      condition += ' and metadata.projectId in (:projectIds)';
-    } else {
-      condition += ' and metadata.projectId = :projectId';
+      params.projectId = projectId;
     }
-
-    params.projectId = projectId;
 
     if (name) {
       condition += ` and metadata.name LIKE :name`;
@@ -235,12 +270,6 @@ export class MetadataService {
   ): Promise<PageData<MetadataModel>> {
     const { condition, params, skip, take, orderBy } = await this.metadataListParam(query);
 
-    let modules = await this.moduleModel.find();
-    let moduleByIdMap = modules.reduce((total, item) => {
-      total[item.id] = item.name;
-      return total;
-    }, {});
-
     let [metadata, totalCount] = await this.metadataModel
       .createQueryBuilder('metadata')
       .leftJoinAndSelect('metadata.tags', 'tag')
@@ -250,8 +279,21 @@ export class MetadataService {
       .orderBy(orderBy)
       .getManyAndCount();
 
+    let modules = await this.moduleModel.find();
+    let moduleByIdMap = modules.reduce((total, item) => {
+      total[item.id] = item.name;
+      return total;
+    }, {});
+
+    let projects = await this.projectModel.find();
+    let projectByIdMap = projects.reduce((total, item) => {
+      total[item.id] = item.name;
+      return total;
+    }, {});
+
     metadata = metadata.map(item => {
       (item as any).module = moduleByIdMap[item.moduleId] || null;
+      (item as any).projectName = projectByIdMap[item.projectId] || null;
 
       //是否显示日志数
       if (!(user as any).permissions.includes('METADATA_SHOW_LOG')) {
@@ -302,21 +344,27 @@ export class MetadataService {
     //   return { ...md, module: moduleMap.get(md.module.toString()).name };
     // });
 
-    const pageTypes = await this.httpService
-      .get<{ label: string; value: string }[]>('https://static.91jkys.com/dms/defa6d786f0531ab6fedb525705b53de.json')
-      .toPromise();
+    try {
+      var pageTypes = JSON.parse((await this.enumModel.findOne({ code: 'pagetype' })).content);
+    } catch (error) {
+      throw new Error('请先更新pagetype维表');
+    }
+
+    const modules = await this.moduleModel.find();
 
     let data = [['名称', 'code', '类型', '启用', '标签', '模块', '页面类型', '备注']];
     data = data.concat(
       metadata.map(item => {
+        const pageType = pageTypes.find(i => i.value === item.pageType);
+        const module = modules.find(i => i.id === item.moduleId);
         return [
           item.name,
           item.code,
-          item.type === 1 ? '页面' : '事件',
+          this.getActionTypeName(item.type),
           item.status === 1 ? '是' : '否',
           item.tags.map(tag => tag.name).join(','),
-          item.moduleId.toString(),
-          pageTypes.data.find(i => i.value === item.pageType).label,
+          module ? module.name : '',
+          pageType ? pageType.label : '',
           item.description
         ];
       })
@@ -366,7 +414,7 @@ export class MetadataService {
           metadataTags.push(oldTag);
           continue;
         }
-        newMetadataTagModels.push(this.metadataTagModel.create({ name: item, project: { id: projectId }, projectId }));
+        newMetadataTagModels.push(this.metadataTagModel.create({ name: item }));
       }
       const newMetadataTags = await this.metadataTagModel.save(newMetadataTagModels);
       metadataTags.push(...newMetadataTags);
@@ -441,12 +489,12 @@ export class MetadataService {
     const allMetadataTags = [];
     const newMetadataTags = [];
     for (let tagName of [...new Set(tagNames)]) {
-      const oldTag = await this.metadataTagModel.findOne({ name: tagName, projectId });
+      const oldTag = await this.metadataTagModel.findOne({ name: tagName });
       if (oldTag) {
         allMetadataTags.push(oldTag);
         continue;
       }
-      const newMetadataTag = this.metadataTagModel.create({ name: tagName, project: { id: projectId }, projectId });
+      const newMetadataTag = this.metadataTagModel.create({ name: tagName });
       newMetadataTags.push(newMetadataTag);
       await manager.save(MetadataTagModel, newMetadataTag);
     }
@@ -481,7 +529,7 @@ export class MetadataService {
         name: item.name,
         code: item.code,
         url: item.url,
-        type: this.getActionTypeName(item.type),
+        type: this.getActionType(item.type),
         status: item.status === '是' ? 1 : 0,
         moduleId: curModule ? curModule.id : 0,
         pageType: pageType ? pageType.value : 'undefined',
@@ -554,7 +602,7 @@ export class MetadataService {
       const metadataTags = await this.metadataTagModel.findByIds(tags);
       const newMetadataTagModels = [];
       body.newTags.forEach(item => {
-        newMetadataTagModels.push(this.metadataTagModel.create({ name: item, project: { id: projectId }, projectId }));
+        newMetadataTagModels.push(this.metadataTagModel.create({ name: item }));
       });
       const newMetadataTags = await this.metadataTagModel.save(newMetadataTagModels);
       metadataTags.push(...newMetadataTags);
@@ -671,12 +719,12 @@ export class MetadataService {
         // 先处理新增的标签
         const newMetadataTags = [];
         for (let tagName of tags) {
-          const tag = await this.metadataTagModel.findOne({ name: tagName, projectId });
+          const tag = await this.metadataTagModel.findOne({ name: tagName });
           if (tag) {
             newMetadataTags.push(tag);
             continue;
           }
-          const newMetadataTag = this.metadataTagModel.create({ name: tagName, project: { id: projectId }, projectId });
+          const newMetadataTag = this.metadataTagModel.create({ name: tagName });
           newMetadataTags.push(newMetadataTag);
           await manager.save(MetadataTagModel, newMetadataTag);
         }
@@ -746,7 +794,6 @@ export class MetadataService {
     const searchBody: FindManyOptions<MetadataTagModel> = {
       skip: query.skip,
       take: query.take,
-      where: { projectId: query.query.projectId },
       order: {}
     };
 
@@ -759,16 +806,13 @@ export class MetadataService {
 
   public async addMetadataTag(body: AddMetadataTagDto): Promise<void> {
     const oldMetadata = await this.metadataTagModel.findOne({
-      name: body.name,
-      project: { id: body.projectId },
-      projectId: body.projectId
+      name: body.name
     });
     if (oldMetadata) {
       throw new HttpBadRequestError('标签已经存在');
     }
     const metadata = this.metadataTagModel.create({
-      ...body,
-      project: { id: body.projectId }
+      ...body
     });
     await this.metadataTagModel.save(metadata);
     return;

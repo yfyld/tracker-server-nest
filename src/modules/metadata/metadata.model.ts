@@ -23,10 +23,6 @@ export class MetadataTagModel {
   name: string;
   @Column()
   description: string;
-  @ManyToOne(type => ProjectModel)
-  project: ProjectModel;
-  @Column()
-  projectId: number;
 }
 
 @Entity()
