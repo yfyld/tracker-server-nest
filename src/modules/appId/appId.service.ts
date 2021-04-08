@@ -23,7 +23,7 @@ export class AppIdService {
    * @param body: 权限对象
    * @return Promise<PermissionListItemDto>
    */
-  public async insert(body: AppIdModel): Promise<void> {
+  public async insert(body: AppIdInsertDto): Promise<void> {
     await this.appIdModel
       .createQueryBuilder()
       .insert()
