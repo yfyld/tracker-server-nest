@@ -4,7 +4,11 @@ import { Entity, Column, PrimaryGeneratedColumn, Index, CreateDateColumn, Update
 @Entity()
 export class AppIdModel {
   @PrimaryGeneratedColumn()
-  appId: number;
+  id: number;
+
+  @Index()
+  @Column({ type: 'varchar', length: 128, comment: 'appId' })
+  appId: string;
 
   @Index()
   @Column({ type: 'varchar', length: 128, comment: '应用名称' })
