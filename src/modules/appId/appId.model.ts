@@ -1,16 +1,11 @@
 import { IsDate, IsInt, IsString } from 'class-validator';
-import { Entity, Column, PrimaryGeneratedColumn, Index, CreateDateColumn, UpdateDateColumn } from 'typeorm';
+import { Entity, Column, PrimaryColumn, Index, CreateDateColumn, UpdateDateColumn } from 'typeorm';
 
 @Entity()
 export class AppIdModel {
-  @PrimaryGeneratedColumn()
-  id: number;
+  @PrimaryColumn({ type: 'varchar', length: 128, comment: 'appId' })
+  appId: number;
 
-  @Index()
-  @Column({ type: 'varchar', length: 128, comment: 'appId' })
-  appId: string;
-
-  @Index()
   @Column({ type: 'varchar', length: 128, comment: '应用名称' })
   appName: string;
 
@@ -18,7 +13,6 @@ export class AppIdModel {
   @Column({ type: 'varchar', length: 1024, comment: '业务线' })
   business: string;
 
-  @Index()
   @IsString()
   @Column({
     type: 'varchar',
@@ -27,11 +21,9 @@ export class AppIdModel {
   })
   clientType: string;
 
-  @IsInt()
   @Column({ type: 'varchar', length: 128, comment: '从属端类型' })
   subordinateType: string;
 
-  @IsInt()
   @Column({ type: 'varchar', length: 1024, comment: '描述' })
   description: string;
 
