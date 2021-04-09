@@ -4,7 +4,7 @@ import { Response } from 'express';
 import { QueryListQuery, ListData } from '@/interfaces/request.interface';
 import { QueryList } from '../../decotators/query-list.decorators';
 import { PageData } from '../../interfaces/request.interface';
-import { Controller, Get, Post, Body, UseGuards, Delete, Param, Put, Res } from '@nestjs/common';
+import { Controller, Get, Post, Body, UseGuards, Delete, Param, Put, Res, Query } from '@nestjs/common';
 
 import { ChannelService } from './channel.service';
 import { HttpProcessor } from '@/decotators/http.decotator';
@@ -47,6 +47,17 @@ export class ChannelController {
     query: QueryListQuery<ChannelListReqDto>
   ): Promise<PageData<ChannelListItemDto>> {
     return this.channelService.getChannelList(query);
+  }
+
+  @ApiOperation({ title: '通过渠道ID获取渠道', description: '' })
+  @HttpProcessor.handle('通过渠道ID获取渠道')
+  @Permissions(PERMISSION_CODE.CHANNEL_SEARCH)
+  @Get('/info/:channelId')
+  getChannelInfoByChannelId(
+    @Param('channelId')
+    channelId: string
+  ): Promise<ChannelListItemDto> {
+    return this.channelService.getChannelInfoByChannelId(channelId);
   }
 
   @ApiOperation({ title: '删除渠道', description: '' })

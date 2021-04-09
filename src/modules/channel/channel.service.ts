@@ -152,6 +152,19 @@ export class ChannelService {
   }
 
   /**
+   * 通过 channelId 获取渠道信息
+   *
+   * @memberof ChannelService
+   */
+  public async getChannelInfoByChannelId(channelId: string): Promise<ChannelModel> {
+    const channelInfo = await this.channelModel.findOne({
+      channelId,
+      isDeleted: 0
+    });
+    return channelInfo;
+  }
+
+  /**
    * 根据渠道名加描述
    * @param channel: 渠道名+描述
    * @return Promise<void>

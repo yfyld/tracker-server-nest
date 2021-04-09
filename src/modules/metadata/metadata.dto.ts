@@ -246,3 +246,7 @@ export class EventAttrsListDto {
     value: any;
   }[];
 }
+
+export class GetMetadataInfoDto {
+  code: string;
+}

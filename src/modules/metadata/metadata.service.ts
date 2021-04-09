@@ -15,7 +15,8 @@ import {
   UpdateMetadataTagDto,
   GetEventAttrDto,
   UpdateMetadataBatchDto,
-  UpdateMetadataLogDto
+  UpdateMetadataLogDto,
+  GetMetadataInfoDto
 } from './metadata.dto';
 
 import { MetadataModel, FieldModel, MetadataTagModel } from './metadata.model';
@@ -31,6 +32,7 @@ import { RedisService } from 'nestjs-redis';
 import { XlsxService } from '@/providers/xlsx/xlsx.service';
 
 import * as path from 'path';
+import * as lodash from 'lodash';
 
 import { Readable } from 'typeorm/platform/PlatformTools';
 
@@ -281,6 +283,36 @@ export class MetadataService {
       totalCount,
       list: metadata
     };
+  }
+
+  /**
+   * 通过 code 获取 metadata
+   *
+   * @memberof MetadataService
+   */
+  public async getMetadataInfoByCode(code: string): Promise<MetadataModel> {
+    const metadata = await this.metadataModel.findOne({
+      code: code,
+      isDeleted: false
+    });
+    return metadata;
+  }
+
+  /**
+   * 通过 codes 获取 metadata List
+   *
+   * @memberof MetadataService
+   */
+  public async getMetadataInfosByCodes(query: GetMetadataInfoDto): Promise<MetadataModel[]> {
+    const codes = query.code.split(',');
+    const undupCodes = lodash.uniq(codes);
+    const metadataPromises = [];
+    undupCodes.forEach(code => {
+      metadataPromises.push(this.getMetadataInfoByCode(code));
+    });
+
+    const metadatas = await Promise.all(metadataPromises);
+    return metadatas;
   }
 
   public async exportExcel(query: QueryListQuery<QueryMetadataListDto>): Promise<[Readable, number]> {

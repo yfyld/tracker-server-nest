@@ -41,7 +41,8 @@ import {
   QueryFieldListDto,
   AddMetadataByExcelDto,
   GetEventAttrDto,
-  UpdateMetadataBatchDto
+  UpdateMetadataBatchDto,
+  GetMetadataInfoDto
 } from './metadata.dto';
 import { XlsxService } from '@/providers/xlsx/xlsx.service';
 import { Permissions } from '@/decotators/permissions.decotators';
@@ -126,6 +127,20 @@ export class MetadataController {
     @Auth() user: UserModel
   ): Promise<PageData<MetadataModel>> {
     return this.metadataService.getMetadataList(query, user);
+  }
+
+  @HttpProcessor.handle('通过 code 查询元数据')
+  @Get('/info/:code')
+  @Permissions(PERMISSION_CODE.METADATA_SEARCH)
+  getMetadataInfoByCode(@Param('code') code: string): Promise<MetadataModel> {
+    return this.metadataService.getMetadataInfoByCode(code);
+  }
+
+  @HttpProcessor.handle('通过 code Array 批量查询元数据')
+  @Get('/infos')
+  @Permissions(PERMISSION_CODE.METADATA_SEARCH)
+  getMetadataInfosByCodes(@Query() query: GetMetadataInfoDto): Promise<MetadataModel[]> {
+    return this.metadataService.getMetadataInfosByCodes(query);
   }
 
   @HttpProcessor.handle('导出元数据列表')
