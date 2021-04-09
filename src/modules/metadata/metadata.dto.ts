@@ -37,7 +37,7 @@ export class AddMetadataDto {
   logRecent?: number;
 
   @IsNumber()
-  projectId: number;
+  projectId?: number;
 
   @IsNumber()
   moduleId: number;
@@ -55,7 +55,7 @@ export class AddMetadataByExcelDto {
   @IsOptional()
   url?: string;
   @IsNumber()
-  projectId: number;
+  projectId?: number;
 }
 
 export class UpdateMetadataDto {
@@ -91,7 +91,7 @@ export class UpdateMetadataDto {
   @IsOptional()
   log?: number;
   @IsNumber()
-  projectId: number;
+  projectId?: number;
 }
 
 export class UpdateMetadataLogDto {
@@ -118,9 +118,9 @@ export class UpdateMetadataBatchDto {
 
   @IsOptional()
   tags?: string[];
-
+  @IsOptional()
   @IsNumber()
-  projectId: number;
+  projectId?: number;
 }
 
 export class MetadataDto {
@@ -155,7 +155,7 @@ export class QueryMetadataListDto {
   @ApiModelProperty()
   @IsDefined()
   @IsNotEmpty({ message: '应用不能为空' })
-  projectId: number;
+  projectId?: number;
 
   @IsOptional()
   isAssociation: boolean;
@@ -196,7 +196,7 @@ export class AddMetadataTagDto {
   @IsString()
   description?: string;
   @IsNumber()
-  projectId: number;
+  projectId?: number;
 }
 
 export class UpdateMetadataTagDto {
@@ -207,13 +207,14 @@ export class UpdateMetadataTagDto {
   @IsOptional()
   @IsString()
   description?: string;
+  @IsOptional()
   @IsNumber()
-  projectId: number;
+  projectId?: number;
 }
 
 export class QueryMetadataTagListDto {
   @IsNumber()
-  projectId: number;
+  projectId?: number;
 }
 
 export class SourceCodeDto {
@@ -226,12 +227,12 @@ export class SourceCodeDto {
 
 export class GetEventAttrDto {
   metadataCode?: string;
-  projectId: number;
+  projectId?: number;
 }
 
 export class QueryFieldListDto {
   @IsDefined()
-  projectId: number;
+  projectId?: number;
   type: number;
   status: number;
   name?: string;

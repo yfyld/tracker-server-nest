@@ -12,6 +12,7 @@ import { AppIdInsertDto, AppIdListDto } from './appId.dto';
 import { AppIdService } from './appId.service';
 import { ParsePageQueryIntPipe } from '@/pipes/parse-page-query-int.pipe';
 import { Response } from 'express';
+import { AppIdModel } from './appId.model';
 
 @ApiUseTags('appId')
 @Controller('appId')
@@ -32,7 +33,7 @@ export class AppIdController {
   @HttpProcessor.handle('获取AppId列表')
   @Permissions(PERMISSION_CODE.APPID_LIST)
   @Get('/')
-  getPermissions(@QueryList() query: QueryListQuery<AppIdListDto>): Promise<PageData<AppIdInsertDto>> {
+  getPermissions(@QueryList() query: QueryListQuery<AppIdListDto>): Promise<PageData<AppIdModel>> {
     return this.appIdService.getList(query);
   }
 

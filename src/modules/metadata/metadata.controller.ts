@@ -98,9 +98,9 @@ export class MetadataController {
   }
 
   @HttpProcessor.handle('删除元数据')
-  @Delete('/:projectId/:metadataId')
+  @Delete('/')
   @Permissions(PERMISSION_CODE.METADATA_DEL)
-  deleteMetadata(@Param('metadataId', new ParseIntPipe()) metadataId: number): Promise<void> {
+  deleteMetadata(@Query('metadataId', new ParseIntPipe()) metadataId: number): Promise<void> {
     return this.metadataService.deleteMetadata(metadataId);
   }
 
@@ -192,9 +192,9 @@ export class MetadataController {
   }
 
   @HttpProcessor.handle('删除标签')
-  @Delete('/tag/:projectId/:tagId')
+  @Delete('/tag')
   @Permissions(PERMISSION_CODE.METADATA_UPDATE)
-  deleteMetadataTag(@Param('tagId', new ParseIntPipe()) tagId: number): Promise<void> {
+  deleteMetadataTag(@Query('tagId', new ParseIntPipe()) tagId: number): Promise<void> {
     return this.metadataService.deleteMetadataTag(tagId);
   }
 }
