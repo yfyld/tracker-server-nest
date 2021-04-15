@@ -35,3 +35,6 @@ export interface QueryListQuery<T> {
     [propName: string]: Sort;
   };
 }
+export interface GetChannelInfoDto {
+  channels: string;
+}

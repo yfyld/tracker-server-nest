@@ -1,7 +1,7 @@
 import { PermissionsGuard } from '@/guards/permission.guard';
 import { ParseIntPipe } from './../../pipes/parse-int.pipe';
 import { Response } from 'express';
-import { QueryListQuery, ListData } from '@/interfaces/request.interface';
+import { QueryListQuery, ListData, GetChannelInfoDto } from '@/interfaces/request.interface';
 import { QueryList } from '../../decotators/query-list.decorators';
 import { PageData } from '../../interfaces/request.interface';
 import { Controller, Get, Post, Body, UseGuards, Delete, Param, Put, Res, Query } from '@nestjs/common';
@@ -23,6 +23,7 @@ import * as moment from 'moment';
 import { Permissions } from '@/decotators/permissions.decotators';
 import { Auth } from '@/decotators/user.decorators';
 import { PERMISSION_CODE } from '@/constants/permission.contant';
+import { ChannelModel } from './channel.model';
 moment.locale('zh-cn');
 @ApiUseTags('channel')
 @Controller('channel')
@@ -49,15 +50,12 @@ export class ChannelController {
     return this.channelService.getChannelList(query);
   }
 
-  @ApiOperation({ title: '通过渠道ID获取渠道', description: '' })
-  @HttpProcessor.handle('通过渠道ID获取渠道')
+  @ApiOperation({ title: '通过渠道IDs获取多个渠道', description: '' })
+  @HttpProcessor.handle('通过渠道IDs获取多个渠道')
   @Permissions(PERMISSION_CODE.CHANNEL_SEARCH)
-  @Get('/info/:channelId')
-  getChannelInfoByChannelId(
-    @Param('channelId')
-    channelId: string
-  ): Promise<ChannelListItemDto> {
-    return this.channelService.getChannelInfoByChannelId(channelId);
+  @Get('/infos')
+  getChannelInfosByChannelIds(@Query() query: GetChannelInfoDto): Promise<ChannelModel[]> {
+    return this.channelService.getChannelInfosByChannelIds(query);
   }
 
   @ApiOperation({ title: '删除渠道', description: '' })

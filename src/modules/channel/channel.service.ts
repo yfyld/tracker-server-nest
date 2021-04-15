@@ -6,7 +6,7 @@ import { Injectable, HttpService } from '@nestjs/common';
 import { Repository, Like, In } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 
-import { QueryListQuery, PageData } from '@/interfaces/request.interface';
+import { QueryListQuery, PageData, GetChannelInfoDto } from '@/interfaces/request.interface';
 
 import { ChannelModel } from './channel.model';
 import { Readable } from 'typeorm/platform/PlatformTools';
@@ -14,6 +14,8 @@ import { XlsxService } from '@/providers/xlsx/xlsx.service';
 import { ChannelListItemDto, ChannelListReqDto, QueryChannelListDto, UpdateChannelDto } from './channel.dto';
 import { HttpBadRequestError } from '@/errors/bad-request.error';
 import * as moment from 'moment';
+import * as lodash from 'lodash';
+
 import Utils from '@/utils/utils';
 
 @Injectable()
@@ -162,6 +164,23 @@ export class ChannelService {
       isDeleted: 0
     });
     return channelInfo;
+  }
+
+  /**
+   * 通过 channelIds 获取 channel List
+   *
+   * @memberof ChannelService
+   */
+  public async getChannelInfosByChannelIds(query: GetChannelInfoDto): Promise<ChannelModel[]> {
+    const channeIds = query.channels.split(',');
+    const undupChannels = lodash.uniq(channeIds);
+    const channelPromises = [];
+    undupChannels.forEach(channel => {
+      channelPromises.push(this.getChannelInfoByChannelId(channel));
+    });
+
+    const channelModels = await Promise.all(channelPromises);
+    return channelModels;
   }
 
   /**
