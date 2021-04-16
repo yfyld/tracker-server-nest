@@ -18,7 +18,7 @@ export class SlsService {
   public query = function<T>(opt, fixTime = true): Promise<T[]> {
     const { query, from, to } = opt;
 
-    console.info(`slsquery:${query}`);
+    //console.info(`slsquery:${query}`);
 
     const newOpt = {
       ...SLS_STORE_CONFIG,

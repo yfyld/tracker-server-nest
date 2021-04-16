@@ -9,7 +9,7 @@ export class LoggerInterceptor implements NestInterceptor {
     const httpRequest = context.switchToHttp().getRequest();
     return next.handle().pipe(
       tap(httpResponse => {
-        console.info(`request:${this.requestFormat(httpRequest)}   response:${this.responseFormat(httpResponse)}`);
+        // console.info(`request:${this.requestFormat(httpRequest)}   response:${this.responseFormat(httpResponse)}`);
       })
     );
   }

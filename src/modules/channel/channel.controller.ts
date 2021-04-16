@@ -49,6 +49,17 @@ export class ChannelController {
     return this.channelService.getChannelList(query);
   }
 
+  @ApiOperation({ title: '获取渠道列表,用于卡尔', description: '' })
+  @HttpProcessor.handle('获取渠道列表')
+  @Permissions(PERMISSION_CODE.CHANNEL_SEARCH)
+  @Get('/all')
+  getAllChannelList(
+    @QueryList()
+    query: QueryListQuery<ChannelListReqDto>
+  ): Promise<PageData<ChannelListItemDto>> {
+    return this.channelService.getChannelList(query);
+  }
+
   @ApiOperation({ title: '删除渠道', description: '' })
   @HttpProcessor.handle('删除渠道')
   @Permissions(PERMISSION_CODE.CHANNEL_DELETE)

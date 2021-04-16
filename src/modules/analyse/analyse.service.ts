@@ -261,7 +261,7 @@ export class AnalyseService {
       .filter(item => !!item)
       .join(' and ')}| select ${[
       'id',
-      // 'debug',
+      'debug',
       'actionType',
       'trackId',
       'startTime',
@@ -270,7 +270,7 @@ export class AnalyseService {
       'libVersion',
       'libType',
       'version',
-      // 'appVersion',
+      'appVersion',
       'url',
       'title',
       'eventName',
@@ -297,28 +297,30 @@ export class AnalyseService {
       'custom',
       'uid',
       'isLogin',
-      // 'contentId',
-      // 'patientId',
-      // 'doctorId',
-      // 'skuId',
-      // 'prescriptionId',
-      // 'storeId',
-      // 'inquiryId',
-      // 'orderId',
-      // 'activityId',
-      // 'bizId',
-      // 'masterId',
+      'contentId',
+      'patientId',
+      'doctorId',
+      'skuId',
+      'prescriptionId',
+      'storeId',
+      'inquiryId',
+      'orderId',
+      'activityId',
+      'bizId',
+      'masterId',
       'pageId',
       'referrerId',
       'referrerUrl',
-      // 'sourceEventId',
+      'sourceEventId',
       'channel',
-      // 'sessionId',
-      // 'marketid',
+      'sessionId',
+      'marketid',
       'appId',
-      'projectId'
-      // 'appType',
-      // 'seKeywords'
+      'projectId',
+      'appType',
+      'seKeywords',
+      'isAutoTrack',
+      'autoTrackId'
     ].join(',')} order by trackTime desc limit 1000`;
 
     const data = await this.slsService.query<{
@@ -355,7 +357,7 @@ export class AnalyseService {
 
       .map(item => {
         if (item.trackId === 'null') {
-          if (item.actionType === 'DURATION') {
+          if (item.actionType === 'DURATION' || item.actionType === 'VIEW_DURATION') {
             durationMasterIdMap[item.masterId] = item;
           }
           return item;
@@ -401,7 +403,7 @@ export class AnalyseService {
 
         return item;
       })
-      .filter(item => item.actionType !== 'DURATION' && item.trackId !== 'null');
+      .filter(item => item.actionType !== 'DURATION' && item.actionType !== 'VIEW_DURATION' && item.trackId !== 'null');
 
     const metadatas = await this.metadataService.getMetadatasByCodes(Object.keys(trackIdMap));
     metadatas.forEach(item => {

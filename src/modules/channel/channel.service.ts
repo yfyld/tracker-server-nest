@@ -1,5 +1,5 @@
 import { Length } from 'class-validator';
-import { AddChannelDto } from './channel.dto';
+import { AddChannelDto, AllChannelListItemDto } from './channel.dto';
 
 // import { MetadataModel, FieldModel, MetadataTagModel } from './module.model';
 import { Injectable, HttpService } from '@nestjs/common';
@@ -15,12 +15,16 @@ import { ChannelListItemDto, ChannelListReqDto, QueryChannelListDto, UpdateChann
 import { HttpBadRequestError } from '@/errors/bad-request.error';
 import * as moment from 'moment';
 import Utils from '@/utils/utils';
+import { EnumModel } from '../metadata/enum.model';
 
 @Injectable()
 export class ChannelService {
   constructor(
     @InjectRepository(ChannelModel)
     private readonly channelModel: Repository<ChannelModel>,
+
+    @InjectRepository(EnumModel)
+    private readonly enumModel: Repository<EnumModel>,
 
     private readonly xlsxervice: XlsxService
   ) {}
@@ -149,6 +153,72 @@ export class ChannelService {
       totalCount,
       list: channel
     };
+  }
+
+  public async getAllChannelList(
+    // currentUser: UserModel,
+    query: QueryListQuery<ChannelListReqDto>
+  ): Promise<PageData<AllChannelListItemDto>> {
+    const { condition, params, skip, take } = this.channelListParam(query);
+    const { key, value } = query.sort;
+    const order = {};
+    if (typeof key !== 'string') {
+      order['createdAt'] = 'DESC';
+    } else {
+      order[key] = value;
+    }
+    let [channels, totalCount] = await this.channelModel
+      .createQueryBuilder('channel')
+      .where(condition, params)
+      .skip(query.skip)
+      .take(query.take)
+      .orderBy(order)
+      .getManyAndCount();
+
+    try {
+      const positionMap = JSON.parse((await this.enumModel.findOne({ code: 'position' })).content).reduce(
+        (total, item) => {
+          total[item.value] = item.label;
+          return total;
+        },
+        {}
+      );
+
+      const typeMap = JSON.parse((await this.enumModel.findOne({ code: 'type' })).content).reduce((total, item) => {
+        total[item.value] = item.label;
+        return total;
+      }, {});
+
+      const businessMap = JSON.parse((await this.enumModel.findOne({ code: 'business' })).content).reduce(
+        (total, item) => {
+          total[item.value] = item.label;
+          return total;
+        },
+        {}
+      );
+
+      const sourceMap = JSON.parse((await this.enumModel.findOne({ code: 'source' })).content).reduce((total, item) => {
+        total[item.value] = item.label;
+        return total;
+      }, {});
+
+      const list = channels.map(item => {
+        return {
+          positionName: positionMap[item.position],
+          typeName: typeMap[item.type],
+          businessName: businessMap[item.business],
+          sourceName: sourceMap[item.source],
+          ...item
+        };
+      });
+
+      return {
+        totalCount,
+        list
+      };
+    } catch (error) {
+      console.error(error);
+    }
   }
 
   /**

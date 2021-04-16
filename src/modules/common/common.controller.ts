@@ -47,7 +47,7 @@ export class CommonController {
   // )
   async fileUpload(@Req() req) {
     const request = require('request');
-    const res = await req.pipe(request.post(`http://apigw.91jkys.com/api/spider-fileupload/1.0/upload`)); // 这里请求真正的接口
+    const res = await req.pipe(request.post(`https://apigw.91jkys.com/api/spider-fileupload/1.0/upload`)); // 这里请求真正的接口
     var response = [];
 
     return new Promise((resolve, reject) => {

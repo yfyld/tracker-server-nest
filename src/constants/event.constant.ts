@@ -20,6 +20,10 @@ export const EVENT_ATTRS = [
       {
         text: '视区',
         value: 'VIEW'
+      },
+      {
+        text: '视区停留',
+        value: 'VIEW_DURATION'
       }
     ]
   },
