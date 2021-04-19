@@ -116,9 +116,10 @@ export class MetadataService {
       sort: { key: sortKey, value: sortValue },
       query: {
         projectId,
-
+        version,
         status,
         checkoutStatus,
+        selfCheckoutStatus,
         type,
         name,
         code,
@@ -198,6 +199,16 @@ export class MetadataService {
     if (typeof checkoutStatus !== 'undefined') {
       condition += ' and metadata.checkoutStatus = :checkoutStatus';
       params.checkoutStatus = checkoutStatus;
+    }
+
+    if (typeof version !== 'undefined') {
+      condition += ' and metadata.version = :version';
+      params.version = version;
+    }
+
+    if (typeof selfCheckoutStatus !== 'undefined') {
+      condition += ' and metadata.selfCheckoutStatus = :selfCheckoutStatus';
+      params.selfCheckoutStatus = selfCheckoutStatus;
     }
 
     if (type) {
@@ -685,7 +696,7 @@ export class MetadataService {
    * @memberof MetadataService
    */
   public async updateMetadataBatch(body: UpdateMetadataBatchDto, manager: EntityManager): Promise<void> {
-    let { ids, tags, projectId, status, type } = body;
+    let { ids, tags, projectId, status, type, version } = body;
     const metadatas = await this.metadataModel.find({ where: { id: In(ids) }, relations: ['tags'] });
     switch (type) {
       case 'DEL':
@@ -700,6 +711,14 @@ export class MetadataService {
 
         break;
 
+      case 'VERSION':
+        for (const metadata of metadatas) {
+          metadata.version = version;
+          await manager.save(MetadataModel, metadata);
+        }
+
+        break;
+
       case 'CHECKOUT':
         for (const metadata of metadatas) {
           metadata.checkoutStatus = 2;
@@ -710,6 +729,21 @@ export class MetadataService {
       case 'FAIL_CHECKOUT':
         for (const metadata of metadatas) {
           metadata.checkoutStatus = 0;
+          await manager.save(MetadataModel, metadata);
+        }
+
+        break;
+
+      case 'SELF_CHECKOUT':
+        for (const metadata of metadatas) {
+          metadata.selfCheckoutStatus = 2;
+          await manager.save(MetadataModel, metadata);
+        }
+
+        break;
+      case 'FAIL_SELF_CHECKOUT':
+        for (const metadata of metadatas) {
+          metadata.selfCheckoutStatus = 0;
           await manager.save(MetadataModel, metadata);
         }
 

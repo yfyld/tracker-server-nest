@@ -34,7 +34,11 @@ export class CheckoutService {
 
     const metadata = await this.metadataModel.findOne({ code: info.trackId });
     if (metadata) {
-      metadata.checkoutStatus = info.status;
+      if (info.type) {
+        metadata.checkoutStatus = info.status;
+      } else {
+        metadata.selfCheckoutStatus = info.status;
+      }
       this.metadataModel.save(metadata);
     }
   }
@@ -50,7 +54,11 @@ export class CheckoutService {
     );
     const metadata = await this.metadataModel.findOne({ code: info.trackId });
     if (metadata) {
-      metadata.checkoutStatus = info.status;
+      if (info.type) {
+        metadata.checkoutStatus = info.status;
+      } else {
+        metadata.selfCheckoutStatus = info.status;
+      }
       this.metadataModel.save(metadata);
     }
   }

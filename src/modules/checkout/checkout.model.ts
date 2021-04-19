@@ -15,6 +15,9 @@ export class CheckoutLogModel extends BaseEntity {
   @Column({ comment: '校验状态' })
   status: number;
 
+  @Column({ default: 0 })
+  type: number;
+
   @Column()
   userId: number;
 

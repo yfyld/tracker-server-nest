@@ -88,4 +88,8 @@ export class QueryCheckoutAnalyseDataDto {
   slsquery?: string;
   channel?: string;
   sessionId?: string;
+  version?: string;
+  isAutoTrack: boolean;
+  checkoutStatus: number;
+  selfCheckoutStatus: number;
 }

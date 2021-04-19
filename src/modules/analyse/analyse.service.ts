@@ -254,9 +254,12 @@ export class AnalyseService {
       param.channel && 'channel:' + param.channel,
       param.custom && 'custom:' + param.custom,
       param.slsquery && param.slsquery,
-      param.deviceId && param.deviceId,
-      param.uid && param.uid,
-      param.projectId && param.projectId
+      param.deviceId && 'deviceId:' + param.deviceId,
+      param.uid && 'uid:' + param.uid,
+      param.projectId && 'projectId:' + param.projectId,
+      typeof param.isAutoTrack === 'number' && param.isAutoTrack
+        ? 'isAutoTrack:true'
+        : '(not isAutoTrack:* or isAutoTrack:false)'
     ]
       .filter(item => !!item)
       .join(' and ')}| select ${[
@@ -369,6 +372,8 @@ export class AnalyseService {
             name: '',
             actionType: item.actionType,
             checkoutStatus: 1,
+            version: '',
+            selfCheckoutStatus: 1,
             projectId: Number(item.projectId)
           };
         }
@@ -377,6 +382,8 @@ export class AnalyseService {
             code: item.referrerId,
             name: '',
             actionType: item.actionType,
+            selfCheckoutStatus: 1,
+            version: '',
             checkoutStatus: 1
           };
         }
@@ -385,6 +392,8 @@ export class AnalyseService {
             code: item.sourceEventId,
             name: '',
             actionType: item.actionType,
+            selfCheckoutStatus: 1,
+            version: '',
             checkoutStatus: 1
           };
         }
@@ -392,7 +401,7 @@ export class AnalyseService {
           trackIdMap[item.pageId] = { code: item.trackId, name: '', actionType: 'PAGE' };
         }
 
-        checkoutMap[item.id] = { trackId: item.trackId, status: 1, logId: item.id };
+        checkoutMap[item.id + '_0'] = { trackId: item.trackId, status: 1, logId: item.id, type: 0 };
 
         if (item.channel) {
           channelMap[item.channel] = { code: item.channel, name: '' };
@@ -417,26 +426,45 @@ export class AnalyseService {
 
     const checkoutLogs = await this.checkoutService.getCheckoutLogByLogIds(Object.keys(checkoutMap));
     checkoutLogs.forEach(item => {
-      checkoutMap[item.id] = item;
+      checkoutMap[item.id + '_' + item.type] = item;
     });
 
     const channels = await this.channelService.getChannelByCodes(Object.keys(channelMap));
     channels.forEach(item => {
       channelMap[item.channelId] = item;
     });
-    const list = newdata.map(item => {
-      return {
-        ...item,
-        channelInfo: channelMap[item.channel] || {},
-        trackIdInfo: trackIdMap[item.trackId] || {},
-        pageIdInfo: trackIdMap[item.pageId] || {},
-        referrerInfo: trackIdMap[item.referrerId] || {},
-        sourceEventInfo: trackIdMap[item.sourceEventId] || {},
-        durationInfo: durationMasterIdMap[item.id] || {},
-        checkoutInfo: checkoutMap[item.id] || {},
-        projectInfo: projectMap[Number(item.projectId)] || {}
-      };
-    });
+    const list = newdata
+      .filter(item => {
+        if (
+          typeof param.checkoutStatus === 'number' &&
+          trackIdMap[item.trackId] &&
+          trackIdMap[item.trackId].checkoutStatus !== param.checkoutStatus
+        ) {
+          return false;
+        }
+        if (
+          typeof param.selfCheckoutStatus === 'number' &&
+          trackIdMap[item.trackId] &&
+          trackIdMap[item.trackId].selfCheckoutStatus !== param.selfCheckoutStatus
+        ) {
+          return false;
+        }
+        return true;
+      })
+      .map(item => {
+        return {
+          ...item,
+          channelInfo: channelMap[item.channel] || {},
+          trackIdInfo: trackIdMap[item.trackId] || {},
+          pageIdInfo: trackIdMap[item.pageId] || {},
+          referrerInfo: trackIdMap[item.referrerId] || {},
+          sourceEventInfo: trackIdMap[item.sourceEventId] || {},
+          durationInfo: durationMasterIdMap[item.id] || {},
+          checkoutInfo: checkoutMap[item.id + '_0'] || {},
+          selfCheckoutInfo: checkoutMap[item.id + '_1'] || {},
+          projectInfo: projectMap[Number(item.projectId)] || {}
+        };
+      });
     return { list };
   }
 }

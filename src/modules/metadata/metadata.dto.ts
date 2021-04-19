@@ -25,6 +25,14 @@ export class AddMetadataDto {
   @IsOptional()
   @IsNumber()
   checkoutStatus?: number;
+
+  @IsOptional()
+  version?: string;
+
+  @IsOptional()
+  @IsNumber()
+  selfCheckoutStatus?: number;
+
   @IsOptional()
   operatorType?: number;
 
@@ -81,6 +89,13 @@ export class UpdateMetadataDto {
   @IsOptional()
   @IsNumber()
   checkoutStatus?: number;
+
+  @IsOptional()
+  version?: string;
+
+  @IsOptional()
+  @IsNumber()
+  selfCheckoutStatus?: number;
   @IsOptional()
   tags?: number[];
   @IsOptional()
@@ -117,6 +132,13 @@ export class UpdateMetadataBatchDto {
   checkoutStatus?: number;
 
   @IsOptional()
+  version?: string;
+
+  @IsOptional()
+  @IsNumber()
+  selfCheckoutStatus?: number;
+
+  @IsOptional()
   tags?: string[];
   @IsOptional()
   @IsNumber()
@@ -141,12 +163,19 @@ export class MetadataDto {
   @IsOptional()
   @IsNumber()
   checkoutStatus?: number;
+
+  @IsOptional()
+  version?: string;
+
+  @IsOptional()
+  @IsNumber()
+  selfCheckoutStatus?: number;
+
   @ApiModelProperty()
   message: string;
   @ApiModelProperty()
   url: string;
-  @ApiModelProperty()
-  version?: string;
+
   @ApiModelProperty()
   project: ProjectModel | { id: number };
 }
@@ -172,6 +201,14 @@ export class QueryMetadataListDto {
   @IsOptional()
   @IsNumber()
   checkoutStatus?: number;
+
+  @IsOptional()
+  version?: string;
+
+  @IsOptional()
+  @IsNumber()
+  selfCheckoutStatus?: number;
+
   @IsOptional()
   @IsString()
   name: string;
