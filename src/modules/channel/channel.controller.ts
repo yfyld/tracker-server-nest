@@ -58,7 +58,7 @@ export class ChannelController {
     @QueryList()
     query: QueryListQuery<ChannelListReqDto>
   ): Promise<PageData<ChannelListItemDto>> {
-    return this.channelService.getChannelList(query);
+    return this.channelService.getAllChannelList(query);
   }
 
   @ApiOperation({ title: '通过渠道IDs获取多个渠道', description: '' })
