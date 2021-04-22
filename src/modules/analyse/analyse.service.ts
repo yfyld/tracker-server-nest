@@ -317,7 +317,7 @@ export class AnalyseService {
       'sourceEventId',
       'channel',
       'sessionId',
-      'marketid',
+      'marketId',
       'appId',
       'projectId',
       'appType',
