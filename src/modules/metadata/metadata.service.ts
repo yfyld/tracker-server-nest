@@ -392,15 +392,18 @@ export class MetadataService {
     } catch (error) {
       throw new Error('请先更新pagetype维表');
     }
+    const projects = await this.projectModel.find();
 
     const modules = await this.moduleModel.find();
 
-    let data = [['名称', 'code', '类型', '启用', '标签', '模块', '页面类型', '备注']];
+    let data = [['应用', '名称', 'code', '类型', '启用', '标签', '模块', '页面类型', '版本', '备注']];
     data = data.concat(
       metadata.map(item => {
         const pageType = pageTypes.find(i => i.value === item.pageType);
         const module = modules.find(i => i.id === item.moduleId);
+        const project = projects.find(i => (i.id = item.projectId));
         return [
+          project ? project.name : '',
           item.name,
           item.code,
           this.getActionTypeName(item.type),
@@ -408,6 +411,7 @@ export class MetadataService {
           item.tags.map(tag => tag.name).join(','),
           module ? module.name : '',
           pageType ? pageType.label : '',
+          item.version,
           item.description
         ];
       })
@@ -436,7 +440,6 @@ export class MetadataService {
     const { code, projectId, tags, newTags } = body;
     const oldMetadata = await this.metadataModel.findOne({
       code: code,
-      projectId,
       isDeleted: false
     });
     if (oldMetadata && !oldMetadata.isDeleted) {
@@ -507,8 +510,19 @@ export class MetadataService {
     const res = await this.getHttpBuffer(url);
     const datas = await this.xlsxervice.parseByBuffer(
       res,
-      ['名称', 'code', '类型', '启用', '标签', '模块', '页面类型', '备注'],
-      ['name', 'code', 'type', 'status', 'newTags', 'moduleName', 'pageTypeName', 'description']
+      ['应用', '名称', 'code', '类型', '启用', '标签', '模块', '页面类型', '版本', '备注'],
+      [
+        'projectName',
+        'name',
+        'code',
+        'type',
+        'status',
+        'newTags',
+        'moduleName',
+        'pageTypeName',
+        'version',
+        'description'
+      ]
     );
 
     const metadatas = datas.filter(
@@ -520,7 +534,9 @@ export class MetadataService {
         item.newTags ||
         item.moduleName ||
         item.pageTypeName ||
-        item.description
+        item.description ||
+        item.projectName ||
+        item.version
     );
 
     const tagNames = metadatas.reduce((total, item) => {
@@ -544,10 +560,20 @@ export class MetadataService {
 
     allMetadataTags.push(...newMetadataTags);
 
+    //处理应用
+    const projectNames = [
+      ...new Set(datas.filter(item => !!item.projectName).map(item => item.projectName))
+    ] as string[];
+    const projects = projectNames.length ? await this.projectModel.find({ name: In(projectNames) }) : [];
+
+    if (projectId && (!projects || projects.length > 1 || projects[0].id !== projectId)) {
+      throw new Error('excel表中包含非本应用的元数据');
+    }
+
     //处理模块
 
     const moduleNames = [...new Set(datas.filter(item => !!item.moduleName).map(item => item.moduleName))] as string[];
-    const modules = await this.moduleModel.find({ name: In(moduleNames) });
+    const modules = moduleNames.length ? await this.moduleModel.find({ name: In(moduleNames) }) : [];
 
     // if (modules.length !== moduleNames.length) {
     //   throw new Error('模块不能未空');
@@ -567,8 +593,8 @@ export class MetadataService {
       const pageType = pageTypes.data.find(i => i.label == item.pageTypeName);
 
       const curModule = modules.find(val => val.name == item.moduleName);
+      const project = projects.find(val => val.name == item.projectName);
       const newMetadata = {
-        projectId,
         name: item.name,
         code: item.code,
         url: item.url,
@@ -576,7 +602,9 @@ export class MetadataService {
         status: item.status === '是' ? 1 : 0,
         moduleId: curModule ? curModule.id : 0,
         pageType: pageType ? pageType.value : 'undefined',
-        description: item.description
+        description: item.description,
+        projectId: project.id || projectId,
+        version: item.version
       };
 
       const { code } = newMetadata;
@@ -610,6 +638,7 @@ export class MetadataService {
         oldMetadata.pageType = newMetadata.pageType;
         oldMetadata.tags = oldMetadata.tags || [];
         oldMetadata.tags.push(...metadataTags);
+        oldMetadata.version = newMetadata.version;
         await manager.save(MetadataModel, oldMetadata);
 
         continue;

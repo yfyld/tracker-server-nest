@@ -62,6 +62,7 @@ export class AddMetadataByExcelDto {
   @IsString()
   @IsOptional()
   url?: string;
+  @IsOptional()
   @IsNumber()
   projectId?: number;
 }
