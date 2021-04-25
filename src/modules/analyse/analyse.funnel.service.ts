@@ -34,13 +34,13 @@ export class AnalyseFunnelService {
     if (indicatorType === 'PV' || indicatorType === 'DPV') {
       key.push(`count(1) as count`);
     } else if (indicatorType === `UV` || indicatorType === 'DUV') {
-      key.push(`approx_distinct (coalesce(uid ,utoken)) as count`);
+      key.push(`approx_distinct (deviceId) as count`);
     } else if (indicatorType === 'APV') {
-      key.push(`try(count(1) / approx_distinct (coalesce(uid ,utoken))) as count`);
+      key.push(`try(count(1) / approx_distinct (deviceId)) as count`);
     } else if (indicatorType === `RUV` || indicatorType === 'DRUV') {
-      key.push(`approx_distinct (coalesce(uid ,utoken)) as count`);
+      key.push(`approx_distinct (uid) as count`);
     } else if (indicatorType === 'RAPV') {
-      key.push(`try(count(1) / approx_distinct (coalesce(uid ,utoken))) as count`);
+      key.push(`try(count(1) / approx_distinct (uid)) as count`);
     }
 
     if (indicatorType === 'DRUV' || indicatorType === 'DUV' || indicatorType === 'DPV') {

@@ -64,19 +64,19 @@ export class AnalyseService {
     if (indicatorType === 'PV') {
       countStr = `select count(1) as count`;
     } else if (indicatorType === `UV`) {
-      countStr = `select approx_distinct (coalesce(uid ,utoken)) as count`;
+      countStr = `select approx_distinct (deviceId) as count`;
     } else if (indicatorType === 'APV') {
-      countStr = `select try(count(1) / approx_distinct (coalesce(uid ,utoken))) as count`;
+      countStr = `select try(count(1) / approx_distinct (deviceId)) as count`;
     } else if (indicatorType === `RUV`) {
-      countStr = `select approx_distinct (coalesce(uid ,utoken)) as count`;
+      countStr = `select approx_distinct (uid) as count`;
     } else if (indicatorType === 'RAPV') {
-      countStr = `select try(count(1) / approx_distinct (coalesce(uid ,utoken))) as count`;
+      countStr = `select try(count(1) / approx_distinct (uid)) as count`;
     } else if (indicatorType === 'DPV') {
       countStr = `select count(1) / ${day} as count`;
     } else if (indicatorType === 'DUV') {
-      countStr = `select try(approx_distinct (coalesce(uid ,utoken)) / ${day} )as count`;
+      countStr = `select try(approx_distinct (deviceId) / ${day} )as count`;
     } else if (indicatorType === 'DRUV') {
-      countStr = `select try(approx_distinct (coalesce(uid ,utoken)) / ${day} )as count`;
+      countStr = `select try(approx_distinct (uid) / ${day} )as count`;
     }
 
     // tslint:disable-next-line:max-line-length

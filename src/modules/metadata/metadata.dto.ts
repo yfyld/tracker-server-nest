@@ -129,6 +129,14 @@ export class UpdateMetadataBatchDto {
 
   @IsOptional()
   @IsNumber()
+  moduleId?: number;
+
+  @IsOptional()
+  @IsString()
+  pageType?: string;
+
+  @IsOptional()
+  @IsNumber()
   checkoutStatus?: number;
 
   @IsOptional()

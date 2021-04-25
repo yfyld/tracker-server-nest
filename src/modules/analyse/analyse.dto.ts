@@ -84,6 +84,7 @@ export class QueryCheckoutAnalyseDataDto {
   mobile?: string;
   ip?: string;
   custom?: string;
+  env?: string;
   appId?: string;
   slsquery?: string;
   channel?: string;

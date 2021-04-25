@@ -728,7 +728,7 @@ export class MetadataService {
    * @memberof MetadataService
    */
   public async updateMetadataBatch(body: UpdateMetadataBatchDto, manager: EntityManager): Promise<void> {
-    let { ids, tags, projectId, status, type, version } = body;
+    let { ids, tags, projectId, status, type, version, moduleId, pageType } = body;
     const metadatas = await this.metadataModel.find({ where: { id: In(ids) }, relations: ['tags'] });
     switch (type) {
       case 'DEL':
@@ -746,6 +746,37 @@ export class MetadataService {
       case 'VERSION':
         for (const metadata of metadatas) {
           metadata.version = version;
+          await manager.save(MetadataModel, metadata);
+        }
+
+        break;
+
+      case 'MODULE':
+        for (const metadata of metadatas) {
+          metadata.moduleId = moduleId;
+          await manager.save(MetadataModel, metadata);
+        }
+
+        break;
+
+      case 'PAGE_TYPE':
+        for (const metadata of metadatas) {
+          metadata.pageType = pageType;
+          await manager.save(MetadataModel, metadata);
+        }
+
+        break;
+
+      case 'SELF_CHECKOUT':
+        for (const metadata of metadatas) {
+          metadata.selfCheckoutStatus = 2;
+          await manager.save(MetadataModel, metadata);
+        }
+
+        break;
+      case 'FAIL_SELF_CHECKOUT':
+        for (const metadata of metadatas) {
+          metadata.selfCheckoutStatus = 0;
           await manager.save(MetadataModel, metadata);
         }
 
