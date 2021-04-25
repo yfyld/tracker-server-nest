@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import * as ALY from 'aliyun-sdk';
-import { SLS_CONFIG, SLS_STORE_CONFIG } from '../../app.config';
+import { SLS_CONFIG, SLS_STORE_CONFIG, DEV_LOG_CONFIG } from '../../app.config';
 
 const sls = new ALY.SLS({
   ...SLS_CONFIG
@@ -15,18 +15,14 @@ export interface IQueryParams {
 @Injectable()
 export class SlsService {
   constructor() {}
-  public query = function<T>(opt, fixTime = true): Promise<T[]> {
+  public query = function<T>(opt, dev = false): Promise<T[]> {
     const { query, from, to } = opt;
 
     //console.info(`slsquery:${query}`);
 
     const newOpt = {
-      ...SLS_STORE_CONFIG,
-      query: fixTime
-        ? query.replace(/(^.+)(\|.*)/, ($, $1, $2) => {
-            return `trackTime<${to} and trackTime>${from} and (${$1})${$2}`;
-          })
-        : query,
+      ...(dev ? DEV_LOG_CONFIG : SLS_STORE_CONFIG),
+      query,
       from: Math.floor(from / 1000),
       to: Math.floor(to / 1000)
     };

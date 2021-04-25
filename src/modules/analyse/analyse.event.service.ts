@@ -50,22 +50,16 @@ export class AnalyseEventService {
       30}) as yoy  from (${countStr}  from log ))`;
 
     const [qoqData, yoyData] = await Promise.all([
-      this.slsService.query<ICompare>(
-        {
-          query: qoqQuery,
-          from: timeParam.dateStart,
-          to: timeParam.dateEnd
-        },
-        false
-      ),
-      this.slsService.query<ICompare>(
-        {
-          query: yoyQuery,
-          from: timeParam.dateStart,
-          to: timeParam.dateEnd
-        },
-        false
-      )
+      this.slsService.query<ICompare>({
+        query: qoqQuery,
+        from: timeParam.dateStart,
+        to: timeParam.dateEnd
+      }),
+      this.slsService.query<ICompare>({
+        query: yoyQuery,
+        from: timeParam.dateStart,
+        to: timeParam.dateEnd
+      })
     ]);
 
     return {

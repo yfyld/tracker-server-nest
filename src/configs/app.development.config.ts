@@ -75,4 +75,9 @@ export const SLS_CONFIG = {
 
 export const SLS_STORE_CONFIG = { ...opsConfig.slsLogStroe };
 
-export const F2E_LOG_CONFIG = { ...opsConfig.slsLogStroe };
+export const F2E_LOG_CONFIG = opsConfig.f2eLogStroe || { ...opsConfig.slsLogStroe };
+
+export const DEV_LOG_CONFIG = opsConfig.devLogStroe || {
+  projectName: 'k8s-log-custom-ks-qa',
+  logStoreName: 'frontlo-collection-telescope-process-qa'
+};

@@ -76,3 +76,8 @@ export const F2E_LOG_CONFIG = opsConfig.f2eLogStroe || {
   projectName: 'k8s-log-custom-ks-pro',
   logStoreName: 'frontlo-collection-telescope-debug'
 };
+
+export const DEV_LOG_CONFIG = opsConfig.devLogStroe || {
+  projectName: 'k8s-log-custom-ks-qa',
+  logStoreName: 'frontlo-collection-telescope-process-qa'
+};

@@ -222,20 +222,23 @@ export class AnalyseService {
     } else {
       const timeParam = getDynamicTime(param.dateStart, param.dateEnd, param.dateType);
 
-      const deviceIds = await this.slsService.query<{ deviceId: string }>({
-        query: `${[
-          param.ip && 'ip:' + param.ip,
-          param.appId && 'appId:' + param.appId,
-          param.sessionId && 'sessionId:' + param.sessionId,
-          param.channel && 'channel:' + param.channel,
-          param.custom && 'custom:' + param.custom,
-          param.slsquery && param.slsquery
-        ]
-          .filter(item => !!item)
-          .join(' and ')}| select deviceId group by deviceId`,
-        from: timeParam.dateStart,
-        to: timeParam.dateEnd
-      });
+      const deviceIds = await this.slsService.query<{ deviceId: string }>(
+        {
+          query: `${[
+            param.ip && 'ip:' + param.ip,
+            param.appId && 'appId:' + param.appId,
+            param.sessionId && 'sessionId:' + param.sessionId,
+            param.channel && 'channel:' + param.channel,
+            param.custom && 'custom:' + param.custom,
+            param.slsquery && param.slsquery
+          ]
+            .filter(item => !!item)
+            .join(' and ')}| select deviceId group by deviceId`,
+          from: timeParam.dateStart,
+          to: timeParam.dateEnd
+        },
+        param.env === 'QA'
+      );
       if (deviceIds.length !== 1) {
         throw new Error('超过了1个用户');
       } else {
@@ -340,11 +343,14 @@ export class AnalyseService {
       sourceEventId?: string;
       id: string;
       projectId: string;
-    }>({
-      query,
-      from: timeParam.dateStart,
-      to: timeParam.dateEnd
-    });
+    }>(
+      {
+        query,
+        from: timeParam.dateStart,
+        to: timeParam.dateEnd
+      },
+      param.env === 'QA'
+    );
 
     if (!data.length) {
       return [];
@@ -447,6 +453,10 @@ export class AnalyseService {
           trackIdMap[item.trackId] &&
           trackIdMap[item.trackId].selfCheckoutStatus !== param.selfCheckoutStatus
         ) {
+          return false;
+        }
+
+        if (param.version && trackIdMap[item.trackId] && trackIdMap[item.trackId].version !== param.version) {
           return false;
         }
         return true;
