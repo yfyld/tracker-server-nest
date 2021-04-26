@@ -40,6 +40,7 @@ export class QueryCustomAnalyseDataDto {
   dateEnd: number;
   dateType: string;
   query: string;
+  env: string;
 }
 
 export class QueryPathAnalyseDataDto {

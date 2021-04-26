@@ -158,6 +158,8 @@ export class AllChannelListItemDto {
   @IsString({ message: '描述必须为字符串' })
   @Length(0, 1024, { message: '请不要超过1024个字符' })
   description?: string;
+
+  createdAt: Date;
 }
 
 export class UpdateChannelDto {

@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import * as ALY from 'aliyun-sdk';
-import { SLS_CONFIG, F2E_LOG_CONFIG } from '../../app.config';
+import { SLS_CONFIG, F2E_LOG_CONFIG, DEV_LOG_CONFIG } from '../../app.config';
 
 const sls = new ALY.SLS({
   ...SLS_CONFIG
@@ -9,11 +9,11 @@ const sls = new ALY.SLS({
 @Injectable()
 export class SlsF2eService {
   constructor() {}
-  public query = function<T>(opt, fixTime = true): Promise<T[]> {
+  public query = function<T>(opt, dev = false): Promise<T[]> {
     const { query, from, to } = opt;
 
     const newOpt = {
-      ...F2E_LOG_CONFIG,
+      ...(dev ? DEV_LOG_CONFIG : F2E_LOG_CONFIG),
       query,
       from: Math.floor(from / 1000),
       to: Math.floor(to / 1000)

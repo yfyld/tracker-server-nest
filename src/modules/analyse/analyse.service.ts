@@ -115,11 +115,14 @@ export class AnalyseService {
       query = queryArr.length > 1 ? `${query} and (${queryArr[0]}) | ${queryArr[1]}` : `${query} and (${param.query})`;
     }
 
-    const data = await this.slsF2eService.query({
-      query,
-      from: timeParam.dateStart,
-      to: timeParam.dateEnd
-    });
+    const data = await this.slsF2eService.query(
+      {
+        query,
+        from: timeParam.dateStart,
+        to: timeParam.dateEnd
+      },
+      param.env === 'QA'
+    );
     return data;
   }
 

@@ -324,58 +324,20 @@ export class ChannelService {
   }
 
   public async exportExcel(query: QueryListQuery<QueryChannelListDto>): Promise<[Readable, number]> {
-    const { condition, params, skip, take } = this.channelListParam(query);
-    const { key, value } = query.sort;
-    const order = {};
-    if (typeof key !== 'string') {
-      order['createdAt'] = 'DESC';
-    } else {
-      order[key] = value;
-    }
-    let [channels, totalCount] = await this.channelModel
-      .createQueryBuilder('channel')
-      .where(condition, params)
-      .skip(query.skip)
-      .take(query.take)
-      .orderBy(order)
-      .getManyAndCount();
-
-    // const [channels, totalCount] = await this.channelModel.findAndCount({
-    //   select: [
-    //     'channelId',
-    //     'name',
-    //     'type',
-    //     'business',
-    //     'source',
-    //     'position',
-    //     'activity',
-    //     'content',
-    //     'keyword',
-    //     'description',
-    //     'createdAt'
-    //   ],
-    //   where: [
-    //     {
-    //       name: Like(`%${query.query.name || ''}%`),
-    //       isDeleted: 0
-    //     }
-    //   ],
-    //   skip: query.skip,
-    //   take: query.take
-    // });
+    let { list } = await this.getAllChannelList(query);
 
     let data = [
       ['渠道id', '渠道名称', '渠道类型', '业务线', '来源', '位置', '活动', '内容', '关键字', '描述', '创建时间']
     ];
     data = data.concat(
-      channels.map(item => {
+      list.map(item => {
         return [
           item.channelId.toString(),
           item.name.toString(),
-          item.type.toString(),
-          item.business.toString(),
-          item.source.toString(),
-          item.position.toString(),
+          item.typeName,
+          item.businessName,
+          item.sourceName,
+          item.positionName,
           item.activity.toString(),
           item.content.toString(),
           item.keyword.toString(),
