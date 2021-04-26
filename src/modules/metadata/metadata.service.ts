@@ -401,7 +401,7 @@ export class MetadataService {
       metadata.map(item => {
         const pageType = pageTypes.find(i => i.value === item.pageType);
         const module = modules.find(i => i.id === item.moduleId);
-        const project = projects.find(i => (i.id = item.projectId));
+        const project = projects.find(i => i.id == item.projectId);
         return [
           project ? project.name : '',
           item.name,
@@ -439,8 +439,7 @@ export class MetadataService {
   public async addMetadata(body: AddMetadataDto): Promise<void> {
     const { code, projectId, tags, newTags } = body;
     const oldMetadata = await this.metadataModel.findOne({
-      code: code,
-      isDeleted: false
+      code: code
     });
     if (oldMetadata && !oldMetadata.isDeleted) {
       throw new HttpBadRequestError(`元数据${code}重复`);
@@ -504,6 +503,84 @@ export class MetadataService {
         resolve(Buffer.concat(response));
       });
     });
+  }
+
+  public async test(url: string): Promise<any> {
+    const res = await this.getHttpBuffer(url);
+    const datas = await this.xlsxervice.parseByBuffer(
+      res,
+      ['埋点ID', '项目名称', 'trackid', '名称', '埋点类型', '状态', '模块名称', '页面类型', '备注'],
+      ['id', 'projectName', 'code', 'name', 'name', 'type', 'status', 'moduleName', 'pageTypeName', 'description']
+    );
+
+    const metadatas = datas.filter(item => item.code);
+
+    //处理模块
+
+    const moduleNames = [...new Set(datas.filter(item => !!item.moduleName).map(item => item.moduleName))] as string[];
+    const modules = moduleNames.length ? await this.moduleModel.find({ name: In(moduleNames) }) : [];
+
+    // if (modules.length !== moduleNames.length) {
+    //   throw new Error('模块不能未空');
+    // }
+
+    //处理页面类型
+    const pageTypes = await this.httpService
+      .get<{ label: string; value: string }[]>('https://static.91jkys.com/dms/defa6d786f0531ab6fedb525705b53de.json')
+      .toPromise();
+    let data = [['code', 'checkSls', 'checkPageType', 'checkModule', 'checkName', 'checkCode']];
+    for (let key in metadatas) {
+      const item = datas[key];
+      try {
+        const pageType = pageTypes.data.find(i => i.label == item.pageTypeName);
+        const curModule = modules.find(val => val.name == item.moduleName);
+
+        const oldMetadata = await this.metadataModel.findOne({
+          code: item.code,
+          isDeleted: false
+        });
+
+        if (!oldMetadata) {
+          item.checkCode = '元数据未录入平台';
+        } else if (oldMetadata) {
+          item.checkCode = '元数据录入平台';
+        }
+
+        const slsdata = await this.slsService.query({
+          query: `trackId:${item.code}`,
+          from: Date.now() - 86400000 * 30,
+          to: Date.now()
+        });
+        if (slsdata.length) {
+          item.checkSls = '有数据';
+        } else {
+          item.checkSls = '无数据';
+        }
+
+        if (!item.pageTypeName) {
+          item.checkPageType = '页面类型为空';
+        } else if (!pageType) {
+          item.checkPageType = '页面类型未录入平台';
+        }
+
+        if (!item.moduleName) {
+          item.checkModule = '模块为空';
+        } else if (!curModule) {
+          item.checkModule = '模块未录入平台';
+        }
+
+        if (!/.*-(click|page|view)-.*/.test(item.code)) {
+          item.checkName = '命名不规范';
+        }
+        data.push([item.code, item.checkSls, item.checkPageType, item.checkModule, item.checkName, item.checkCode]);
+        console.log(key);
+      } catch (error) {
+        console.log(item.code);
+        continue;
+      }
+    }
+
+    return data;
   }
 
   public async addMetadataByExcel(projectId: number, url: string, manager: EntityManager): Promise<void> {

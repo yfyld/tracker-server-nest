@@ -72,6 +72,12 @@ export class MetadataController {
     return this.metadataService.addMetadataByExcel(body.projectId, body.url, manager);
   }
 
+  @HttpProcessor.handle('校验元数据,临时')
+  @Get('/check')
+  test(): Promise<any> {
+    return this.metadataService.test(`http://yfyld.oss-cn-hangzhou.aliyuncs.com/code.xlsx`);
+  }
+
   @HttpProcessor.handle('更新元数据')
   @Put('/')
   @Permissions(PERMISSION_CODE.METADATA_UPDATE)
