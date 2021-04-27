@@ -77,6 +77,11 @@ export class MetadataController {
   test(): Promise<any> {
     return this.metadataService.test(`http://yfyld.oss-cn-hangzhou.aliyuncs.com/code.xlsx`);
   }
+  @HttpProcessor.handle('校验元数据,临时')
+  @Get('/check2')
+  test2(@Query('id', new ParseIntPipe()) id: number): Promise<any> {
+    return this.metadataService.test2(id);
+  }
 
   @HttpProcessor.handle('更新元数据')
   @Put('/')

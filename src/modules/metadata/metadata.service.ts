@@ -505,6 +505,29 @@ export class MetadataService {
     });
   }
 
+  public async test2(id?: number): Promise<any> {
+    if (id) {
+      const metadata = await this.metadataModel.findOne({ id });
+      await this.metadataModel.remove(metadata);
+      return;
+    }
+
+    const metadatas = await this.metadataModel.find();
+    const datas = [];
+
+    for (let item of metadatas) {
+      const data = { code: '' };
+      const metadata = await this.metadataModel.find({
+        code: item.code
+      });
+
+      if (metadata.length > 1) {
+        data.code = JSON.stringify(metadata);
+      }
+    }
+    return datas;
+  }
+
   public async test(url: string): Promise<any> {
     const res = await this.getHttpBuffer(url);
     const datas = await this.xlsxervice.parseByBuffer(
