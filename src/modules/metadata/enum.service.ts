@@ -72,4 +72,8 @@ export class EnumService {
 
     return null;
   }
+
+  public async getEnumList(code: string): Promise<{ label: string; value: string }[]> {
+    return JSON.parse((await this.enumModel.findOne({ code })).content);
+  }
 }

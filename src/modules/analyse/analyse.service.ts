@@ -29,15 +29,6 @@ import { ProjectService } from '../project/project.service';
 import * as sk from '@91jkys/service-kit';
 import { SlsF2eService } from '@/providers/sls/sls.f2e.service';
 
-async function test() {
-  try {
-    console.log(await sk.request('clitest.TestService:1.0', 'hello', ['test data']));
-  } catch (error) {
-    console.error(error);
-  }
-}
-
-test();
 @Injectable()
 export class AnalyseService {
   constructor(

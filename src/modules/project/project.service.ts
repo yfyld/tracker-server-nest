@@ -121,6 +121,13 @@ export class ProjectService {
         relations: ['project']
       });
 
+      if (projectMembers.length === 0) {
+        return {
+          totalCount: 0,
+          list: []
+        };
+      }
+
       const projectIds = projectMembers.map(item => item.project.id);
       (findParam.where as any).id = In(projectIds);
     }

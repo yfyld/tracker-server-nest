@@ -18,7 +18,8 @@ export const AUTH = {
 export const CRYPTO_KEY = 'ks@123';
 
 export const CROSS_DOMAIN = {
-  allowedOrigins: []
+  allowedOrigins: [],
+  allowedOriginDecide: (origin: string) => /91jkys\.com/.test(origin)
 };
 
 export const BULLCONFIG = {};

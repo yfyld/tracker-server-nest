@@ -42,7 +42,8 @@ import {
   AddMetadataByExcelDto,
   GetEventAttrDto,
   UpdateMetadataBatchDto,
-  GetMetadataInfoDto
+  GetMetadataInfoDto,
+  AddMetadataByKaerDto
 } from './metadata.dto';
 import { XlsxService } from '@/providers/xlsx/xlsx.service';
 import { Permissions } from '@/decotators/permissions.decotators';
@@ -62,6 +63,13 @@ export class MetadataController {
   @Permissions(PERMISSION_CODE.METADATA_ADD)
   addMetadata(@Body() body: AddMetadataDto): Promise<void> {
     return this.metadataService.addMetadata(body);
+  }
+
+  @HttpProcessor.handle('新增元数据通过卡尔')
+  @Post('/kaer')
+  @Permissions(PERMISSION_CODE.METADATA_ADD)
+  addMetadataByKaer(@Body() body: AddMetadataByKaerDto): Promise<void> {
+    return this.metadataService.addMetadataByKaer(body);
   }
 
   @HttpProcessor.handle('上传元数据')

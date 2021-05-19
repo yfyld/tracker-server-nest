@@ -1,3 +1,4 @@
+import { EnumController } from './enum.controller';
 import { EnumService } from './enum.service';
 import { MetadataSchedule } from './metadata.schedule';
 import { HttpModule, HttpService, Module } from '@nestjs/common';
@@ -17,8 +18,8 @@ import { EnumModel } from './enum.model';
     TypeOrmModule.forFeature([MetadataModel, MetadataTagModel, ProjectModel, ModuleModel, EnumModel]),
     HttpModule
   ],
-  providers: [MetadataService, MetadataSchedule, ModuleService, EnumService],
-  controllers: [MetadataController],
-  exports: [MetadataService]
+  providers: [MetadataService, MetadataSchedule, ModuleService, EnumService, EnumService],
+  controllers: [MetadataController, EnumController],
+  exports: [MetadataService, EnumService]
 })
 export class MetadataModule {}

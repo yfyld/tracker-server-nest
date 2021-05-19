@@ -17,7 +17,8 @@ import {
   GetEventAttrDto,
   UpdateMetadataBatchDto,
   UpdateMetadataLogDto,
-  GetMetadataInfoDto
+  GetMetadataInfoDto,
+  AddMetadataByKaerDto
 } from './metadata.dto';
 
 import { MetadataModel, FieldModel, MetadataTagModel } from './metadata.model';
@@ -427,6 +428,32 @@ export class MetadataService {
       .where('moduleId = :moduleId', { moduleId })
       .getOne();
     return metadata;
+  }
+
+  public async addMetadataByKaer(body: AddMetadataByKaerDto): Promise<void> {
+    const { code, pageType, moduleId, name } = body;
+    const oldMetadata = await this.metadataModel.findOne({
+      code: code
+    });
+
+    if (oldMetadata && oldMetadata.projectId !== 35) {
+      return;
+    }
+
+    if (oldMetadata) {
+      oldMetadata.moduleId = moduleId;
+      oldMetadata.pageType = pageType;
+      oldMetadata.name = name;
+      await this.metadataModel.save(oldMetadata);
+    } else {
+      let metadata = this.metadataModel.create({
+        ...body,
+        type: 1,
+        projectId: 35,
+        status: 1
+      });
+      await this.metadataModel.save(metadata);
+    }
   }
 
   /**

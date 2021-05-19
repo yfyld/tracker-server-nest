@@ -13,6 +13,7 @@ export class AddMetadataDto {
   @IsOptional()
   @IsString()
   description?: string;
+  @IsOptional()
   @IsNumber()
   status: number;
   @IsOptional()
@@ -46,6 +47,22 @@ export class AddMetadataDto {
 
   @IsNumber()
   projectId?: number;
+
+  @IsNumber()
+  moduleId: number;
+
+  @IsString()
+  pageType: string;
+}
+
+export class AddMetadataByKaerDto {
+  @IsString()
+  code: string;
+  @IsString()
+  name: string;
+
+  @IsOptional()
+  url?: string;
 
   @IsNumber()
   moduleId: number;
