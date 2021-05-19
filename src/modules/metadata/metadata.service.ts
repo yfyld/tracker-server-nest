@@ -448,7 +448,7 @@ export class MetadataService {
     } else {
       let metadata = this.metadataModel.create({
         ...body,
-        type: 1,
+        type: 2,
         projectId: 35,
         status: 1
       });
