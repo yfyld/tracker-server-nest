@@ -1,6 +1,23 @@
 import { IsOptional } from 'class-validator';
 import { IIndicatorInfo, IFilterInfo } from './analyse.interface';
 
+export class QueryKaerAnalyseDataDto {
+  @IsOptional()
+  url?: string;
+  @IsOptional()
+  trackId?: string;
+  @IsOptional()
+  dateStart: number;
+  @IsOptional()
+  dateEnd: number;
+  @IsOptional()
+  dateType?: string;
+  @IsOptional()
+  appId?: string;
+  @IsOptional()
+  channel?: string;
+}
+
 export class QueryEventAnalyseDataDto {
   projectId: number;
   indicators: IIndicatorInfo[];

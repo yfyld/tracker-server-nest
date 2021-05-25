@@ -125,3 +125,17 @@ export interface IPathDataLinksItem {
   targetName: string;
   conversionRate: number;
 }
+
+export interface IAnalyseKaerData {
+  list: {
+    pv: number;
+    uv: number;
+    time: string;
+  }[];
+}
+
+export interface IAnalyseKaerDataListDataItem {
+  pv: string;
+  uv: string;
+  time: string;
+}
