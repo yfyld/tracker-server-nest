@@ -9,7 +9,9 @@ import {
   IAnalyseEventDataListDataItem,
   ICompare,
   IPathData,
-  IIndicatorInfo
+  IIndicatorInfo,
+  IAnalyseKaerDataListDataItem,
+  IAnalyseKaerData
 } from './analyse.interface';
 import { SlsService } from '@/providers/sls/sls.service';
 import { Injectable } from '@nestjs/common';
@@ -19,7 +21,8 @@ import {
   QueryPathAnalyseDataDto,
   QueryCustomAnalyseDataDto,
   QueryUserTimelineAnalyseDataDto,
-  QueryCheckoutAnalyseDataDto
+  QueryCheckoutAnalyseDataDto,
+  QueryKaerAnalyseDataDto
 } from './analyse.dto';
 import { clearNullStr, filterToQuery } from './analyse.util';
 import { getDynamicTime } from '@/utils/date';
@@ -470,5 +473,29 @@ export class AnalyseService {
         };
       });
     return { list };
+  }
+
+  public async kaerAnalyse(param: QueryKaerAnalyseDataDto): Promise<IAnalyseKaerData> {
+    let query = `${[
+      param.trackId && 'trackId:' + param.trackId,
+      param.appId && 'appId:' + param.appId,
+      param.url && 'url:' + param.url,
+      param.channel && 'channel:' + param.channel,
+      'projectId:35'
+    ]
+      .filter(item => !!item)
+      .join(
+        ' and '
+        // tslint:disable-next-line:max-line-length
+      )} | select approx_distinct(id) as pv ,approx_distinct(deviceId) as uv ,date_trunc('day', trackTime/1000) as time group by time order by time desc`;
+
+    const timeParam = getDynamicTime(param.dateStart, param.dateEnd, param.dateType);
+
+    const data = await this.slsService.query<IAnalyseKaerDataListDataItem>({
+      query,
+      from: timeParam.dateStart,
+      to: timeParam.dateEnd
+    });
+    return { list: data.map(item => ({ time: item.time, pv: Number(item.pv), uv: Number(item.uv) })) };
   }
 }

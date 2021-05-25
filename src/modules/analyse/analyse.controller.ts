@@ -3,9 +3,9 @@ import { AnalyseEventService } from './analyse.event.service';
 import { AnalysePathService } from './analyse.path.service';
 import { PERMISSION_CODE } from './../../constants/permission.contant';
 import { PermissionsGuard } from '@/guards/permission.guard';
-import { IFunnelData, IPathData } from './analyse.interface';
+import { IAnalyseKaerData, IFunnelData, IPathData } from './analyse.interface';
 import { ApiUseTags } from '@nestjs/swagger';
-import { Controller, Post, UseGuards, Body } from '@nestjs/common';
+import { Controller, Post, UseGuards, Body, Get, Query } from '@nestjs/common';
 
 import { HttpProcessor } from '@/decotators/http.decotator';
 
@@ -17,7 +17,8 @@ import {
   QueryPathAnalyseDataDto,
   QueryCustomAnalyseDataDto,
   QueryUserTimelineAnalyseDataDto,
-  QueryCheckoutAnalyseDataDto
+  QueryCheckoutAnalyseDataDto,
+  QueryKaerAnalyseDataDto
 } from './analyse.dto';
 import { Permissions } from '@/decotators/permissions.decotators';
 @ApiUseTags('分析')
@@ -77,5 +78,11 @@ export class AnalyseController {
       throw new Error('uid,deviceId,ip不能都为空');
     }
     return this.analyseService.checkoutAnalyse(body);
+  }
+
+  @HttpProcessor.handle('卡尔pv&uv分析')
+  @Get('/kaer')
+  kaerAnalyse(@Query() query: QueryKaerAnalyseDataDto): Promise<IAnalyseKaerData> {
+    return this.analyseService.kaerAnalyse(query);
   }
 }
