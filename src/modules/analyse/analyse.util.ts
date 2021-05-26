@@ -218,10 +218,20 @@ export function filterToQuery({ filterValues, filterType }: IFilterInfo): string
  * @param hasTime
  */
 export function getGroup(dimension: string, hasTime: boolean) {
+  //解析自定义纬度
+  let dimensionKey = dimension;
+  if (/^dimension/.test(dimension)) {
+    dimension = dimension.replace(/^dimension_*/, '');
+    if (dimension) {
+      dimensionKey = 'dimension';
+      dimension = dimension.replace(/\\\\/g, '\\') + ' as dimension ';
+    }
+  }
+
   if (dimension && !hasTime) {
-    return `,${dimension}  GROUP BY ${dimension}`;
+    return `,${dimension}  GROUP BY ${dimensionKey}`;
   } else if (dimension && hasTime) {
-    return `,${dimension} GROUP BY time, ${dimension} ORDER BY time`;
+    return `,${dimension} GROUP BY time, ${dimensionKey} ORDER BY time`;
   } else if (hasTime) {
     return ` group by time order by time`;
   } else {

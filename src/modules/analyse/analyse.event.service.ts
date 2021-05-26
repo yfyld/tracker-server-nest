@@ -116,7 +116,7 @@ export class AnalyseEventService {
 
     const result: IAnalyseEventData = {
       list: [],
-      dimension: param.dimension,
+      dimension: param.dimension.replace(/(^dimension).*/, '$1'),
       dimensionValues: [],
       timeUnit: param.timeUnit,
       type: param.type
@@ -145,6 +145,7 @@ export class AnalyseEventService {
         from: timeParam.dateStart,
         to: timeParam.dateEnd
       });
+      param.dimension = param.dimension.replace(/(^dimension).*/, '$1');
       if (param.dimension) {
         data.forEach(item => {
           dimensionMap[item[param.dimension]] = true;
