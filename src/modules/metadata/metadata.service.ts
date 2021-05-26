@@ -185,12 +185,12 @@ export class MetadataService {
     }
 
     if (name) {
-      condition += ` and metadata.name LIKE :name`;
+      condition += ` and (metadata.name LIKE :name or metadata.code LIKE :name) `;
       params.name = `%${name}%`;
     }
 
     if (code) {
-      condition += ` and metadata.code LIKE :code `;
+      condition += ` and (metadata.code LIKE :code or metadata.name LIKE :code) `;
       params.code = `%${code}%`;
     }
 

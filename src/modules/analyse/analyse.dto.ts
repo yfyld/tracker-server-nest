@@ -1,20 +1,25 @@
-import { IsOptional } from 'class-validator';
+import { IsNumber, IsOptional, IsString } from 'class-validator';
 import { IIndicatorInfo, IFilterInfo } from './analyse.interface';
 
 export class QueryKaerAnalyseDataDto {
   @IsOptional()
+  @IsString()
   url?: string;
   @IsOptional()
+  @IsString()
   trackId?: string;
-  @IsOptional()
+  @IsNumber()
   dateStart: number;
-  @IsOptional()
+  @IsNumber()
   dateEnd: number;
   @IsOptional()
+  @IsString()
   dateType?: string;
   @IsOptional()
+  @IsString()
   appId?: string;
   @IsOptional()
+  @IsString()
   channel?: string;
 }
 
