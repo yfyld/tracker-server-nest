@@ -739,7 +739,7 @@ export class MetadataService {
         code: code
       });
 
-      if (oldMetadata && oldMetadata.projectId !== projectId) {
+      if (oldMetadata && oldMetadata.projectId !== projectId && !oldMetadata.isDeleted) {
         throw `第${key}行 ${code} 已经在Id位${oldMetadata.projectId}的项目中添加了`;
       }
 
@@ -758,6 +758,7 @@ export class MetadataService {
       if (oldMetadata) {
         oldMetadata.isDeleted = false;
         oldMetadata.name = newMetadata.name;
+        oldMetadata.projectId = newMetadata.projectId;
         oldMetadata.type = newMetadata.type;
         oldMetadata.status = newMetadata.status;
         oldMetadata.description = newMetadata.description;
