@@ -1,3 +1,4 @@
+import { ParsePageQueryIntPipe } from './../../pipes/parse-page-query-int.pipe';
 import { AnalyseFunnelService } from './analyse.funnel.service';
 import { AnalyseEventService } from './analyse.event.service';
 import { AnalysePathService } from './analyse.path.service';
@@ -82,7 +83,9 @@ export class AnalyseController {
 
   @HttpProcessor.handle('卡尔pv&uv分析')
   @Get('/kaer')
-  kaerAnalyse(@Query() query: QueryKaerAnalyseDataDto): Promise<IAnalyseKaerData> {
+  kaerAnalyse(
+    @Query(new ParsePageQueryIntPipe(['dateEnd', 'dateStart'])) query: QueryKaerAnalyseDataDto
+  ): Promise<IAnalyseKaerData> {
     return this.analyseService.kaerAnalyse(query);
   }
 }
