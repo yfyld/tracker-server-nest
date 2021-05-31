@@ -652,19 +652,7 @@ export class MetadataService {
       ]
     );
 
-    const metadatas = datas.filter(
-      item =>
-        item.name ||
-        item.code ||
-        item.type ||
-        item.status ||
-        item.newTags ||
-        item.moduleName ||
-        item.pageTypeName ||
-        item.description ||
-        item.projectName ||
-        item.version
-    );
+    const metadatas = datas.filter(item => item.name && item.code && item.type);
 
     const tagNames = metadatas.reduce((total, item) => {
       const newTags = item.newTags ? item.newTags.split(',') : [];
@@ -714,7 +702,7 @@ export class MetadataService {
     for (let key in metadatas) {
       const item = datas[key];
       if (!item.name || !item.code || !item.type) {
-        throw `第${key}行格式错误`;
+        throw `第${Number(key) + 2}行格式错误`;
       }
 
       const pageType = pageTypes.data.find(i => i.label == item.pageTypeName);
@@ -739,13 +727,9 @@ export class MetadataService {
         code: code
       });
 
-      if (oldMetadata && oldMetadata.projectId !== projectId) {
-        throw `第${key}行 ${code} 已经在Id位${oldMetadata.projectId}的项目中添加了`;
+      if (oldMetadata && !oldMetadata.isDeleted && oldMetadata.projectId !== newMetadata.projectId) {
+        throw `第${Number(key) + 2}行 ${code} 已经在Id为${oldMetadata.projectId}的项目中添加了`;
       }
-
-      // if (oldMetadata && oldMetadata.isDeleted === false && oldMetadata.name !== '') {
-      //   throw new HttpBadRequestError(`第${key}行,元数据${code}重复`);
-      // }
 
       let metadataTags = [];
 
@@ -758,6 +742,7 @@ export class MetadataService {
       if (oldMetadata) {
         oldMetadata.isDeleted = false;
         oldMetadata.name = newMetadata.name;
+        oldMetadata.projectId = newMetadata.projectId;
         oldMetadata.type = newMetadata.type;
         oldMetadata.status = newMetadata.status;
         oldMetadata.description = newMetadata.description;
