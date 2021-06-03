@@ -130,7 +130,6 @@ export class AuthService {
    * @return Promise<TokenDto>
    */
   public async createToken(user: UserModel | BaseUserDto): Promise<TokenDto> {
-    const permissions = await this.getPermissionsByUserId(user.id);
     const { id, username, nickname } = user;
     const data = {
       id,
@@ -138,6 +137,7 @@ export class AuthService {
       nickname
     };
     const accessToken = this.jwtService.sign(data);
+
     return {
       accessToken,
       expireIn: AUTH.expiresIn

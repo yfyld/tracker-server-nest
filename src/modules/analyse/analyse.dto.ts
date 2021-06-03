@@ -8,9 +8,9 @@ export class QueryKaerAnalyseDataDto {
   @IsOptional()
   @IsString()
   trackId?: string;
-  @IsNumber()
+
   dateStart: number;
-  @IsNumber()
+
   dateEnd: number;
   @IsOptional()
   @IsString()
