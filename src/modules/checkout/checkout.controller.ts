@@ -27,12 +27,6 @@ export class CheckoutController {
   addCheckoutLog(@Body() body: AddCheckoutLogDto, @Auth() user: UserModel): Promise<void> {
     return this.checkoutService.addCheckoutLog(body, user);
   }
-  @UseGuards(JwtAuthGuard, PermissionsGuard)
-  @HttpProcessor.handle('修改校验日志')
-  @Post('/add-log')
-  updateCheckoutLog(@Body() body: UpdateCheckoutLogDto, @Auth() user: UserModel): Promise<void> {
-    return this.checkoutService.updateCheckoutLog(body, user);
-  }
 
   @HttpProcessor.handle('用户标识')
   @Get('/user')

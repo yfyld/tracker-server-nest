@@ -25,7 +25,7 @@ export class CheckoutService {
    * name
    */
   public async addCheckoutLog(info: AddCheckoutLogDto, user: UserModel): Promise<void> {
-    const log = await this.checkoutLogModel.findOne({ logId: info.logId });
+    const log = await this.checkoutLogModel.findOne({ logId: info.logId, type: info.type });
     if (!log) {
       const newLog = await this.checkoutLogModel.create({
         ...info,
@@ -38,26 +38,6 @@ export class CheckoutService {
       log.status = info.status;
     }
 
-    const metadata = await this.metadataModel.findOne({ code: info.trackId });
-    if (metadata) {
-      if (info.type) {
-        metadata.selfCheckoutStatus = info.status;
-      } else {
-        metadata.checkoutStatus = info.status;
-      }
-      this.metadataModel.save(metadata);
-    }
-  }
-
-  public async updateCheckoutLog(info: UpdateCheckoutLogDto, user: UserModel): Promise<void> {
-    await this.checkoutLogModel.update(
-      { id: info.id },
-      {
-        ...info,
-
-        userId: user.id
-      }
-    );
     const metadata = await this.metadataModel.findOne({ code: info.trackId });
     if (metadata) {
       if (info.type) {
@@ -122,6 +102,7 @@ export class CheckoutService {
         this.statusToString(metadata.selfCheckoutStatus),
         this.statusToString(metadata.checkoutStatus),
         checkoutLogs
+          .reverse()
           .map(log => {
             return `${moment(log.createdAt).format('lll')}: ${log.type ? '自测' : '测试'}${this.statusToString(
               log.status
