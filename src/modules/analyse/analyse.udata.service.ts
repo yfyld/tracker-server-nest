@@ -1,3 +1,4 @@
+import { UserModel } from './../user/user.model';
 import { JwtService } from '@nestjs/jwt';
 
 import { SlsService } from '@/providers/sls/sls.service';
@@ -17,9 +18,10 @@ export class AnalyseUdataService {
     private readonly jwtService: JwtService
   ) {}
 
-  public async getToken(projectIds) {
+  public async getToken(projectIds: number[], user: UserModel) {
     return this.jwtService.sign({
       projectIds,
+      user,
       expiresIn: '1800s'
     });
   }
@@ -28,7 +30,7 @@ export class AnalyseUdataService {
    * 路径分析service
    * @param QueryUdataAnalyseDataDto
    */
-  public async pathAnalyse(param: any): Promise<any> {
+  public async udataAnalyse(param: any): Promise<any> {
     const tokenInfo = this.jwtService.verify(param.token);
 
     const result = this.slsService.query({});

@@ -1,3 +1,6 @@
+import { QueryAutotrackListDto } from './autotrack.dto';
+import { QueryListQuery } from './../../interfaces/request.interface';
+import { UserModel } from './../user/user.model';
 import { AutotrackModel } from './autotrack.model';
 
 import { Injectable, HttpService } from '@nestjs/common';
@@ -12,7 +15,7 @@ export class AutotrackService {
     private readonly httpService: HttpService
   ) {}
 
-  public async getAutotrackList(code: string): Promise<{ label: string; value: string }[]> {
-    return JSON.parse((await this.autotrackModel.findOne({ code })).content);
+  public async getAutotrackList(query: QueryListQuery<QueryAutotrackListDto>, user: UserModel): Promise<any> {
+    return;
   }
 }
