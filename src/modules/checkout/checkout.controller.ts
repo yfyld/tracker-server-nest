@@ -1,11 +1,12 @@
+import { Response } from 'express';
 import { PermissionsGuard } from '@/guards/permission.guard';
 
-import { Controller, Get, Post, Body, UseGuards, Delete, Param, Put, Res, Headers } from '@nestjs/common';
+import { Controller, Get, Post, Body, UseGuards, Delete, Param, Put, Res, Headers, Query } from '@nestjs/common';
 
 import { CheckoutService } from './checkout.service';
 import { HttpProcessor } from '@/decotators/http.decotator';
 import { JwtAuthGuard } from '@/guards/auth.guard';
-import { ApiBearerAuth, ApiOperation, ApiUseTags, ApiResponse } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation, ApiUseTags } from '@nestjs/swagger';
 
 import * as moment from 'moment';
 
@@ -26,12 +27,6 @@ export class CheckoutController {
   addCheckoutLog(@Body() body: AddCheckoutLogDto, @Auth() user: UserModel): Promise<void> {
     return this.checkoutService.addCheckoutLog(body, user);
   }
-  @UseGuards(JwtAuthGuard, PermissionsGuard)
-  @HttpProcessor.handle('修改校验日志')
-  @Post('/add-log')
-  updateCheckoutLog(@Body() body: UpdateCheckoutLogDto, @Auth() user: UserModel): Promise<void> {
-    return this.checkoutService.updateCheckoutLog(body, user);
-  }
 
   @HttpProcessor.handle('用户标识')
   @Get('/user')
@@ -40,5 +35,17 @@ export class CheckoutController {
       uid: cookie['user_id'] || cookie['wechat_uid'],
       deviceId: cookie['TRYCATCH_TOKEN']
     };
+  }
+
+  @HttpProcessor.handle('导出记录')
+  @Get('/export')
+  async getCheckoutRecord(@Res() res: Response, @Query('version') version: string): Promise<any> {
+    const [stream, length] = await this.checkoutService.getCheckoutRecord(version);
+    res.set({
+      'Content-Type': 'application/xlsx',
+      'Content-Length': length
+    });
+    res.attachment(`埋点${version}版本的测试记录 ${moment().format('lll')}.xlsx`);
+    stream.pipe(res);
   }
 }
