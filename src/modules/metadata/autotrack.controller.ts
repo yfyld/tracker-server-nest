@@ -1,3 +1,10 @@
+import { QueryAutotrackListDto } from './autotrack.dto';
+import { ParsePageQueryIntPipe } from './../../pipes/parse-page-query-int.pipe';
+import { QueryList } from './../../decotators/query-list.decorators';
+import { UserModel } from './../user/user.model';
+import { Auth } from './../../decotators/user.decorators';
+import { AutotrackModel } from './autotrack.model';
+import { PageData, QueryListQuery } from './../../interfaces/request.interface';
 import { PermissionsGuard } from '@/guards/permission.guard';
 
 import { Controller, Get, UseGuards, Query } from '@nestjs/common';
@@ -13,16 +20,13 @@ import { ApiUseTags } from '@nestjs/swagger';
 export class AutotrackController {
   constructor(private readonly autotrackService: AutotrackService) {}
 
-  @HttpProcessor.handle('获取枚举值')
+  @HttpProcessor.handle('获取圈选数据列表')
   @Get('/')
   getAutotrackList(
-    @Query('code') code: string
-  ): Promise<
-    {
-      label: string;
-      value: string;
-    }[]
-  > {
-    return this.autotrackService.getAutotrackList(code);
+    @QueryList(new ParsePageQueryIntPipe(['projectId']))
+    query: QueryListQuery<QueryAutotrackListDto>,
+    @Auth() user: UserModel
+  ): Promise<PageData<AutotrackModel>> {
+    return this.autotrackService.getAutotrackList(query, user);
   }
 }
