@@ -739,20 +739,21 @@ export class MetadataService {
           metadataTags.push(allMetadataTags.find(val => val.name === tagName));
         }
       }
+
       if (oldMetadata) {
         oldMetadata.isDeleted = false;
         oldMetadata.name = newMetadata.name;
         oldMetadata.projectId = newMetadata.projectId;
         oldMetadata.type = newMetadata.type;
         oldMetadata.status = newMetadata.status;
-        oldMetadata.description = newMetadata.description;
+        oldMetadata.description = newMetadata.description || '';
         oldMetadata.moduleId = newMetadata.moduleId;
         oldMetadata.pageType = newMetadata.pageType;
         oldMetadata.tags = oldMetadata.tags || [];
         oldMetadata.tags.push(...metadataTags);
         oldMetadata.version = newMetadata.version;
         await manager.save(MetadataModel, oldMetadata);
-
+        console.log(key, newMetadata.code);
         continue;
       }
       const metadata =
@@ -763,6 +764,7 @@ export class MetadataService {
         });
 
       metadata.tags.push(...metadataTags);
+      console.log(key, newMetadata.code);
       await manager.save(MetadataModel, metadata);
     }
 
