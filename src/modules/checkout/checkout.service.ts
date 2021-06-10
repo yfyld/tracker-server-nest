@@ -83,7 +83,7 @@ export class CheckoutService {
   }
 
   public async getCheckoutRecord(version: string): Promise<[Readable, number]> {
-    const metadatas = await this.metadataModel.find({ version });
+    const metadatas = await this.metadataModel.find({ version, isDeleted: false });
     const records = [['名称', 'code', '类型', '备注', '自测结果', '测试结果', '测试记录']];
     const users = await this.userModel.find();
     const userMapById = users.reduce(
