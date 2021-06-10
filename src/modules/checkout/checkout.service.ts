@@ -84,7 +84,7 @@ export class CheckoutService {
 
   public async getCheckoutRecord(version: string): Promise<[Readable, number]> {
     const metadatas = await this.metadataModel.find({ version });
-    const records = [['名称', 'code', '类型', '自测结果', '测试结果', '测试记录']];
+    const records = [['名称', 'code', '类型', '备注', '自测结果', '测试结果', '测试记录']];
     const users = await this.userModel.find();
     const userMapById = users.reduce(
       (total, item) => {
@@ -99,6 +99,7 @@ export class CheckoutService {
         metadata.name,
         metadata.code,
         this.getActionTypeName(metadata.type),
+        metadata.description,
         this.statusToString(metadata.selfCheckoutStatus),
         this.statusToString(metadata.checkoutStatus),
         checkoutLogs
