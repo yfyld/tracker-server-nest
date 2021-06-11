@@ -23,7 +23,7 @@ import {
 
 import { MetadataModel, FieldModel, MetadataTagModel } from './metadata.model';
 import { Injectable, HttpService } from '@nestjs/common';
-import { Repository, In, LessThan, MoreThan, Between, Like, FindManyOptions, EntityManager } from 'typeorm';
+import { Repository, In, LessThan, MoreThan, Between, Like, FindManyOptions, EntityManager, Not } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 
 import { QueryListQuery, PageData } from '@/interfaces/request.interface';
@@ -204,7 +204,7 @@ export class MetadataService {
       params.checkoutStatus = checkoutStatus;
     }
 
-    if (typeof version !== 'undefined') {
+    if (version) {
       condition += ' and metadata.version = :version';
       params.version = version;
     }
@@ -282,6 +282,8 @@ export class MetadataService {
     query: QueryListQuery<QueryMetadataListDto>,
     user: UserModel
   ): Promise<PageData<MetadataModel>> {
+    let a = await this.metadataModel.find({ name: query.query.name });
+    let b = await this.metadataModel.find({ name: query.query.name, version: '' });
     const { condition, params, skip, take, orderBy } = await this.metadataListParam(query);
 
     let [metadata, totalCount] = await this.metadataModel
@@ -502,6 +504,7 @@ export class MetadataService {
       oldMetadata.pageType = body.pageType;
       oldMetadata.moduleId = body.moduleId;
       oldMetadata.status = body.status;
+      oldMetadata.version = body.version;
       oldMetadata.tags.push(...metadataTags);
       await this.metadataModel.save(oldMetadata);
       return;
@@ -631,6 +634,193 @@ export class MetadataService {
     }
 
     return data;
+  }
+
+  public async checkoutExcel(url: string): Promise<[Readable, number]> {
+    const res = await this.getHttpBuffer(url);
+    const datas = await this.xlsxervice.parseByBuffer(
+      res,
+      ['应用', '名称', 'code', '类型', '启用', '标签', '模块', '页面类型', '版本', '备注'],
+      [
+        'projectName',
+        'name',
+        'code',
+        'type',
+        'status',
+        'newTags',
+        'moduleName',
+        'pageTypeName',
+        'version',
+        'description'
+      ]
+    );
+
+    const result = [
+      [
+        '应用',
+        '名称',
+        'code',
+        '类型',
+        '启用',
+        '标签',
+        '模块',
+        '页面类型',
+        '版本',
+        '备注',
+        '检查结果',
+        '应用检查',
+        '名称检查',
+        'code检查',
+        '类型检查',
+        '模块检查',
+        '页面类型检查',
+        '版本检查'
+      ]
+    ];
+
+    const metadatas = datas.filter(item => item.name && item.code && item.type);
+
+    const projectNames = [
+      ...new Set(datas.filter(item => !!item.projectName).map(item => item.projectName))
+    ] as string[];
+    const projects = projectNames.length ? await this.projectModel.find({ name: In(projectNames) }) : [];
+
+    const moduleNames = [...new Set(datas.filter(item => !!item.moduleName).map(item => item.moduleName))] as string[];
+    const modules = moduleNames.length ? await this.moduleModel.find({ name: In(moduleNames) }) : [];
+
+    const pageTypes = await this.httpService
+      .get<{ label: string; value: string }[]>('https://static.91jkys.com/dms/defa6d786f0531ab6fedb525705b53de.json')
+      .toPromise();
+
+    const projectMap = projects.reduce((total, item) => {
+      total[item.name] = item;
+      return total;
+    }, {});
+    const moduleMap = modules.reduce((total, item) => {
+      total[item.name] = item;
+      return total;
+    }, {});
+    const pageTypeMap = pageTypes.data.reduce((total, item) => {
+      total[item.label] = item;
+      return total;
+    }, {});
+
+    for (let key in metadatas) {
+      const item = datas[key];
+      const checkoutItem = {
+        ...item,
+        checkResult: '',
+        checkProject: '',
+        checkName: '',
+        checkCode: '',
+        checkType: '',
+        checkModule: '',
+        checkPageType: '',
+        checkVersion: ''
+      };
+
+      //检查应用
+      if (!projectMap[item.projectName]) {
+        checkoutItem.checkProject += '应用不存在,需新增请联系陈帅;';
+      }
+
+      //检查名称
+      if (!item.name) {
+        checkoutItem.checkName += '不能为空;';
+      } else {
+        const oldNameMetadata = await this.metadataModel.findOne({
+          name: item.name,
+          code: Not(item.code)
+        });
+        if (oldNameMetadata) {
+          checkoutItem.checkName += `已经在Id为${oldNameMetadata.projectId}的应用中有重复名称;`;
+        }
+      }
+
+      //检查code
+      if (!item.code) {
+        checkoutItem.checkCode += '不能为空;';
+      } else {
+        if (!/[0-9a-zA-Z]+-(page|click|view)-[0-9a-zA-Z\-_]+/.test(item.code)) {
+          checkoutItem.checkCode += '请检查命名是否规范;';
+        }
+        if (
+          !(
+            (/page/.test(item.code) && this.getActionType(item.type) == 1) ||
+            (/click|event/.test(item.code) && this.getActionType(item.type) == 0) ||
+            (/view/.test(item.code) && this.getActionType(item.type) == 2)
+          )
+        ) {
+          checkoutItem.checkCode += '请检查埋点类型是否错误;';
+        }
+
+        const oldMetadata = await this.metadataModel.findOne({
+          code: item.code
+        });
+        if (oldMetadata) {
+          checkoutItem.checkCode += `已经在Id为${oldMetadata.projectId}的应用中添加了,请确认是否要覆盖;`;
+        }
+      }
+
+      //检查Type
+      if (!item.type) {
+        checkoutItem.checkType += '类型不能为空;';
+      } else {
+        if (!['点击', '事件', '页面曝光', '区域曝光'].includes(item.type)) {
+          checkoutItem.checkType += '类型只能是事件/页面曝光/区域曝光之一;';
+        }
+      }
+
+      //检查模块
+      if (!item.moduleName) {
+        checkoutItem.checkModule += '模块不能为空;';
+      } else {
+        if (!moduleMap[item.moduleName]) {
+          checkoutItem.checkModule += '模块不存在,需新增请联系国强;';
+        }
+      }
+
+      //检查页面类型
+      if (!item.pageTypeName) {
+        checkoutItem.checkPageType += '页面类型不能为空;';
+      } else {
+        if (!pageTypeMap[item.pageTypeName]) {
+          checkoutItem.checkPageType += '页面类型不存在,需新增请联系国强;';
+        }
+      }
+
+      //检查版本
+      if (!item.version) {
+        checkoutItem.checkVersion += '版本不能为空;';
+      } else {
+        if (/\s/.test(item.version)) {
+          checkoutItem.checkVersion += '版本包含空白符(空格,换行符,回车符等);';
+        }
+
+        const oldVersionMetadata = await this.metadataModel.findOne({
+          version: item.version
+        });
+        if (oldVersionMetadata) {
+          checkoutItem.checkVersion += `已经在Id为${oldVersionMetadata.projectId}的应用中已存在,请确认是否要继续使用该版本;`;
+        }
+      }
+
+      if (
+        checkoutItem.checkProject ||
+        checkoutItem.checkName ||
+        checkoutItem.checkCode ||
+        checkoutItem.checkType ||
+        checkoutItem.checkModule ||
+        checkoutItem.checkPageType ||
+        checkoutItem.checkVersion
+      ) {
+        checkoutItem.checkResult = '不通过';
+      }
+
+      result.push(Object.values(checkoutItem));
+    }
+
+    return await this.xlsxervice.exportExcel(result);
   }
 
   public async addMetadataByExcel(projectId: number, url: string, manager: EntityManager): Promise<void> {

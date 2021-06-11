@@ -1,3 +1,4 @@
+import { Readable } from 'typeorm/platform/PlatformTools';
 import { UserModel } from './../user/user.model';
 import { TransactionManager, EntityManager, Transaction } from 'typeorm';
 import { PERMISSION_CODE } from './../../constants/permission.contant';
@@ -80,15 +81,16 @@ export class MetadataController {
     return this.metadataService.addMetadataByExcel(body.projectId, body.url, manager);
   }
 
-  @HttpProcessor.handle('校验元数据,临时')
-  @Get('/check')
-  test(): Promise<any> {
-    return this.metadataService.test(`http://yfyld.oss-cn-hangzhou.aliyuncs.com/code.xlsx`);
-  }
-  @HttpProcessor.handle('校验元数据,临时')
-  @Get('/check2')
-  test2(@Query('id', new ParseIntPipe()) id: number): Promise<any> {
-    return this.metadataService.test2(id);
+  @HttpProcessor.handle('检查元数据')
+  @Get('/checkout')
+  async checkoutMetadata(@Query('url') url: string, @Res() res: Response): Promise<void> {
+    const [stream, length] = await this.metadataService.checkoutExcel(url);
+    res.set({
+      'Content-Type': 'application/xlsx',
+      'Content-Length': length
+    });
+    res.attachment(`元数据检查结果${moment().format('lll')}.xlsx`);
+    stream.pipe(res);
   }
 
   @HttpProcessor.handle('更新元数据')
